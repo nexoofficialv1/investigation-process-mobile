@@ -7,6 +7,11 @@ import '../services/local_store_service.dart';
 import '../widgets/home_grid_card.dart';
 import 'case_detail_screen.dart';
 import 'case_form_screen.dart';
+import 'forms_screen.dart';
+import 'statement_screen.dart';
+import 'compliance_screen.dart';
+import 'investigation_checklist_screen.dart';
+import 'report_screen.dart';
 import 'officer_profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -63,12 +68,82 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await _load();
   }
 
-  void _openLatestOrNew() {
-    if (_cases.isEmpty) {
-      _newCase();
-    } else {
-      _openCase(_cases.first);
+  CaseFile? get _latestCase => _cases.isEmpty ? null : _cases.first;
+
+  void _needCaseMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('প্রথমে একটি case create করুন, তারপর এই module খুলবে।')),
+    );
+  }
+
+  Future<void> _openLatestCase() async {
+    final file = _latestCase;
+    if (file == null) {
+      await _newCase();
+      return;
     }
+    await _openCase(file);
+  }
+
+  Future<void> _openCdWriter() async {
+    final file = _latestCase;
+    if (file == null) {
+      await _newCase();
+      return;
+    }
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => CaseDetailScreen(profile: _profile, caseFile: file)));
+    await _load();
+  }
+
+  Future<void> _openForms() async {
+    final file = _latestCase;
+    if (file == null) {
+      _needCaseMessage();
+      return;
+    }
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => FormsScreen(profile: _profile, caseFile: file)));
+  }
+
+  Future<void> _openStatements() async {
+    final file = _latestCase;
+    if (file == null) {
+      _needCaseMessage();
+      return;
+    }
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => StatementScreen(profile: _profile, caseFile: file)));
+  }
+
+  Future<void> _openCompliance() async {
+    final file = _latestCase;
+    if (file == null) {
+      _needCaseMessage();
+      return;
+    }
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => ComplianceScreen(caseFile: file)));
+  }
+
+  Future<void> _openInvestigationChecklist() async {
+    final file = _latestCase;
+    if (file == null) {
+      _needCaseMessage();
+      return;
+    }
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => InvestigationChecklistScreen(caseFile: file)));
+  }
+
+  Future<void> _openReport() async {
+    final file = _latestCase;
+    if (file == null) {
+      _needCaseMessage();
+      return;
+    }
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => ReportScreen(profile: _profile, caseFile: file)));
+  }
+
+  void _comingSoon(String module) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$module module next patch-এ full screen হবে। এখন Case Detail থেকে কাজ করুন।')),
+    );
   }
 
   @override
@@ -96,7 +171,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         currentIndex: _tabIndex,
         onTap: (i) {
           setState(() => _tabIndex = i);
-          if (i == 1) _openLatestOrNew();
+          if (i == 1) _openLatestCase();
+          if (i == 2) _comingSoon('Tasks / Pending CD Entries');
           if (i == 3) _editProfile();
         },
         items: const [
@@ -129,33 +205,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _gridMenu() {
     final items = [
-      _Menu('Case Diary', Icons.menu_book_rounded, AppTheme.gold, _openLatestOrNew),
-      _Menu('New Case', Icons.add_box_rounded, AppTheme.teal, _newCase),
-      _Menu('Forms', Icons.description_rounded, AppTheme.purple, _openLatestOrNew),
-      _Menu('Statement', Icons.assignment_ind_rounded, const Color(0xFF673AB7), _openLatestOrNew),
-      _Menu('Compliance', Icons.event_available_rounded, AppTheme.blue, _openLatestOrNew),
-      _Menu('IF5 / CS', Icons.fact_check_rounded, AppTheme.coral, _openLatestOrNew),
-      _Menu('Evidence', Icons.inventory_2_rounded, const Color(0xFF795000), _openLatestOrNew),
-      _Menu('PDF Export', Icons.picture_as_pdf_rounded, const Color(0xFF42A5F5), _openLatestOrNew),
-      _Menu('Final CD', Icons.verified_rounded, const Color(0xFFC2188B), _openLatestOrNew),
-      _Menu('Sketch Map', Icons.map_rounded, const Color(0xFF1B5E4B), _openLatestOrNew),
-      _Menu('Backup', Icons.backup_rounded, const Color(0xFFF4A62A), _openLatestOrNew),
-      _Menu('Reports', Icons.warning_rounded, const Color(0xFFD68A00), _openLatestOrNew),
+      _Menu('Case Diary', 'CD writer', Icons.menu_book_rounded, AppTheme.gold, _openCdWriter),
+      _Menu('New Case', 'case entry', Icons.add_box_rounded, AppTheme.teal, _newCase),
+      _Menu('Forms', 'notice/requisition', Icons.description_rounded, AppTheme.purple, _openForms),
+      _Menu('Statement', '180 BNSS', Icons.assignment_ind_rounded, const Color(0xFF673AB7), _openStatements),
+      _Menu('Checklists', 'investigation needs', Icons.checklist_rounded, AppTheme.blue, _openInvestigationChecklist),
+      _Menu('Report', 'SP/SDPO/SDO', Icons.summarize_rounded, const Color(0xFFD68A00), _openReport),
+      _Menu('Compliance', 'legal checklist', Icons.event_available_rounded, const Color(0xFF1B5E4B), _openCompliance),
+      _Menu('IF5 / CS', 'from final CD', Icons.fact_check_rounded, AppTheme.coral, () => _comingSoon('IF5 / CS')),
+      _Menu('Evidence', 'seizure/docs', Icons.inventory_2_rounded, const Color(0xFF795000), () => _comingSoon('Evidence')),
+      _Menu('PDF Export', 'preview first', Icons.picture_as_pdf_rounded, const Color(0xFF42A5F5), () => _comingSoon('PDF Export')),
+      _Menu('Final CD', 'investigation summary', Icons.verified_rounded, const Color(0xFFC2188B), _openCdWriter),
+      _Menu('Sketch Map', 'PO map', Icons.map_rounded, const Color(0xFF006B57), () => _comingSoon('Sketch Map')),
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: items.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          mainAxisSpacing: 18,
-          crossAxisSpacing: 14,
-          childAspectRatio: .86,
+          mainAxisSpacing: 14,
+          crossAxisSpacing: 12,
+          childAspectRatio: .78,
         ),
-        itemBuilder: (_, i) => HomeGridCard(title: items[i].title, icon: items[i].icon, color: items[i].color, onTap: items[i].onTap),
+        itemBuilder: (_, i) => HomeGridCard(
+          title: items[i].title,
+          subtitle: items[i].subtitle,
+          icon: items[i].icon,
+          color: items[i].color,
+          onTap: items[i].onTap,
+        ),
       ),
     );
   }
@@ -189,8 +271,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 class _Menu {
   final String title;
+  final String subtitle;
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
-  _Menu(this.title, this.icon, this.color, this.onTap);
+  _Menu(this.title, this.subtitle, this.icon, this.color, this.onTap);
 }
