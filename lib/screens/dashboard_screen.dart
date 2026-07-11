@@ -14,6 +14,7 @@ import 'investigation_checklist_screen.dart';
 import 'report_screen.dart';
 import 'officer_profile_screen.dart';
 import 'sketch_map_screen.dart';
+import 'case_parser_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -137,6 +138,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
 
+  Future<void> _openCaseParser() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => CaseParserScreen(profile: _profile)));
+    await _load();
+  }
+
+
   Future<void> _openSketchMap() async {
     final file = _latestCase;
     if (file == null) {
@@ -213,6 +220,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final items = [
       _Menu('Case Diary', 'CD writer', Icons.menu_book_rounded, AppTheme.gold, _openCdWriter),
       _Menu('New Case', 'case entry', Icons.add_box_rounded, AppTheme.teal, _newCase),
+      _Menu('Case Parser', 'auto extract', Icons.document_scanner_rounded, const Color(0xFF0E7C86), _openCaseParser),
       _Menu('Forms', 'notice/requisition', Icons.description_rounded, AppTheme.purple, _openForms),
       _Menu('Statement', '180 BNSS', Icons.assignment_ind_rounded, const Color(0xFF673AB7), _openStatements),
       _Menu('Checklists', 'investigation needs', Icons.checklist_rounded, AppTheme.blue, _openInvestigationChecklist),

@@ -22,3 +22,11 @@ Changes:
    - IO can edit generated body before preview/export.
 
 4. PDF + DOC export continues to be available through preview screen.
+
+## v1.8 Case Parser Patch
+- Added Case Parser dashboard module.
+- Text parser supports structured police case text using labels: Ref, P.O, D.O, D.R, Complt, FIR Named Accd, I.O, Gist, Arrest.
+- Extracted fields are shown in an editable review screen before saving.
+- IO can create a new case or update an existing selected case.
+- Camera/Scan Document button is reserved for the OCR phase; this patch keeps OCR as a safe placeholder and uses paste-text parsing first.
+- Parsed data will feed Case Entry and later CD-I, forms, statements, final CD and IF5.

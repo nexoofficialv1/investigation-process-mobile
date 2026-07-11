@@ -14,3 +14,6 @@ Flutter Android MVP for police investigation workflow, CD writing, official form
 
 ## Build
 Push to GitHub and use the included GitHub Actions workflow to build debug APK.
+
+### v1.8 Case Parser
+Dashboard now includes **Case Parser**. Paste structured case text such as Ref, P.O, D.O, D.R, Complt, FIR Named Accd, I.O, Gist and Arrest. The app extracts the case fields, shows a review/edit screen, and then saves as a new case or updates an existing case. Camera/OCR support is planned for the next online/OCR phase.
