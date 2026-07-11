@@ -5,6 +5,7 @@ import '../models/officer_profile.dart';
 import '../models/statement_entry.dart';
 import '../services/local_store_service.dart';
 import '../services/pdf_service.dart';
+import 'pdf_preview_screen.dart';
 import '../widgets/form_helpers.dart';
 
 class StatementScreen extends StatefulWidget {
@@ -72,8 +73,17 @@ class _StatementScreenState extends State<StatementScreen> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Statement saved')));
   }
 
-  Future<void> _export(StatementEntry entry) async {
-    await PdfService().shareStatementPdf(officer: widget.profile, caseFile: widget.caseFile, statement: entry);
+  Future<void> _preview(StatementEntry entry) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfPreviewScreen(
+          title: 'Preview Statement',
+          filename: 'Statement_${entry.witnessName}.pdf',
+          buildPdf: () => PdfService().buildStatementPdf(officer: widget.profile, caseFile: widget.caseFile, statement: entry),
+        ),
+      ),
+    );
   }
 
   @override
@@ -116,7 +126,7 @@ class _StatementScreenState extends State<StatementScreen> {
                   child: ListTile(
                     title: Text(e.witnessName, style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(e.statementType),
-                    trailing: IconButton(icon: const Icon(Icons.picture_as_pdf), onPressed: () => _export(e)),
+                    trailing: IconButton(icon: const Icon(Icons.preview), onPressed: () => _preview(e)),
                   ),
                 )),
         ],

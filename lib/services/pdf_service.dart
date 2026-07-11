@@ -18,84 +18,140 @@ class PdfService {
   }) async {
     final doc = pw.Document();
 
+    // Locked official-style A4 Case Diary template.
+    // Do not change the layout here without changing the official CD template.
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.fromLTRB(36, 28, 36, 28),
-        footer: (context) => pw.Align(
-          alignment: pw.Alignment.centerRight,
-          child: pw.Text('Page ${context.pageNumber} of ${context.pagesCount}', style: const pw.TextStyle(fontSize: 9)),
-        ),
+        margin: const pw.EdgeInsets.fromLTRB(28, 24, 28, 24),
         build: (context) => [
-          _centerBold('West Bengal Form No. 5363'),
-          pw.SizedBox(height: 4),
-          _centerBold('CASE DIARY UNDER SECTION 192 BNSS'),
-          pw.SizedBox(height: 12),
-          pw.Table(
-            border: pw.TableBorder.all(width: 0.4),
-            columnWidths: const {
-              0: pw.FlexColumnWidth(1.2),
-              1: pw.FlexColumnWidth(2),
-              2: pw.FlexColumnWidth(1.2),
-              3: pw.FlexColumnWidth(2),
-            },
-            children: [
-              _infoRow('Police Station', officer.policeStation, 'District', officer.district),
-              _infoRow('PS Case No.', caseFile.psCaseNo, 'Case Date', caseFile.caseDate),
-              _infoRow('Sections', caseFile.sections, 'CD No.', 'CD-${cd.cdNumber}'),
-              _infoRow('CD Date', cd.cdDate, 'IO', '${officer.rank} ${officer.name}'),
-              _infoRow('Start Time', cd.startTime, 'End Time', cd.endTime),
-            ],
-          ),
-          pw.SizedBox(height: 14),
-          pw.Table(
-            border: pw.TableBorder.all(width: 0.45),
-            columnWidths: const {
-              0: pw.FlexColumnWidth(1.35),
-              1: pw.FlexColumnWidth(1.45),
-              2: pw.FlexColumnWidth(5.2),
-            },
-            children: [
-              pw.TableRow(
-                decoration: const pw.BoxDecoration(color: PdfColors.grey200),
-                children: [
-                  _cell('No. and hour of entry', bold: true),
-                  _cell('Place of entry', bold: true),
-                  _cell('Synopsis of entry', bold: true),
-                ],
-              ),
-              pw.TableRow(
-                verticalAlignment: pw.TableCellVerticalAlignment.top,
-                children: [
-                  _cell('CD-${cd.cdNumber}\n${cd.startTime}'),
-                  _cell(cd.placeOfEntry),
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text(cd.body, style: const pw.TextStyle(fontSize: 11), textAlign: pw.TextAlign.justify),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          pw.SizedBox(height: 24),
-          pw.Align(
-            alignment: pw.Alignment.centerRight,
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.end,
-              children: [
-                pw.Text('Submitted by'),
-                pw.SizedBox(height: 26),
-                pw.Text('${officer.rank} ${officer.name}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                pw.Text(officer.policeStation),
-                pw.Text('Date: ${cd.cdDate}'),
-              ],
-            ),
-          ),
+          _officialCdHeader(officer: officer, caseFile: caseFile, cd: cd),
+          pw.SizedBox(height: 8),
+          _officialCdBodyTable(cd),
+          pw.SizedBox(height: 26),
+          _officialCdSignature(officer: officer, cd: cd),
         ],
       ),
     );
 
     return doc.save();
+  }
+
+  pw.Widget _officialCdHeader({
+    required OfficerProfile officer,
+    required CaseFile caseFile,
+    required CdEntry cd,
+  }) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+        pw.Center(
+          child: pw.Text(
+            'CASE DIARY',
+            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+          ),
+        ),
+        pw.SizedBox(height: 2),
+        pw.Center(
+          child: pw.Text(
+            'UNDER SECTION 192 BNSS',
+            style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+          ),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Table(
+          border: pw.TableBorder.all(width: 0.55),
+          columnWidths: const {
+            0: pw.FlexColumnWidth(1.15),
+            1: pw.FlexColumnWidth(2.25),
+            2: pw.FlexColumnWidth(1.15),
+            3: pw.FlexColumnWidth(2.25),
+          },
+          children: [
+            _officialInfoRow('Police Station', officer.policeStation, 'District', officer.district),
+            _officialInfoRow('P.S. Case No.', caseFile.psCaseNo, 'Date', caseFile.caseDate),
+            _officialInfoRow('Sections of Law', caseFile.sections, 'C.D. No.', cd.cdNumber.toString()),
+            _officialInfoRow('Date of C.D.', cd.cdDate, 'I.O.', '${officer.rank} ${officer.name}'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _officialCdBodyTable(CdEntry cd) {
+    return pw.Table(
+      border: pw.TableBorder.all(width: 0.65),
+      columnWidths: const {
+        0: pw.FlexColumnWidth(1.20),
+        1: pw.FlexColumnWidth(1.30),
+        2: pw.FlexColumnWidth(5.80),
+      },
+      children: [
+        pw.TableRow(
+          verticalAlignment: pw.TableCellVerticalAlignment.middle,
+          children: [
+            _officialCell('No. and hour of entry', bold: true, center: true),
+            _officialCell('Place of entry', bold: true, center: true),
+            _officialCell('Diary of proceedings in investigation', bold: true, center: true),
+          ],
+        ),
+        pw.TableRow(
+          verticalAlignment: pw.TableCellVerticalAlignment.top,
+          children: [
+            _officialCell('C.D. No. ${cd.cdNumber}\n${cd.startTime}\nto\n${cd.endTime}', center: true),
+            _officialCell(cd.placeOfEntry),
+            pw.Padding(
+              padding: const pw.EdgeInsets.fromLTRB(7, 6, 7, 6),
+              child: pw.Text(
+                cd.body,
+                style: const pw.TextStyle(fontSize: 11),
+                textAlign: pw.TextAlign.justify,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _officialCdSignature({
+    required OfficerProfile officer,
+    required CdEntry cd,
+  }) {
+    return pw.Align(
+      alignment: pw.Alignment.centerRight,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.SizedBox(height: 24),
+          pw.Text('Signature of the I.O.', style: const pw.TextStyle(fontSize: 11)),
+          pw.SizedBox(height: 4),
+          pw.Text('${officer.rank} ${officer.name}', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+          pw.Text(officer.policeStation, style: const pw.TextStyle(fontSize: 11)),
+          pw.Text('Date: ${cd.cdDate}', style: const pw.TextStyle(fontSize: 11)),
+        ],
+      ),
+    );
+  }
+
+  pw.TableRow _officialInfoRow(String a, String b, String c, String d) {
+    return pw.TableRow(children: [
+      _officialCell(a, bold: true),
+      _officialCell(b),
+      _officialCell(c, bold: true),
+      _officialCell(d),
+    ]);
+  }
+
+  pw.Widget _officialCell(String text, {bool bold = false, bool center = false}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.fromLTRB(5, 4, 5, 4),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(fontSize: 10.5, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal),
+        textAlign: center ? pw.TextAlign.center : pw.TextAlign.left,
+      ),
+    );
   }
 
   Future<Uint8List> buildStatementPdf({

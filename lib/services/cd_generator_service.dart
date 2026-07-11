@@ -1,6 +1,7 @@
 import '../models/case_file.dart';
 
 class CdQuestionAnswer {
+  List<String> pendingActionParagraphs = <String>[];
   bool examinedWitness = false;
   String witnessDetails = '';
 
@@ -54,6 +55,10 @@ class CdGeneratorService {
     required CdQuestionAnswer answers,
   }) {
     final paragraphs = <String>[fixedOpening, ''];
+
+    for (final pending in answers.pendingActionParagraphs) {
+      if (pending.trim().isNotEmpty) paragraphs.add(pending.trim());
+    }
 
     if (cdNumber == 1) {
       final start = caseFile.investigationStart;

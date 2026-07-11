@@ -5,6 +5,7 @@ import '../models/cd_entry.dart';
 import '../models/officer_profile.dart';
 import '../services/local_store_service.dart';
 import '../services/pdf_service.dart';
+import 'pdf_preview_screen.dart';
 import '../widgets/form_helpers.dart';
 
 class CdEditorScreen extends StatefulWidget {
@@ -78,16 +79,29 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
     if (ok == true) await _save(finalSave: true);
   }
 
-  Future<void> _exportPdf() async {
+  CdEntry _currentCd() => _cd.copyWith(
+        cdDate: cdDate.text.trim(),
+        startTime: startTime.text.trim(),
+        endTime: endTime.text.trim(),
+        placeOfEntry: place.text.trim(),
+        body: body.text.trim(),
+      );
+
+  Future<void> _previewPdf() async {
     await _save(finalSave: false);
     if (!mounted) return;
-    await PdfService().shareCaseDiaryPdf(officer: widget.profile, caseFile: widget.caseFile, cd: _cd.copyWith(
-      cdDate: cdDate.text.trim(),
-      startTime: startTime.text.trim(),
-      endTime: endTime.text.trim(),
-      placeOfEntry: place.text.trim(),
-      body: body.text.trim(),
-    ));
+    final cdForPreview = _currentCd();
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfPreviewScreen(
+          title: 'Preview CD-${_cd.cdNumber}',
+          filename: 'CD_${widget.caseFile.psCaseNo.replaceAll('/', '_')}_${_cd.cdNumber}.pdf',
+          buildPdf: () => PdfService().buildCaseDiaryPdf(officer: widget.profile, caseFile: widget.caseFile, cd: cdForPreview),
+          onFinalSave: () => _save(finalSave: true),
+        ),
+      ),
+    );
   }
 
   @override
@@ -103,7 +117,7 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
               const SizedBox(width: 8),
               Expanded(child: FilledButton.icon(onPressed: _finalSave, icon: const Icon(Icons.lock), label: const Text('Final'))),
               const SizedBox(width: 8),
-              Expanded(child: FilledButton.icon(onPressed: _exportPdf, icon: const Icon(Icons.picture_as_pdf), label: const Text('PDF'))),
+              Expanded(child: FilledButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.preview), label: const Text('Preview'))),
             ],
           ),
         ),

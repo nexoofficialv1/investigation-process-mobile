@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/case_file.dart';
 import '../models/cd_entry.dart';
 import '../models/officer_profile.dart';
+import '../models/pending_cd_action.dart';
 import '../services/cd_generator_service.dart';
 import '../services/local_store_service.dart';
 import '../widgets/app_section_card.dart';
@@ -24,6 +25,8 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
   final CdQuestionAnswer _answers = CdQuestionAnswer();
 
   int? cdNumber;
+  List<PendingCdAction> pendingActions = [];
+  final Set<String> selectedPendingActionIds = <String>{};
   final witness = TextEditingController();
   final po = TextEditingController();
   final sketch = TextEditingController();
@@ -43,12 +46,23 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
   void initState() {
     super.initState();
     _loadNextCd();
+    _loadPendingActions();
   }
 
   Future<void> _loadNextCd() async {
     final next = await _store.nextCdNumber(widget.caseFile.id);
     if (!mounted) return;
     setState(() => cdNumber = next);
+  }
+
+
+  Future<void> _loadPendingActions() async {
+    final actions = await _store.loadPendingCdActions(widget.caseFile.id);
+    if (!mounted) return;
+    setState(() {
+      pendingActions = actions;
+      selectedPendingActionIds.addAll(actions.map((e) => e.id));
+    });
   }
 
   @override
@@ -77,6 +91,8 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
     _answers.verificationDetails = verification.text.trim();
     _answers.digitalEvidenceDetails = digitalEvidence.text.trim();
     _answers.importantDevelopmentDetails = importantDevelopment.text.trim();
+    final selectedPending = pendingActions.where((e) => selectedPendingActionIds.contains(e.id)).toList();
+    _answers.pendingActionParagraphs = selectedPending.map((e) => e.paragraph).toList();
 
     final body = CdGeneratorService().generateCdDraft(
       caseFile: widget.caseFile,
@@ -90,6 +106,7 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
       placeOfEntry: widget.profile.policeStation,
     );
     await _store.saveCd(cd);
+    await _store.markPendingCdActionsConsumed(selectedPending.map((e) => e.id).toList());
     if (!mounted) return;
     await Navigator.pushReplacement(
       context,
@@ -119,6 +136,31 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
                     child: Text('CD-$number তৈরি হবে। Yes/No select করে details দিন। Generate CD চাপলে draft তৈরি হবে।', style: const TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ),
+                if (pendingActions.isNotEmpty)
+                  AppSectionCard(
+                    title: 'Pending CD Entries from Forms/Requisitions',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('আগে save/export করা requisition/form থেকে CD mention pending আছে। যেগুলো আজকের CD-তে রাখতে চান tick রাখুন।'),
+                        const SizedBox(height: 8),
+                        ...pendingActions.map((action) => CheckboxListTile(
+                              value: selectedPendingActionIds.contains(action.id),
+                              title: Text(action.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                              subtitle: Text('${action.actionDate} • ${action.paragraph}'),
+                              onChanged: (value) {
+                                setState(() {
+                                  if (value == true) {
+                                    selectedPendingActionIds.add(action.id);
+                                  } else {
+                                    selectedPendingActionIds.remove(action.id);
+                                  }
+                                });
+                              },
+                            )),
+                      ],
+                    ),
+                  ),
                 _questionCard('1. Did you examine any witness today?', _answers.examinedWitness, (v) => setState(() => _answers.examinedWitness = v), witness, 'Witness examination details'),
                 _questionCard('2. Did you visit the PO today?', _answers.visitedPo, (v) => setState(() => _answers.visitedPo = v), po, 'PO visit details'),
                 _questionCard('3. Did you prepare/modify rough sketch map?', _answers.sketchMap, (v) => setState(() => _answers.sketchMap = v), sketch, 'Sketch map details'),

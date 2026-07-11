@@ -4,6 +4,7 @@ import 'core/app_theme.dart';
 import 'models/officer_profile.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/officer_profile_screen.dart';
+import 'screens/intro_screen.dart';
 import 'services/local_store_service.dart';
 
 void main() {
@@ -35,6 +36,7 @@ class StartupGate extends StatefulWidget {
 class _StartupGateState extends State<StartupGate> {
   final LocalStoreService _store = LocalStoreService();
   OfficerProfile? _profile;
+  bool _introDone = false;
 
   @override
   void initState() {
@@ -50,6 +52,9 @@ class _StartupGateState extends State<StartupGate> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_introDone) {
+      return IntroScreen(onStart: () => setState(() => _introDone = true));
+    }
     final profile = _profile;
     if (profile == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));

@@ -69,3 +69,11 @@ Added Termux push guide and helper script:
 
 After pushing to GitHub, the included workflow `.github/workflows/android-apk.yml` will generate Android platform files and build a debug APK.
 
+
+## v0.7 Added Workflow
+
+- Mandatory preview before PDF export for CD, Statement and Forms/Notices.
+- Form/Requisition save/export now asks: “Do you want to mention this in the Case Diary?”
+- If Yes, app creates a date-wise pending CD entry.
+- CD Builder displays pending form/requisition entries so IO can include/edit them in the daily CD.
+- Official output templates remain locked; app UI may be modern but PDF formats must remain official.

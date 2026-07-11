@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../models/case_file.dart';
 import '../models/form_notice.dart';
 import '../models/officer_profile.dart';
+import '../models/pending_cd_action.dart';
 import '../services/forms_generator_service.dart';
 import '../services/local_store_service.dart';
 import '../services/pdf_service.dart';
+import 'pdf_preview_screen.dart';
 import '../widgets/form_helpers.dart';
 
 class FormsScreen extends StatefulWidget {
@@ -147,23 +149,101 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     super.dispose();
   }
 
-  Future<void> _save({bool finalSave = false}) async {
-    final updated = _form.copyWith(
-      title: title.text.trim(),
-      body: body.text.trim(),
-      isFinal: finalSave ? true : _form.isFinal,
-    );
+  FormNotice _currentForm({bool? finalSave}) => _form.copyWith(
+        title: title.text.trim(),
+        body: body.text.trim(),
+        isFinal: finalSave == true ? true : _form.isFinal,
+      );
+
+  Future<FormNotice> _save({bool finalSave = false, bool askCdMention = true}) async {
+    final updated = _currentForm(finalSave: finalSave);
     await _store.saveForm(updated);
-    if (!mounted) return;
+    if (!mounted) return updated;
     setState(() => _form = updated);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(finalSave ? 'Form final saved' : 'Form draft saved')));
+    if (askCdMention) await _askMentionInCaseDiary(updated);
+    return updated;
   }
 
-  Future<void> _export() async {
-    await _save();
+  String _today() => DateTime.now().toIso8601String().split('T').first;
+
+  String _cdParagraphForForm(FormNotice form) {
+    final lower = form.title.toLowerCase();
+    if (lower.contains('183')) {
+      return 'Submitted prayer before the Ld. Court for recording statement u/s 183 BNSS in connection with this case.';
+    }
+    if (lower.contains('35')) {
+      return 'Prepared/served notice u/s 35(3) BNSS upon the concerned person in connection with this case.';
+    }
+    if (lower.contains('94')) {
+      return 'Sent requisition u/s 94 BNSS for collection/production of relevant document/material in connection with this case.';
+    }
+    if (lower.contains('medical')) {
+      return 'Sent medical requisition for examination/collection of medical papers in connection with this case.';
+    }
+    if (lower.contains('bht') || lower.contains('injury')) {
+      return 'Sent requisition for collection of BHT/injury report in connection with this case.';
+    }
+    if (lower.contains('cdr') || lower.contains('caf')) {
+      return 'Sent requisition for collection of CDR/CAF in connection with this case.';
+    }
+    if (lower.contains('bank')) {
+      return 'Sent requisition to the concerned bank/authority for collection of account/transaction details in connection with this case.';
+    }
+    if (lower.contains('fsl')) {
+      return 'Sent requisition for FSL/scientific examination in connection with this case.';
+    }
+    if (lower.contains('forwarding')) {
+      return 'Prepared forwarding report/prayer in connection with this case.';
+    }
+    return 'Prepared ${form.title} in connection with this case.';
+  }
+
+  Future<void> _askMentionInCaseDiary(FormNotice form) async {
     if (!mounted) return;
-    final exportForm = _form.copyWith(title: title.text.trim(), body: body.text.trim());
-    await PdfService().shareFormNoticePdf(officer: widget.profile, caseFile: widget.caseFile, form: exportForm);
+    final mention = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Mention in Case Diary?'),
+        content: Text('“${form.title}” CD-তে mention করা হবে? Yes করলে date-wise pending CD entry হিসেবে save হবে।'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes')),
+        ],
+      ),
+    );
+    if (mention != true) return;
+
+    final action = PendingCdAction.create(
+      caseId: widget.caseFile.id,
+      sourceType: 'form_notice',
+      sourceId: form.id,
+      title: form.title,
+      actionDate: _today(),
+      paragraph: _cdParagraphForForm(form),
+    );
+    await _store.savePendingCdAction(action);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('CD pending entry saved. Daily CD builder-এ দেখা যাবে.')));
+  }
+
+  Future<void> _previewPdf() async {
+    final previewForm = await _save(askCdMention: false);
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfPreviewScreen(
+          title: 'Preview ${previewForm.title}',
+          filename: '${previewForm.title.replaceAll(' ', '_')}_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.pdf',
+          buildPdf: () => PdfService().buildFormNoticePdf(officer: widget.profile, caseFile: widget.caseFile, form: previewForm),
+          onFinalSave: () async {
+            final saved = await _save(finalSave: true, askCdMention: false);
+            await _askMentionInCaseDiary(saved);
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _finalSave() async {
@@ -194,7 +274,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
               const SizedBox(width: 8),
               Expanded(child: FilledButton.icon(onPressed: _finalSave, icon: const Icon(Icons.lock), label: const Text('Final'))),
               const SizedBox(width: 8),
-              Expanded(child: FilledButton.icon(onPressed: _export, icon: const Icon(Icons.picture_as_pdf), label: const Text('PDF'))),
+              Expanded(child: FilledButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.preview), label: const Text('Preview'))),
             ],
           ),
         ),

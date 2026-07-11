@@ -7,6 +7,7 @@ import '../models/cd_entry.dart';
 import '../models/officer_profile.dart';
 import '../models/statement_entry.dart';
 import '../models/form_notice.dart';
+import '../models/pending_cd_action.dart';
 
 class LocalStoreService {
   static const _profileKey = 'officer_profile_v1';
@@ -14,6 +15,7 @@ class LocalStoreService {
   static const _cdsKey = 'cd_entries_v1';
   static const _statementsKey = 'statement_entries_v1';
   static const _formsKey = 'form_notice_entries_v1';
+  static const _pendingCdActionsKey = 'pending_cd_actions_v1';
 
   Future<OfficerProfile> loadOfficerProfile() async {
     final prefs = await SharedPreferences.getInstance();
@@ -149,6 +151,49 @@ class LocalStoreService {
       _formsKey,
       jsonEncode(all.map((e) => e.toJson()).toList()),
     );
+  }
+
+
+  Future<List<PendingCdAction>> loadPendingCdActions(String caseId, {bool includeConsumed = false}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_pendingCdActionsKey);
+    if (raw == null || raw.isEmpty) return [];
+    final list = jsonDecode(raw) as List<dynamic>;
+    return list
+        .map((e) => PendingCdAction.fromJson(Map<String, dynamic>.from(e)))
+        .where((e) => e.caseId == caseId && (includeConsumed || !e.consumed))
+        .toList()
+      ..sort((a, b) => a.actionDate.compareTo(b.actionDate));
+  }
+
+  Future<void> savePendingCdAction(PendingCdAction action) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_pendingCdActionsKey);
+    final all = raw == null || raw.isEmpty
+        ? <PendingCdAction>[]
+        : (jsonDecode(raw) as List<dynamic>)
+            .map((e) => PendingCdAction.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+
+    final duplicate = all.indexWhere((e) => e.caseId == action.caseId && e.sourceId == action.sourceId && e.title == action.title && !e.consumed);
+    if (duplicate >= 0) {
+      all[duplicate] = action;
+    } else {
+      all.add(action);
+    }
+    await prefs.setString(_pendingCdActionsKey, jsonEncode(all.map((e) => e.toJson()).toList()));
+  }
+
+  Future<void> markPendingCdActionsConsumed(List<String> ids) async {
+    if (ids.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_pendingCdActionsKey);
+    if (raw == null || raw.isEmpty) return;
+    final all = (jsonDecode(raw) as List<dynamic>)
+        .map((e) => PendingCdAction.fromJson(Map<String, dynamic>.from(e)))
+        .map((e) => ids.contains(e.id) ? e.copyWith(consumed: true) : e)
+        .toList();
+    await prefs.setString(_pendingCdActionsKey, jsonEncode(all.map((e) => e.toJson()).toList()));
   }
 
 }
