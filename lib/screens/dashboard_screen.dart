@@ -13,6 +13,7 @@ import 'compliance_screen.dart';
 import 'investigation_checklist_screen.dart';
 import 'report_screen.dart';
 import 'officer_profile_screen.dart';
+import 'sketch_map_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -132,12 +133,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _openReport() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => ReportScreen(profile: _profile, caseFile: _latestCase)));
+  }
+
+
+  Future<void> _openSketchMap() async {
     final file = _latestCase;
     if (file == null) {
       _needCaseMessage();
       return;
     }
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => ReportScreen(profile: _profile, caseFile: file)));
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => SketchMapScreen(profile: _profile, caseFile: file)));
   }
 
   void _comingSoon(String module) {
@@ -213,10 +219,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _Menu('Report', 'SP/SDPO/SDO', Icons.summarize_rounded, const Color(0xFFD68A00), _openReport),
       _Menu('Compliance', 'legal checklist', Icons.event_available_rounded, const Color(0xFF1B5E4B), _openCompliance),
       _Menu('IF5 / CS', 'from final CD', Icons.fact_check_rounded, AppTheme.coral, () => _comingSoon('IF5 / CS')),
-      _Menu('Evidence', 'seizure/docs', Icons.inventory_2_rounded, const Color(0xFF795000), () => _comingSoon('Evidence')),
+      _Menu('Evidence', 'case entry', Icons.inventory_2_rounded, const Color(0xFF795000), _newCase),
       _Menu('PDF Export', 'preview first', Icons.picture_as_pdf_rounded, const Color(0xFF42A5F5), () => _comingSoon('PDF Export')),
       _Menu('Final CD', 'investigation summary', Icons.verified_rounded, const Color(0xFFC2188B), _openCdWriter),
-      _Menu('Sketch Map', 'PO map', Icons.map_rounded, const Color(0xFF006B57), () => _comingSoon('Sketch Map')),
+      _Menu('Sketch Map', 'builder/index', Icons.map_rounded, const Color(0xFF006B57), _openSketchMap),
     ];
 
     return Padding(

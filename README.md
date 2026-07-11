@@ -77,3 +77,9 @@ After pushing to GitHub, the included workflow `.github/workflows/android-apk.ym
 - If Yes, app creates a date-wise pending CD entry.
 - CD Builder displays pending form/requisition entries so IO can include/edit them in the daily CD.
 - Official output templates remain locked; app UI may be modern but PDF formats must remain official.
+
+### v1.1 Sketch Map Builder
+This version adds a police rough sketch map builder with symbol-based objects, draggable canvas, labels, index descriptions, direction fields, PDF preview/export, and Case Diary mention linkage.
+
+### v1.2 Update — General Report Generator
+The Report section can now prepare reports without a case. It supports general office reports to SP, SDPO, SDO/Executive Magistrate, Ld. Court, Bank, Hospital, and blank custom reports. If opened while a case exists, the report can optionally be linked to that case.

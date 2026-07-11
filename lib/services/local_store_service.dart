@@ -8,6 +8,7 @@ import '../models/officer_profile.dart';
 import '../models/statement_entry.dart';
 import '../models/form_notice.dart';
 import '../models/pending_cd_action.dart';
+import '../models/sketch_map.dart';
 
 class LocalStoreService {
   static const _profileKey = 'officer_profile_v1';
@@ -16,6 +17,7 @@ class LocalStoreService {
   static const _statementsKey = 'statement_entries_v1';
   static const _formsKey = 'form_notice_entries_v1';
   static const _pendingCdActionsKey = 'pending_cd_actions_v1';
+  static const _sketchMapsKey = 'sketch_maps_v1';
 
   Future<OfficerProfile> loadOfficerProfile() async {
     final prefs = await SharedPreferences.getInstance();
@@ -194,6 +196,38 @@ class LocalStoreService {
         .map((e) => ids.contains(e.id) ? e.copyWith(consumed: true) : e)
         .toList();
     await prefs.setString(_pendingCdActionsKey, jsonEncode(all.map((e) => e.toJson()).toList()));
+  }
+
+
+
+  Future<SketchMapEntry?> loadSketchMap(String caseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_sketchMapsKey);
+    if (raw == null || raw.isEmpty) return null;
+    final list = jsonDecode(raw) as List<dynamic>;
+    final maps = list
+        .map((e) => SketchMapEntry.fromJson(Map<String, dynamic>.from(e)))
+        .where((e) => e.caseId == caseId)
+        .toList()
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return maps.isEmpty ? null : maps.first;
+  }
+
+  Future<void> saveSketchMap(SketchMapEntry map) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_sketchMapsKey);
+    final all = raw == null || raw.isEmpty
+        ? <SketchMapEntry>[]
+        : (jsonDecode(raw) as List<dynamic>)
+            .map((e) => SketchMapEntry.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+    final index = all.indexWhere((e) => e.id == map.id);
+    if (index >= 0) {
+      all[index] = map;
+    } else {
+      all.add(map);
+    }
+    await prefs.setString(_sketchMapsKey, jsonEncode(all.map((e) => e.toJson()).toList()));
   }
 
 }

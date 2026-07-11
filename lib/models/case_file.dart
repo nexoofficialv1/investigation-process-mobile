@@ -11,6 +11,8 @@ class InvestigationStart {
   final String medicalDetails;
   final bool seizureRequired;
   final String seizureDetails;
+  final bool evidenceRequired;
+  final String evidenceDetails;
 
   const InvestigationStart({
     required this.ioName,
@@ -25,6 +27,8 @@ class InvestigationStart {
     required this.medicalDetails,
     required this.seizureRequired,
     required this.seizureDetails,
+    required this.evidenceRequired,
+    required this.evidenceDetails,
   });
 
   factory InvestigationStart.empty({String ioName = ''}) => InvestigationStart(
@@ -40,6 +44,8 @@ class InvestigationStart {
         medicalDetails: '',
         seizureRequired: false,
         seizureDetails: '',
+        evidenceRequired: false,
+        evidenceDetails: '',
       );
 
   Map<String, dynamic> toJson() => {
@@ -55,6 +61,8 @@ class InvestigationStart {
         'medicalDetails': medicalDetails,
         'seizureRequired': seizureRequired,
         'seizureDetails': seizureDetails,
+        'evidenceRequired': evidenceRequired,
+        'evidenceDetails': evidenceDetails,
       };
 
   factory InvestigationStart.fromJson(Map<String, dynamic> json) {
@@ -71,6 +79,8 @@ class InvestigationStart {
       medicalDetails: json['medicalDetails'] ?? '',
       seizureRequired: json['seizureRequired'] ?? false,
       seizureDetails: json['seizureDetails'] ?? '',
+      evidenceRequired: json['evidenceRequired'] ?? false,
+      evidenceDetails: json['evidenceDetails'] ?? '',
     );
   }
 }

@@ -37,12 +37,14 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
   late final TextEditingController witnessDetails;
   late final TextEditingController medicalDetails;
   late final TextEditingController seizureDetails;
+  late final TextEditingController evidenceDetails;
 
   bool visitedPo = false;
   bool sketchPrepared = false;
   bool witnessExamined = false;
   bool medicalRequired = false;
   bool seizureRequired = false;
+  bool evidenceRequired = false;
 
   @override
   void initState() {
@@ -67,16 +69,18 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
     witnessDetails = TextEditingController(text: start.witnessDetails);
     medicalDetails = TextEditingController(text: start.medicalDetails);
     seizureDetails = TextEditingController(text: start.seizureDetails);
+    evidenceDetails = TextEditingController(text: start.evidenceDetails);
     visitedPo = start.visitedPo;
     sketchPrepared = start.sketchPrepared;
     witnessExamined = start.witnessExamined;
     medicalRequired = start.medicalRequired;
     seizureRequired = start.seizureRequired;
+    evidenceRequired = start.evidenceRequired;
   }
 
   @override
   void dispose() {
-    for (final c in [psCaseNo, caseDate, sections, crimeHead, po, dto, dtr, complainant, victim, accused, gist, tookUpDate, poDetails, sketchDetails, witnessDetails, medicalDetails, seizureDetails]) {
+    for (final c in [psCaseNo, caseDate, sections, crimeHead, po, dto, dtr, complainant, victim, accused, gist, tookUpDate, poDetails, sketchDetails, witnessDetails, medicalDetails, seizureDetails, evidenceDetails]) {
       c.dispose();
     }
     super.dispose();
@@ -101,6 +105,8 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
       medicalDetails: medicalDetails.text.trim(),
       seizureRequired: seizureRequired,
       seizureDetails: seizureDetails.text.trim(),
+      evidenceRequired: evidenceRequired,
+      evidenceDetails: evidenceDetails.text.trim(),
     );
 
     final updated = _base.copyWith(
@@ -191,6 +197,8 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
                 if (medicalRequired) FormHelpers.textField(controller: medicalDetails, label: 'Medical / BHT / Injury details', maxLines: 4),
                 FormHelpers.yesNoTile(title: 'Seizure required?', value: seizureRequired, onChanged: (v) => setState(() => seizureRequired = v)),
                 if (seizureRequired) FormHelpers.textField(controller: seizureDetails, label: 'Seizure details', maxLines: 4),
+                FormHelpers.yesNoTile(title: 'Evidence available/required?', value: evidenceRequired, onChanged: (v) => setState(() => evidenceRequired = v)),
+                if (evidenceRequired) FormHelpers.textField(controller: evidenceDetails, label: 'Evidence details (physical/digital/CCTV/document etc.)', maxLines: 4),
               ],
             ),
           ),

@@ -94,16 +94,23 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
     final selectedPending = pendingActions.where((e) => selectedPendingActionIds.contains(e.id)).toList();
     _answers.pendingActionParagraphs = selectedPending.map((e) => e.paragraph).toList();
 
-    final body = CdGeneratorService().generateCdDraft(
+    final service = CdGeneratorService();
+    final now = DateTime.now();
+    final time = '${now.hour.toString().padLeft(2, '0')}.${now.minute.toString().padLeft(2, '0')} hrs.';
+    final tableLines = service.generateOfficialCdTableLines(
       caseFile: widget.caseFile,
       cdNumber: number,
+      time: time,
+      defaultPlace: widget.profile.policeStation,
       answers: _answers,
     );
+    final body = tableLines.map((e) => e.proceedings).join('\n\n');
     final cd = CdEntry.newDraft(
       caseId: widget.caseFile.id,
       cdNumber: number,
       body: body,
       placeOfEntry: widget.profile.policeStation,
+      tableLines: tableLines,
     );
     await _store.saveCd(cd);
     await _store.markPendingCdActionsConsumed(selectedPending.map((e) => e.id).toList());
@@ -173,7 +180,7 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
                 _questionCard('10. Did you receive any order/report/document?', _answers.receivedDocument, (v) => setState(() => _answers.receivedDocument = v), receivedDocument, 'Received document details'),
                 _questionCard('11. Did you conduct local enquiry?', _answers.localEnquiry, (v) => setState(() => _answers.localEnquiry = v), localEnquiry, 'Local enquiry details'),
                 _questionCard('12. Did you verify any person/detail?', _answers.verification, (v) => setState(() => _answers.verification = v), verification, 'Verification details'),
-                _questionCard('13. Did you collect/take steps for digital evidence?', _answers.digitalEvidence, (v) => setState(() => _answers.digitalEvidence = v), digitalEvidence, 'Digital evidence details'),
+                _questionCard('13. Did you collect/take steps for evidence?', _answers.digitalEvidence, (v) => setState(() => _answers.digitalEvidence = v), digitalEvidence, 'Digital evidence details'),
                 _questionCard('14. Any important development today?', _answers.importantDevelopment, (v) => setState(() => _answers.importantDevelopment = v), importantDevelopment, 'Important development details'),
                 const SizedBox(height: 80),
               ],
