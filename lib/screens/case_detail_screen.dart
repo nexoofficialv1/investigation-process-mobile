@@ -46,7 +46,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
     if (!mounted) return;
     setState(() {
       _cds = cds;
-      if (refreshed != null) _caseFile = refreshed!;
+      if (refreshed != null) _caseFile = refreshed;
     });
   }
 
