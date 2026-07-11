@@ -7,6 +7,7 @@ import '../models/pending_cd_action.dart';
 import '../services/forms_generator_service.dart';
 import '../services/local_store_service.dart';
 import '../services/pdf_service.dart';
+import '../services/doc_export_service.dart';
 import 'pdf_preview_screen.dart';
 import '../widgets/form_helpers.dart';
 
@@ -236,7 +237,9 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
         builder: (_) => PdfPreviewScreen(
           title: 'Preview ${previewForm.title}',
           filename: '${previewForm.title.replaceAll(' ', '_')}_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.pdf',
+          docFilename: '${previewForm.title.replaceAll(' ', '_')}_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.doc',
           buildPdf: () => PdfService().buildFormNoticePdf(officer: widget.profile, caseFile: widget.caseFile, form: previewForm),
+          buildDoc: () => DocExportService().buildFormNoticeDoc(officer: widget.profile, caseFile: widget.caseFile, form: previewForm),
           onFinalSave: () async {
             final saved = await _save(finalSave: true, askCdMention: false);
             await _askMentionInCaseDiary(saved);

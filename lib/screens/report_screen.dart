@@ -6,6 +6,7 @@ import '../models/officer_profile.dart';
 import '../screens/pdf_preview_screen.dart';
 import '../services/local_store_service.dart';
 import '../services/pdf_service.dart';
+import '../services/doc_export_service.dart';
 
 class ReportScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -114,11 +115,18 @@ Submitted for favour of kind information and necessary action.''';
         builder: (_) => PdfPreviewScreen(
           title: 'Report Preview',
           filename: '${fileSlug}_Report.pdf',
+          docFilename: '${fileSlug}_Report.doc',
           buildPdf: () async {
             if (_caseLinked && _hasCase) {
               return _pdf.buildFormNoticePdf(officer: widget.profile, caseFile: widget.caseFile!, form: report);
             }
             return _pdf.buildGeneralReportPdf(officer: widget.profile, form: report);
+          },
+          buildDoc: () async {
+            if (_caseLinked && _hasCase) {
+              return DocExportService().buildFormNoticeDoc(officer: widget.profile, caseFile: widget.caseFile!, form: report);
+            }
+            return DocExportService().buildGeneralReportDoc(officer: widget.profile, form: report);
           },
           onFinalSave: () async => _store.saveForm(report.copyWith(isFinal: true)),
         ),

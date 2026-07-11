@@ -7,6 +7,7 @@ import '../models/pending_cd_action.dart';
 import '../models/sketch_map.dart';
 import '../services/local_store_service.dart';
 import '../services/pdf_service.dart';
+import '../services/doc_export_service.dart';
 import 'pdf_preview_screen.dart';
 
 class SketchMapScreen extends StatefulWidget {
@@ -144,7 +145,9 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
         builder: (_) => PdfPreviewScreen(
           title: 'Preview Sketch Map',
           filename: 'Sketch_Map_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.pdf',
+          docFilename: 'Sketch_Map_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.doc',
           buildPdf: () => _pdf.buildSketchMapPdf(officer: widget.profile, caseFile: widget.caseFile, sketch: _currentMap()),
+          buildDoc: () => DocExportService().buildSketchMapDoc(officer: widget.profile, caseFile: widget.caseFile, sketch: _currentMap()),
           onFinalSave: () async => _save(askCd: true),
         ),
       ),
@@ -353,29 +356,76 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
           final ny = (((top + details.delta.dy) / h).clamp(0.0, 0.92)).toDouble();
           _updateObject(obj.copyWith(x: nx, y: ny));
         },
-        child: Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            color: _objectColor(obj.type),
-            border: Border.all(color: obj.type == SketchObjectType.po ? Colors.red.shade800 : Colors.black87, width: obj.type == SketchObjectType.po ? 2 : 1),
-            borderRadius: obj.type == SketchObjectType.tree || obj.type == SketchObjectType.po ? BorderRadius.circular(80) : BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.all(3),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(_objectIcon(obj.type), size: 22, color: obj.type == SketchObjectType.po ? Colors.red.shade900 : Colors.black87),
-                Text(obj.marker, style: const TextStyle(fontWeight: FontWeight.w900)),
-                Text(obj.label, textAlign: TextAlign.center, maxLines: 2),
-              ],
-            ),
-          ),
-        ),
+        child: SizedBox(width: width, height: height, child: _realisticSketchObject(obj)),
       ),
     );
+  }
+
+  Widget _realisticSketchObject(SketchMapObject obj) {
+    final text = '${obj.marker} ${obj.label}'.trim();
+    switch (obj.type) {
+      case SketchObjectType.house:
+        return Column(
+          children: [
+            const Icon(Icons.roofing, size: 28, color: Color(0xFF7B3F00)),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(color: Colors.orange.shade100, border: Border.all(color: Colors.black87)),
+                alignment: Alignment.center,
+                child: Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        );
+      case SketchObjectType.shop:
+        return Container(
+          decoration: BoxDecoration(color: Colors.purple.shade50, border: Border.all(color: Colors.black87)),
+          child: Column(
+            children: [
+              Container(height: 18, width: double.infinity, color: Colors.purple.shade200, alignment: Alignment.center, child: const Text('SHOP', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold))),
+              Expanded(child: Center(child: Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)))),
+            ],
+          ),
+        );
+      case SketchObjectType.pond:
+        return Container(
+          decoration: BoxDecoration(color: Colors.lightBlue.shade100, border: Border.all(color: Colors.blue.shade900), borderRadius: BorderRadius.circular(28)),
+          alignment: Alignment.center,
+          child: Text(text.isEmpty ? 'Pond' : text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+        );
+      case SketchObjectType.tree:
+        return Column(
+          children: [
+            Icon(Icons.park, size: 34, color: Colors.green.shade800),
+            Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
+          ],
+        );
+      case SketchObjectType.road:
+        return Container(
+          decoration: BoxDecoration(color: Colors.grey.shade400, border: Border.all(color: Colors.black87)),
+          alignment: Alignment.center,
+          child: Text(text.isEmpty ? 'Road' : text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+        );
+      case SketchObjectType.field:
+        return Container(
+          decoration: BoxDecoration(color: Colors.green.shade100, border: Border.all(color: Colors.green.shade900)),
+          alignment: Alignment.center,
+          child: Text(text.isEmpty ? 'Field' : text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+        );
+      case SketchObjectType.po:
+        return Container(
+          decoration: BoxDecoration(color: Colors.red.shade50, border: Border.all(color: Colors.red.shade900, width: 2)),
+          alignment: Alignment.center,
+          child: Text(text.isEmpty ? 'PO' : text, textAlign: TextAlign.center, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.red.shade900)),
+        );
+      case SketchObjectType.arrow:
+        return Column(
+          children: [
+            const Icon(Icons.navigation, size: 34, color: Colors.black87),
+            Text(text.isEmpty ? 'N' : text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+          ],
+        );
+    }
   }
 
   Color _objectColor(SketchObjectType type) {

@@ -4,6 +4,7 @@ import '../models/case_file.dart';
 import '../models/officer_profile.dart';
 import '../models/statement_entry.dart';
 import '../services/local_store_service.dart';
+import '../services/doc_export_service.dart';
 import '../services/pdf_service.dart';
 import 'pdf_preview_screen.dart';
 import '../widgets/form_helpers.dart';
@@ -80,7 +81,9 @@ class _StatementScreenState extends State<StatementScreen> {
         builder: (_) => PdfPreviewScreen(
           title: 'Preview Statement',
           filename: 'Statement_${entry.witnessName}.pdf',
+          docFilename: 'Statement_${entry.witnessName}.doc',
           buildPdf: () => PdfService().buildStatementPdf(officer: widget.profile, caseFile: widget.caseFile, statement: entry),
+          buildDoc: () => DocExportService().buildStatementDoc(officer: widget.profile, caseFile: widget.caseFile, statement: entry),
         ),
       ),
     );

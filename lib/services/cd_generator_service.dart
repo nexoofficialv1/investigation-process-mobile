@@ -70,22 +70,29 @@ class CdGeneratorService {
 
     if (cdNumber == 1) {
       final start = caseFile.investigationStart;
+      final topNotes = <String>[
+        'PO: -${caseFile.placeOfOccurrence.trim().isEmpty ? 'Not Mentioned' : caseFile.placeOfOccurrence.trim()}.',
+        'DO: -${caseFile.dateTimeOccurrence.trim().isEmpty ? 'Not Mentioned' : caseFile.dateTimeOccurrence.trim()}.',
+        'DR: -${caseFile.dateTimeReporting.trim().isEmpty ? 'Not Mentioned' : caseFile.dateTimeReporting.trim()}.',
+        'DD: -On ${caseFile.caseDate}.',
+        'DA: -On ${start.tookUpDate.trim().isEmpty ? caseFile.caseDate : start.tookUpDate.trim()}.',
+        'RO: -To be mentioned.',
+        'IO: -${start.ioName.trim().isEmpty ? 'To be mentioned' : start.ioName.trim()}.',
+      ].join('\n');
       final firText = <String>[
-        fixedOpening,
-        if (caseFile.placeOfOccurrence.trim().isNotEmpty) 'PO: ${caseFile.placeOfOccurrence.trim()}.',
-        if (caseFile.dateTimeOccurrence.trim().isNotEmpty) 'DO: ${caseFile.dateTimeOccurrence.trim()}.',
-        if (caseFile.dateTimeReporting.trim().isNotEmpty) 'DR: ${caseFile.dateTimeReporting.trim()}.',
-        if (caseFile.firGist.trim().isNotEmpty) 'By this marginally noted time I perused the FIR/complaint. The brief fact of the case is that ${caseFile.firGist.trim()}',
+        topNotes,
+        if (caseFile.firGist.trim().isNotEmpty)
+          'By this marginally noted time I received copy of FIR along with the complaint through PS serestha. I perused the same and found that ${caseFile.firGist.trim()} Over this complaint, the above noted case has been started and as per endorsement I took up its investigation.',
       ].join('\n\n');
-      add('I', defaultPlace, 'Received copy of FIR\n+\nGist', firText);
-      if (start.visitedPo && start.poDetails.trim().isNotEmpty) add('II', place(caseFile.placeOfOccurrence), 'PO Visit', 'Visited the place of occurrence and noted the following details: ${start.poDetails.trim()}');
-      if (start.sketchPrepared && start.sketchDetails.trim().isNotEmpty) add('III', place(caseFile.placeOfOccurrence), 'Rough sketch map', 'Prepared rough sketch map of the PO with index. Details: ${start.sketchDetails.trim()}');
-      if (start.witnessExamined && start.witnessDetails.trim().isNotEmpty) add('IV', defaultPlace, 'Examine witness\n+\nStatement record', 'Examined available witness/witnesses and recorded statement u/s 180 BNSS. Details: ${start.witnessDetails.trim()}');
+      add('I', defaultPlace, 'Received\ncopy of FIR\n+\nGist', firText);
+      if (start.visitedPo && start.poDetails.trim().isNotEmpty) add('II', place(caseFile.placeOfOccurrence), 'Dept\nArrival\n+\nPO Visit', 'This time I visited the PO and noted the following details: ${start.poDetails.trim()}');
+      if (start.sketchPrepared && start.sketchDetails.trim().isNotEmpty) add('III', place(caseFile.placeOfOccurrence), 'Rough\nsketch map', 'This time as shown by the complainant/witness I visited the PO and prepared rough sketch map of the PO with its index which are kept with the case diary. Details: ${start.sketchDetails.trim()}');
+      if (start.witnessExamined && start.witnessDetails.trim().isNotEmpty) add('IV', defaultPlace, 'Examine\nwitness\n+\nStatement\nrecord', 'By this marginally noted time I examined available witness/witnesses and recorded statement u/s 180 BNSS. Details: ${start.witnessDetails.trim()}');
       if (start.medicalRequired && start.medicalDetails.trim().isNotEmpty) add('V', defaultPlace, 'Medical', 'Took steps regarding medical papers/injury report/BHT. Details: ${start.medicalDetails.trim()}');
       if (start.seizureRequired && start.seizureDetails.trim().isNotEmpty) add('VI', defaultPlace, 'Seizure', 'Took steps regarding seizure of relevant article/document. Details: ${start.seizureDetails.trim()}');
       if (start.evidenceRequired && start.evidenceDetails.trim().isNotEmpty) add('VII', defaultPlace, 'Evidence', 'Took steps regarding evidence collection/preservation. Details: ${start.evidenceDetails.trim()}');
     } else {
-      add('I', defaultPlace, 'Further investigation', fixedOpening);
+      add('I', defaultPlace, 'Further\ninvestigation', fixedOpening);
     }
 
     final romanList = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX'];

@@ -19,17 +19,26 @@ class PdfService {
   }) async {
     final doc = pw.Document();
 
-    // LOCKED OFFICIAL CD FORMAT
-    // This follows the user's sample: West Bengal Form No. 5363 / PRB Form No. 43,
-    // status row, Particulars of Enquiry row, and 4-column marginal entry table.
+    // STRICT OFFICIAL CD FORMAT - West Bengal Form No. 5363 / P.R.B Form No. 43.
+    // Important: no horizontal lines between individual diary entries. Entry no/time,
+    // place, synopsis and proceedings are placed inside one continuous enquiry block.
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.fromLTRB(20, 18, 20, 18),
+        margin: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
+        header: (context) => context.pageNumber == 1
+            ? pw.SizedBox()
+            : pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                children: [
+                  _wbOfficialCdHeader(officer: officer, caseFile: caseFile, cd: cd, continued: true),
+                  _wbOfficialCdStatusRow(),
+                ],
+              ),
         build: (context) => [
           _wbOfficialCdHeader(officer: officer, caseFile: caseFile, cd: cd),
           _wbOfficialCdStatusRow(),
-          _wbOfficialCdTable(cd),
+          _wbOfficialCdContinuousTable(cd),
           _wbOfficialCdSignature(officer: officer),
         ],
       ),
@@ -44,6 +53,7 @@ class PdfService {
     required OfficerProfile officer,
     required CaseFile caseFile,
     required CdEntry cd,
+    bool continued = false,
   }) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.stretch,
@@ -56,7 +66,7 @@ class PdfService {
           ],
         ),
         pw.SizedBox(height: 4),
-        pw.Center(child: pw.Text('CASE DIARY UNDER SECTION 192 BNSS', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('CASE DIARY UNDER SECTION 192 BNSS${continued ? ' (Continued)' : ''}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 8),
         pw.Center(child: pw.RichText(text: pw.TextSpan(children: [
           pw.TextSpan(text: '(P.R.B FROM NO. 43 – Vide ', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
@@ -106,18 +116,23 @@ class PdfService {
     );
   }
 
-  pw.Widget _wbOfficialCdTable(CdEntry cd) {
+  pw.Widget _wbOfficialCdContinuousTable(CdEntry cd) {
     final lines = cd.tableLines.isNotEmpty
         ? cd.tableLines
         : [CdTableLine(noAndHour: 'I\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation', proceedings: cd.body)];
 
+    final leftEntryColumn = lines.map((line) => line.noAndHour).join('\n\n\n');
+    final placeColumn = lines.map((line) => line.placeOfEntry).join('\n\n\n');
+    final synopsisColumn = lines.map((line) => line.synopsis).join('\n\n\n');
+    final proceedingsColumn = lines.map((line) => line.proceedings).where((e) => e.trim().isNotEmpty).join('\n\n');
+
     return pw.Table(
       border: pw.TableBorder.all(width: 0.55),
       columnWidths: const {
-        0: pw.FlexColumnWidth(0.78),
-        1: pw.FlexColumnWidth(0.86),
-        2: pw.FlexColumnWidth(1.08),
-        3: pw.FlexColumnWidth(4.75),
+        0: pw.FlexColumnWidth(0.86),
+        1: pw.FlexColumnWidth(0.90),
+        2: pw.FlexColumnWidth(1.14),
+        3: pw.FlexColumnWidth(7.10),
       },
       children: [
         pw.TableRow(children: [
@@ -130,23 +145,23 @@ class PdfService {
           pw.Container(),
         ]),
         pw.TableRow(children: [
-          _officialCell('No. and\nhour of\nentry.', center: true, fontSize: 9.5),
-          _officialCell('Place of\nentry.', center: true, fontSize: 9.5),
-          _officialCell('Synopsis of\nentry.', center: true, fontSize: 9.5),
+          _officialCell('No. and\nhour of\nentry.', center: true, fontSize: 9.4),
+          _officialCell('Place of\nentry.', center: true, fontSize: 9.4),
+          _officialCell('Synopsis of\nentry.', center: true, fontSize: 9.4),
           pw.Container(),
         ]),
-        ...lines.map((line) => pw.TableRow(
-              verticalAlignment: pw.TableCellVerticalAlignment.top,
-              children: [
-                _officialCell(line.noAndHour, center: true, fontSize: 9.5, minHeight: 40),
-                _officialCell(line.placeOfEntry, center: true, fontSize: 9.5, minHeight: 40),
-                _officialCell(line.synopsis, center: true, fontSize: 9.5, minHeight: 40),
-                pw.Padding(
-                  padding: const pw.EdgeInsets.fromLTRB(6, 5, 6, 5),
-                  child: pw.Text(line.proceedings, style: const pw.TextStyle(fontSize: 10.2), textAlign: pw.TextAlign.justify),
-                ),
-              ],
-            )),
+        pw.TableRow(
+          verticalAlignment: pw.TableCellVerticalAlignment.top,
+          children: [
+            _officialCell(leftEntryColumn, center: true, fontSize: 9.4),
+            _officialCell(placeColumn, center: true, fontSize: 9.4),
+            _officialCell(synopsisColumn, center: true, fontSize: 9.4),
+            pw.Padding(
+              padding: const pw.EdgeInsets.fromLTRB(6, 4, 6, 4),
+              child: pw.Text(proceedingsColumn, style: const pw.TextStyle(fontSize: 10.2), textAlign: pw.TextAlign.justify),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -252,40 +267,97 @@ class PdfService {
     required FormNotice form,
   }) async {
     final doc = pw.Document();
+    final body = form.body;
+    final is35 = form.templateId == 'bnss_35_3';
+    final is94 = form.templateId == 'bnss_94' || form.templateId == 'medical_exam' || form.templateId == 'bht_injury';
+    final isForwarding = form.templateId == 'forwarding';
+
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.fromLTRB(42, 36, 42, 36),
+        margin: const pw.EdgeInsets.fromLTRB(46, 30, 46, 30),
         footer: (context) => pw.Align(
           alignment: pw.Alignment.centerRight,
-          child: pw.Text('Page ${context.pageNumber} of ${context.pagesCount}', style: const pw.TextStyle(fontSize: 9)),
+          child: pw.Text('Page ${context.pageNumber} of ${context.pagesCount}', style: const pw.TextStyle(fontSize: 8)),
         ),
-        build: (context) => [
-          _centerBold(form.title),
-          pw.SizedBox(height: 10),
-          pw.Text('Case Reference: ${officer.policeStation} PS Case No. ${caseFile.psCaseNo} dated ${caseFile.caseDate} u/s ${caseFile.sections}', style: const pw.TextStyle(fontSize: 10)),
-          pw.SizedBox(height: 16),
-          pw.Text(form.body, style: const pw.TextStyle(fontSize: 11.5), textAlign: pw.TextAlign.justify),
-          pw.SizedBox(height: 26),
-          pw.Align(
-            alignment: pw.Alignment.centerRight,
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.end,
-              children: [
-                pw.Text('${officer.rank} ${officer.name}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                pw.Text('Investigating Officer'),
-                pw.Text(officer.policeStation),
-                pw.Text('District: ${officer.district}'),
-              ],
-            ),
-          ),
-        ],
+        build: (context) {
+          if (is35) return _notice35Pdf(officer, caseFile, body);
+          if (isForwarding) return _forwardingPdf(officer, caseFile, body);
+          if (is94) return _notice94Pdf(officer, caseFile, body);
+          return [
+            _centerBold(form.title),
+            pw.SizedBox(height: 10),
+            pw.Text('Ref: ${officer.policeStation} Case No. ${caseFile.psCaseNo} dated ${caseFile.caseDate} u/s ${caseFile.sections}', style: const pw.TextStyle(fontSize: 10.5)),
+            pw.SizedBox(height: 16),
+            pw.Text(body, style: const pw.TextStyle(fontSize: 11.5), textAlign: pw.TextAlign.justify),
+            pw.SizedBox(height: 26),
+            _rightOfficerBlock(officer),
+          ];
+        },
       ),
     );
     return doc.save();
   }
 
+  List<pw.Widget> _notice35Pdf(OfficerProfile officer, CaseFile caseFile, String body) => [
+        pw.Center(child: pw.Text('NOTICE OF APPEARANCE BY THE POLICE', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('[As per section – 35 (3) BNSS Act.]', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold))),
+        pw.SizedBox(height: 20),
+        pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+          pw.Text('Serial\nNo.............', style: const pw.TextStyle(fontSize: 10.5)),
+          pw.Text('Annexure-A', style: const pw.TextStyle(fontSize: 11)),
+        ]),
+        pw.SizedBox(height: 12),
+        pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text(_shortPsName(officer.policeStation).replaceAll('PS', 'Police Station'), style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+        pw.SizedBox(height: 10),
+        pw.Text(body, style: const pw.TextStyle(fontSize: 11.2), textAlign: pw.TextAlign.justify),
+        pw.SizedBox(height: 28),
+        _submittedOfficerBlock(officer),
+      ];
 
+  List<pw.Widget> _notice94Pdf(OfficerProfile officer, CaseFile caseFile, String body) => [
+        pw.Center(child: pw.Text('NOTICE U/S 94 BNSS, 2023', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold))),
+        pw.SizedBox(height: 18),
+        pw.Text(body, style: const pw.TextStyle(fontSize: 11.5), textAlign: pw.TextAlign.justify),
+        pw.SizedBox(height: 30),
+        _rightOfficerBlock(officer),
+      ];
+
+  List<pw.Widget> _forwardingPdf(OfficerProfile officer, CaseFile caseFile, String body) => [
+        pw.Text('In the court of ${officer.courtName}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 20),
+        pw.Center(child: pw.Text('Through GRO Kalna Court', style: const pw.TextStyle(fontSize: 11))),
+        pw.SizedBox(height: 22),
+        pw.Text(body, style: const pw.TextStyle(fontSize: 11.3), textAlign: pw.TextAlign.justify),
+        pw.SizedBox(height: 24),
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.end,
+          children: [
+            pw.Expanded(child: pw.Text('Enclosure:\n1. Original FIR.\n2. Memo of Arrest.\n3. Inspection Memos.\n4. Medical treatment Slip.\n5. Intimation of arrest.', style: const pw.TextStyle(fontSize: 10.8))),
+            pw.Expanded(child: _submittedOfficerBlock(officer)),
+          ],
+        ),
+      ];
+
+  pw.Widget _rightOfficerBlock(OfficerProfile officer) => pw.Align(
+        alignment: pw.Alignment.centerRight,
+        child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+          pw.Text('${officer.rank} ${officer.name}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          if (officer.mobile.trim().isNotEmpty) pw.Text(officer.mobile),
+          pw.Text('${_shortPsName(officer.policeStation)}, ${officer.district}'),
+        ]),
+      );
+
+  pw.Widget _submittedOfficerBlock(OfficerProfile officer) => pw.Align(
+        alignment: pw.Alignment.centerRight,
+        child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.center, children: [
+          pw.Text('Submitted,', style: const pw.TextStyle(fontSize: 11)),
+          pw.SizedBox(height: 26),
+          pw.Text(officer.name, style: const pw.TextStyle(fontSize: 11)),
+          pw.Text(officer.rank, style: const pw.TextStyle(fontSize: 11)),
+          pw.Text('${_shortPsName(officer.policeStation)}, ${officer.district}', style: const pw.TextStyle(fontSize: 11)),
+        ]),
+      );
 
   Future<Uint8List> buildGeneralReportPdf({
     required OfficerProfile officer,
@@ -410,21 +482,35 @@ class PdfService {
   pw.Widget _pdfSketchObject(SketchMapObject o, double canvasW, double canvasH) {
     final w = o.width * canvasW;
     final h = o.height * canvasH;
-    final isRoad = o.type == SketchObjectType.road;
-    final isPond = o.type == SketchObjectType.pond;
-    final isPo = o.type == SketchObjectType.po;
-    return pw.Container(
-      width: w,
-      height: h,
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(width: isPo ? 1.6 : 0.8),
-        color: isPond ? PdfColors.grey200 : (isRoad ? PdfColors.grey300 : PdfColors.white),
-        shape: o.type == SketchObjectType.tree || o.type == SketchObjectType.po ? pw.BoxShape.circle : pw.BoxShape.rectangle,
-      ),
-      alignment: pw.Alignment.center,
-      padding: const pw.EdgeInsets.all(2),
-      child: pw.Text('${o.marker}\n${o.type.symbol}\n${o.label}', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: isRoad ? 7 : 6.5, fontWeight: isPo ? pw.FontWeight.bold : pw.FontWeight.normal)),
-    );
+    final label = '${o.marker} ${o.label}'.trim();
+    switch (o.type) {
+      case SketchObjectType.house:
+        return pw.Column(children: [
+          pw.Container(width: w, height: h * .72, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), color: PdfColors.grey100), child: pw.Center(child: pw.Text(label, style: const pw.TextStyle(fontSize: 6.5)))),
+          pw.Container(width: w * .88, height: h * .20, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), color: PdfColors.grey300)),
+        ]);
+      case SketchObjectType.shop:
+        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8)), child: pw.Column(children: [
+          pw.Container(width: w, height: h * .22, color: PdfColors.grey500, child: pw.Center(child: pw.Text('SHOP', style: const pw.TextStyle(fontSize: 5.5)))),
+          pw.Expanded(child: pw.Center(child: pw.Text(label, textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 6.2)))),
+        ]));
+      case SketchObjectType.pond:
+        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), borderRadius: pw.BorderRadius.circular(18), color: PdfColors.blue100), child: pw.Center(child: pw.Text(label.isEmpty ? 'POND' : label, textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 6.2))));
+      case SketchObjectType.tree:
+        return pw.Column(children: [
+          pw.Container(width: w * .70, height: h * .62, decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(width: .8), color: PdfColors.green100), child: pw.Center(child: pw.Text(o.marker, style: const pw.TextStyle(fontSize: 7)))),
+          pw.Container(width: w * .12, height: h * .28, color: PdfColors.brown300),
+          pw.Text(o.label, style: const pw.TextStyle(fontSize: 5.5)),
+        ]);
+      case SketchObjectType.road:
+        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), color: PdfColors.grey300), child: pw.Center(child: pw.Text(label.isEmpty ? 'ROAD' : label, textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 6.2))));
+      case SketchObjectType.field:
+        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), color: PdfColors.green50), child: pw.Center(child: pw.Text(label.isEmpty ? 'FIELD' : label, textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 6.2))));
+      case SketchObjectType.po:
+        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: 1.4), color: PdfColors.red50), child: pw.Center(child: pw.Text(label.isEmpty ? 'PO' : label, textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))));
+      case SketchObjectType.arrow:
+        return pw.Container(width: w, height: h, child: pw.Center(child: pw.Text('↑\nN\n$label', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))));
+    }
   }
 
   pw.Widget _sketchIndexTable(SketchMapEntry sketch) {

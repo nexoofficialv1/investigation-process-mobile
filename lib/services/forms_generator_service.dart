@@ -75,44 +75,47 @@ class FormsGeneratorService {
   }
 
   String _notice35(OfficerProfile officer, CaseFile caseFile) => '''To,
-_____________________________
-S/O / W/O ____________________
-Address: _____________________
+1. ____________________________  2. ____________________________
 
-Sub: Notice u/s 35(3) BNSS in connection with ${_caseRef(officer, caseFile)}.
+In exercise of the powers conferred under section 35 (3) of BNSS, I hereby inform you that during the investigation of FIR/Case No ${_caseRef(officer, caseFile)}, it is revealed that there are reasonable grounds to question you to ascertain facts and circumstances from you, in relation to the present investigation. Hence you are directed to appear before undersigned officer within 03 (three) days after receiving the notice at ________ AM/PM at ${officer.policeStation}, Dist-${officer.district}.
 
-You are hereby directed to appear before the undersigned at ${officer.policeStation} on __________ at ______ hrs and cooperate with the investigation of the above noted case.
+You are directed to comply with all and/or the following directions:-
+a) You will not commit any offence in future.
+b) You will not tamper with the evidences in the case in any manner whatsoever.
+c) You will not make any threat, inducement, or promise to any person acquainted with the fact of the case so as to dissuade him/her from disclosing such facts to the court or to police officer.
+d) You will appear before the Court as and when required/directed.
+e) You will join the investigation of the case as and when required and will cooperate in the investigation.
+f) You will disclose all the facts truthfully without concealing any part relevant for the purpose of investigation to reach to the right conclusion of the case.
+g) You will produce all relevant documents/material required for the purpose of investigation.
+h) You will render your full co-operation/assistance in apprehension of the accomplice.
+i) You will not allow in any manner destruction of any evidence relevant for the purpose of investigation/trial of the case.
+j) Any other conditions, which may be imposed by the Investigating Officer / Officer-in-Charge as per the facts of the case.
 
-You are further directed not to tamper with evidence, not to threaten or influence any witness, and to remain available during investigation as and when required.
+Failure to attend/comply with the terms of this Notice can render you liable for arrest under Section 35 (6) BNSS.''';
 
-Given under my hand and seal.
+  String _requisition94(OfficerProfile officer, CaseFile caseFile) => '''To
+The Superintendent / Officer-in-Charge,
+____________________________
+P.S. ______________________
+District – __________________.
 
-${officer.rank} ${officer.name}
-Investigating Officer
-${officer.policeStation}
-District: ${officer.district}''';
+Ref: ${officer.policeStation} Case No- ${caseFile.psCaseNo} Dated-${caseFile.caseDate}, U/S- ${caseFile.sections}.
 
-  String _requisition94(OfficerProfile officer, CaseFile caseFile) => '''To,
-The ___________________________
-Address: ______________________
+Whereas an investigation is being conducted in c/w above reference and whereas the records/documents/articles mentioned below are required for the purpose of proper investigation, you are hereby requested under the provisions of Section 94 of the BNSS, 2023, to produce and/or furnish the following documents/information:
 
-Sub: Requisition u/s 94 BNSS in connection with ${_caseRef(officer, caseFile)}.
+1. Admission Register Entry / relevant register entry.
+2. OPD/IPD tickets and complete treatment/official records.
+3. Case history sheet / Bed Head Ticket / connected documents, if maintained.
+4. Examination report / treatment records / relevant certificate, if prepared.
+5. Name, designation and particulars of the concerned officers/persons.
+6. Age-related documents and records available, if any.
+7. Reports, forms and requisition papers, if any.
+8. Copies of all relevant documents, records and reports.
+9. Any other document, record or report relevant to the investigation.
 
-Sir/Madam,
-Most respectfully, it is requested to provide/produce the following document/article/information for the purpose of investigation of the above noted case:
+You are requested to provide the aforesaid documents, duly attested, at the earliest for the purpose of investigation.
 
-1. ______________________________________
-2. ______________________________________
-3. ______________________________________
-
-The said document/article/information is required for fair and proper investigation. Kindly provide the same at the earliest.
-
-Yours faithfully,
-
-${officer.rank} ${officer.name}
-Investigating Officer
-${officer.policeStation}
-District: ${officer.district}''';
+Failure to comply with this notice without lawful excuse may attract legal consequences as prescribed under law.''';
 
   String _prayer183(OfficerProfile officer, CaseFile caseFile) => '''In the Court of ${officer.courtName}
 
@@ -227,20 +230,20 @@ ${officer.rank} ${officer.name}
 Investigating Officer
 ${officer.policeStation}''';
 
-  String _forwarding(OfficerProfile officer, CaseFile caseFile) => '''In the Court of ${officer.courtName}
+  String _forwarding(OfficerProfile officer, CaseFile caseFile) => '''Ref:   ${officer.policeStation} case no- ${caseFile.psCaseNo} Dated: - ${caseFile.caseDate} u/s - ${caseFile.sections}.
 
-Sub: Forwarding report of arrested accused in connection with ${_caseRef(officer, caseFile)}.
+Sub:   Forwarding of FIR named arrested accused person namely- ____________________________.
 
-May it please your honour,
-Most respectfully I beg to submit that during investigation of the above noted case, accused namely ____________________, S/O ____________________, address ____________________, has been arrested on __________ at ______ hrs after observing all legal formalities.
+Sir,
+        In forwarding herewith the arrested accused person namely- ____________________________ S/O- ____________________________ of ____________________________, P.S.- ____________________, Dist.- ____________________ before your honour's court with all connected paper and proper Police escort I beg to report that on __________ at ______ hrs received a written complaint from one ${caseFile.complainantName.isEmpty ? '____________________' : caseFile.complainantName} to the effect that ${caseFile.firGist.isEmpty ? '____________________________________________________________________________' : caseFile.firGist}. Over this complaint the above referred case has been started and as per endorsement I took up its investigation.
 
-The accused is forwarded before your honour with prayer for necessary order.
+        During investigation I visited the PO, prepared rough sketch map of the PO with its index in separate sheets of paper. Examined the complainant and other available witnesses and recorded their statements u/s-180 BNSS in separate sheets of paper. Thereafter the FIR named accused person was arrested after observing all legal formalities. The grounds of arrest have been informed to the accused person and his/her family member in their vernacular language and a copy of the same was served upon them.
 
-Submitted by,
+        Under the above fact and circumstances, I therefore pray before your Honour's court that arrested accused person namely- ____________________________ may kindly be taken in judicial custody / police custody as prayed for till investigation is over. I strongly oppose bail on the following grounds:-
 
-${officer.rank} ${officer.name}
-Investigating Officer
-${officer.policeStation}''';
+(1) The case is in green stage of investigation. If released on bail at this stage, the accused may hamper the investigation.
+(2) Many important witnesses are yet to be examined. If released on bail at this stage, the accused may induce witnesses.
+(3) Police custody / further interrogation may be required for the purpose of investigation.''';
 
   String _furtherInvestigation(OfficerProfile officer, CaseFile caseFile) => '''In the Court of ${officer.courtName}
 
