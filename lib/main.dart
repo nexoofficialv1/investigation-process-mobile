@@ -1,0 +1,69 @@
+import 'package:flutter/material.dart';
+
+import 'core/app_theme.dart';
+import 'models/officer_profile.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/officer_profile_screen.dart';
+import 'services/local_store_service.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const InvestigationProcessApp());
+}
+
+class InvestigationProcessApp extends StatelessWidget {
+  const InvestigationProcessApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Investigation & Process',
+      theme: AppTheme.light(),
+      home: const StartupGate(),
+    );
+  }
+}
+
+class StartupGate extends StatefulWidget {
+  const StartupGate({super.key});
+
+  @override
+  State<StartupGate> createState() => _StartupGateState();
+}
+
+class _StartupGateState extends State<StartupGate> {
+  final LocalStoreService _store = LocalStoreService();
+  OfficerProfile? _profile;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final profile = await _store.loadOfficerProfile();
+    if (!mounted) return;
+    setState(() => _profile = profile);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = _profile;
+    if (profile == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (!profile.isComplete) {
+      return OfficerProfileScreen(
+        profile: profile,
+        onSaved: (updated) async {
+          await _store.saveOfficerProfile(updated);
+          if (!mounted) return;
+          setState(() => _profile = updated);
+        },
+      );
+    }
+    return DashboardScreen(profile: profile);
+  }
+}

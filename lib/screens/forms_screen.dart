@@ -1,0 +1,221 @@
+import 'package:flutter/material.dart';
+
+import '../models/case_file.dart';
+import '../models/form_notice.dart';
+import '../models/officer_profile.dart';
+import '../services/forms_generator_service.dart';
+import '../services/local_store_service.dart';
+import '../services/pdf_service.dart';
+import '../widgets/form_helpers.dart';
+
+class FormsScreen extends StatefulWidget {
+  final OfficerProfile profile;
+  final CaseFile caseFile;
+
+  const FormsScreen({super.key, required this.profile, required this.caseFile});
+
+  @override
+  State<FormsScreen> createState() => _FormsScreenState();
+}
+
+class _FormsScreenState extends State<FormsScreen> {
+  final LocalStoreService _store = LocalStoreService();
+  final FormsGeneratorService _generator = FormsGeneratorService();
+  List<FormNotice> forms = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final list = await _store.loadForms(widget.caseFile.id);
+    if (!mounted) return;
+    setState(() => forms = list);
+  }
+
+  Future<void> _create(FormTemplateInfo template) async {
+    final body = _generator.generate(templateId: template.id, officer: widget.profile, caseFile: widget.caseFile);
+    final form = FormNotice.create(
+      caseId: widget.caseFile.id,
+      templateId: template.id,
+      title: template.title,
+      body: body,
+    );
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => FormEditorScreen(profile: widget.profile, caseFile: widget.caseFile, form: form)),
+    );
+    await _load();
+  }
+
+  Future<void> _open(FormNotice form) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => FormEditorScreen(profile: widget.profile, caseFile: widget.caseFile, form: form)),
+    );
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Forms & Notices')),
+      body: RefreshIndicator(
+        onRefresh: _load,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Auto-fill Forms', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    Text('${widget.caseFile.displayTitle}\nSections: ${widget.caseFile.sections}\nIO: ${widget.profile.rank} ${widget.profile.name}'),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text('Generate New', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ...FormsGeneratorService.templates.map((template) => Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.post_add),
+                    title: Text(template.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: Text('${template.category} • ${template.subtitle}'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _create(template),
+                  ),
+                )),
+            const SizedBox(height: 18),
+            Text('Saved Forms', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            if (forms.isEmpty)
+              const Card(child: Padding(padding: EdgeInsets.all(18), child: Text('No saved forms yet. Select a template above.')))
+            else
+              ...forms.map((form) => Card(
+                    child: ListTile(
+                      leading: Icon(form.isFinal ? Icons.lock : Icons.description),
+                      title: Text(form.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                      subtitle: Text(form.isFinal ? 'Final saved' : 'Draft'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => _open(form),
+                    ),
+                  )),
+            const SizedBox(height: 80),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FormEditorScreen extends StatefulWidget {
+  final OfficerProfile profile;
+  final CaseFile caseFile;
+  final FormNotice form;
+
+  const FormEditorScreen({super.key, required this.profile, required this.caseFile, required this.form});
+
+  @override
+  State<FormEditorScreen> createState() => _FormEditorScreenState();
+}
+
+class _FormEditorScreenState extends State<FormEditorScreen> {
+  final LocalStoreService _store = LocalStoreService();
+  late FormNotice _form;
+  late final TextEditingController title;
+  late final TextEditingController body;
+
+  @override
+  void initState() {
+    super.initState();
+    _form = widget.form;
+    title = TextEditingController(text: _form.title);
+    body = TextEditingController(text: _form.body);
+  }
+
+  @override
+  void dispose() {
+    title.dispose();
+    body.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save({bool finalSave = false}) async {
+    final updated = _form.copyWith(
+      title: title.text.trim(),
+      body: body.text.trim(),
+      isFinal: finalSave ? true : _form.isFinal,
+    );
+    await _store.saveForm(updated);
+    if (!mounted) return;
+    setState(() => _form = updated);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(finalSave ? 'Form final saved' : 'Form draft saved')));
+  }
+
+  Future<void> _export() async {
+    await _save();
+    if (!mounted) return;
+    final exportForm = _form.copyWith(title: title.text.trim(), body: body.text.trim());
+    await PdfService().shareFormNoticePdf(officer: widget.profile, caseFile: widget.caseFile, form: exportForm);
+  }
+
+  Future<void> _finalSave() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Final Save Form?'),
+        content: const Text('Final save করলে form locked হিসেবে mark হবে। পরে edit করা যাবে, কিন্তু warning দেখাবে।'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Final Save')),
+        ],
+      ),
+    );
+    if (ok == true) await _save(finalSave: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(_form.title)),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Expanded(child: OutlinedButton.icon(onPressed: () => _save(), icon: const Icon(Icons.save), label: const Text('Draft'))),
+              const SizedBox(width: 8),
+              Expanded(child: FilledButton.icon(onPressed: _finalSave, icon: const Icon(Icons.lock), label: const Text('Final'))),
+              const SizedBox(width: 8),
+              Expanded(child: FilledButton.icon(onPressed: _export, icon: const Icon(Icons.picture_as_pdf), label: const Text('PDF'))),
+            ],
+          ),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (_form.isFinal)
+            const Card(child: Padding(padding: EdgeInsets.all(14), child: Text('This form is final saved. Edit carefully if required.', style: TextStyle(fontWeight: FontWeight.bold)))),
+          FormHelpers.textField(controller: title, label: 'Form Title'),
+          TextField(
+            controller: body,
+            maxLines: 28,
+            decoration: const InputDecoration(
+              alignLabelWithHint: true,
+              labelText: 'Auto-filled form body — edit as required',
+            ),
+          ),
+          const SizedBox(height: 90),
+        ],
+      ),
+    );
+  }
+}
