@@ -25,30 +25,53 @@ class _FormsScreenState extends State<FormsScreen> {
   final LocalStoreService _store = LocalStoreService();
   final FormsGeneratorService _generator = FormsGeneratorService();
   List<FormNotice> forms = [];
+  List<CaseFile> _cases = [];
+  late CaseFile _selectedCase;
 
   @override
   void initState() {
     super.initState();
+    _selectedCase = widget.caseFile;
     _load();
   }
 
   Future<void> _load() async {
-    final list = await _store.loadForms(widget.caseFile.id);
+    final cases = await _store.loadCases();
+    CaseFile selected = _selectedCase;
+    if (cases.isNotEmpty) {
+      selected = cases.firstWhere(
+        (c) => c.id == _selectedCase.id,
+        orElse: () => cases.first,
+      );
+    }
+    final list = await _store.loadForms(selected.id);
+    if (!mounted) return;
+    setState(() {
+      _cases = cases;
+      _selectedCase = selected;
+      forms = list;
+    });
+  }
+
+  Future<void> _changeCase(CaseFile? file) async {
+    if (file == null) return;
+    setState(() => _selectedCase = file);
+    final list = await _store.loadForms(file.id);
     if (!mounted) return;
     setState(() => forms = list);
   }
 
   Future<void> _create(FormTemplateInfo template) async {
-    final body = _generator.generate(templateId: template.id, officer: widget.profile, caseFile: widget.caseFile);
+    final body = _generator.generate(templateId: template.id, officer: widget.profile, caseFile: _selectedCase);
     final form = FormNotice.create(
-      caseId: widget.caseFile.id,
+      caseId: _selectedCase.id,
       templateId: template.id,
       title: template.title,
       body: body,
     );
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => FormEditorScreen(profile: widget.profile, caseFile: widget.caseFile, form: form)),
+      MaterialPageRoute(builder: (_) => FormEditorScreen(profile: widget.profile, caseFile: _selectedCase, form: form)),
     );
     await _load();
   }
@@ -56,7 +79,7 @@ class _FormsScreenState extends State<FormsScreen> {
   Future<void> _open(FormNotice form) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => FormEditorScreen(profile: widget.profile, caseFile: widget.caseFile, form: form)),
+      MaterialPageRoute(builder: (_) => FormEditorScreen(profile: widget.profile, caseFile: _selectedCase, form: form)),
     );
     await _load();
   }
@@ -78,7 +101,22 @@ class _FormsScreenState extends State<FormsScreen> {
                   children: [
                     Text('Auto-fill Forms', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
-                    Text('${widget.caseFile.displayTitle}\nSections: ${widget.caseFile.sections}\nIO: ${widget.profile.rank} ${widget.profile.name}'),
+                    Text('${_selectedCase.displayTitle}\nSections: ${_selectedCase.sections}\nIO: ${widget.profile.rank} ${widget.profile.name}'),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCase.id,
+                      decoration: const InputDecoration(
+                        labelText: 'Tag / Select Case for this Form',
+                        helperText: 'এই case অনুযায়ী 35 notice-এ accused name এবং 94 notice-এ complainant name auto-fill হবে।',
+                      ),
+                      items: _cases.isEmpty
+                          ? [DropdownMenuItem(value: _selectedCase.id, child: Text(_selectedCase.displayTitle))]
+                          : _cases.map((c) => DropdownMenuItem(value: c.id, child: Text('${c.displayTitle} • ${c.caseDate}'))).toList(),
+                      onChanged: (id) {
+                        final found = _cases.where((c) => c.id == id).toList();
+                        if (found.isNotEmpty) _changeCase(found.first);
+                      },
+                    ),
                   ],
                 ),
               ),

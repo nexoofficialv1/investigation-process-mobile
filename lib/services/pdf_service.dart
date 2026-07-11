@@ -126,45 +126,76 @@ class PdfService {
     final synopsisColumn = lines.map((line) => line.synopsis).join('\n\n\n');
     final proceedingsColumn = lines.map((line) => line.proceedings).where((e) => e.trim().isNotEmpty).join('\n\n');
 
+    // Official PRB Form No. 43 layout: "Particulars of Enquiry." is a single
+    // heading spread across the three marginal columns. The right proceedings
+    // column begins independently and no horizontal rule is inserted between
+    // daily entries. Only the column boundaries remain visible.
     return pw.Table(
       border: pw.TableBorder.all(width: 0.55),
       columnWidths: const {
-        0: pw.FlexColumnWidth(0.86),
-        1: pw.FlexColumnWidth(0.90),
-        2: pw.FlexColumnWidth(1.14),
-        3: pw.FlexColumnWidth(7.10),
+        0: pw.FlexColumnWidth(2.90),
+        1: pw.FlexColumnWidth(7.10),
       },
       children: [
-        pw.TableRow(children: [
-          pw.Padding(
-            padding: const pw.EdgeInsets.fromLTRB(8, 3, 8, 3),
-            child: pw.Text('Particulars of Enquiry.', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold)),
-          ),
-          pw.Container(),
-          pw.Container(),
-          pw.Container(),
-        ]),
-        pw.TableRow(children: [
-          _officialCell('No. and\nhour of\nentry.', center: true, fontSize: 9.4),
-          _officialCell('Place of\nentry.', center: true, fontSize: 9.4),
-          _officialCell('Synopsis of\nentry.', center: true, fontSize: 9.4),
-          pw.Container(),
-        ]),
         pw.TableRow(
           verticalAlignment: pw.TableCellVerticalAlignment.top,
           children: [
-            _officialCell(leftEntryColumn, center: true, fontSize: 9.4),
-            _officialCell(placeColumn, center: true, fontSize: 9.4),
-            _officialCell(synopsisColumn, center: true, fontSize: 9.4),
-            pw.Padding(
-              padding: const pw.EdgeInsets.fromLTRB(6, 4, 6, 4),
-              child: pw.Text(proceedingsColumn, style: const pw.TextStyle(fontSize: 10.2), textAlign: pw.TextAlign.justify),
+            pw.Container(
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(right: pw.BorderSide(width: 0.55)),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                children: [
+                  pw.Container(
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(bottom: pw.BorderSide(width: 0.55)),
+                    ),
+                    padding: const pw.EdgeInsets.fromLTRB(8, 3, 8, 3),
+                    child: pw.Text('Particulars of Enquiry.', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold)),
+                  ),
+                  pw.Table(
+                    border: const pw.TableBorder(
+                      verticalInside: pw.BorderSide(width: 0.55),
+                      horizontalInside: pw.BorderSide(width: 0.55),
+                    ),
+                    columnWidths: const {
+                      0: pw.FlexColumnWidth(0.86),
+                      1: pw.FlexColumnWidth(0.90),
+                      2: pw.FlexColumnWidth(1.14),
+                    },
+                    children: [
+                      pw.TableRow(children: [
+                        _officialCell('No. and\nhour of\nentry.', center: true, fontSize: 9.4),
+                        _officialCell('Place of\nentry.', center: true, fontSize: 9.4),
+                        _officialCell('Synopsis of\nentry.', center: true, fontSize: 9.4),
+                      ]),
+                      pw.TableRow(
+                        verticalAlignment: pw.TableCellVerticalAlignment.top,
+                        children: [
+                          _officialCell(leftEntryColumn, center: true, fontSize: 9.4),
+                          _officialCell(placeColumn, center: true, fontSize: 9.4),
+                          _officialCell(synopsisColumn, center: true, fontSize: 9.4),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            pw.Container(
+              constraints: const pw.BoxConstraints(minHeight: 610),
+              child: pw.Padding(
+                padding: const pw.EdgeInsets.fromLTRB(6, 4, 6, 4),
+                child: pw.Text(proceedingsColumn, style: const pw.TextStyle(fontSize: 10.2), textAlign: pw.TextAlign.justify),
+              ),
             ),
           ],
         ),
       ],
     );
   }
+
 
   pw.Widget _wbOfficialCdSignature({required OfficerProfile officer}) {
     return pw.Align(

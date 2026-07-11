@@ -74,8 +74,17 @@ class FormsGeneratorService {
     return '${officer.policeStation} PS Case No. ${caseFile.psCaseNo} dated ${caseFile.caseDate} u/s ${caseFile.sections}';
   }
 
-  String _notice35(OfficerProfile officer, CaseFile caseFile) => '''To,
-1. ____________________________  2. ____________________________
+  String _valueOrBlank(String value, String fallback) => value.trim().isEmpty ? fallback : value.trim();
+
+  String _notice35(OfficerProfile officer, CaseFile caseFile) {
+    final accused = _valueOrBlank(caseFile.accusedName, '____________________________');
+    return '''NOTICE OF APPEARANCE BY THE POLICE
+[As per section – 35 (3) BNSS Act.]
+
+Serial No.............                                                   Annexure-A
+
+To,
+1. $accused
 
 In exercise of the powers conferred under section 35 (3) of BNSS, I hereby inform you that during the investigation of FIR/Case No ${_caseRef(officer, caseFile)}, it is revealed that there are reasonable grounds to question you to ascertain facts and circumstances from you, in relation to the present investigation. Hence you are directed to appear before undersigned officer within 03 (three) days after receiving the notice at ________ AM/PM at ${officer.policeStation}, Dist-${officer.district}.
 
@@ -92,8 +101,13 @@ i) You will not allow in any manner destruction of any evidence relevant for the
 j) Any other conditions, which may be imposed by the Investigating Officer / Officer-in-Charge as per the facts of the case.
 
 Failure to attend/comply with the terms of this Notice can render you liable for arrest under Section 35 (6) BNSS.''';
+  }
 
-  String _requisition94(OfficerProfile officer, CaseFile caseFile) => '''To
+  String _requisition94(OfficerProfile officer, CaseFile caseFile) {
+    final complainant = _valueOrBlank(caseFile.complainantName, 'the complainant');
+    return '''NOTICE U/S 94 BNSS, 2023
+
+To
 The Superintendent / Officer-in-Charge,
 ____________________________
 P.S. ______________________
@@ -101,7 +115,7 @@ District – __________________.
 
 Ref: ${officer.policeStation} Case No- ${caseFile.psCaseNo} Dated-${caseFile.caseDate}, U/S- ${caseFile.sections}.
 
-Whereas an investigation is being conducted in c/w above reference and whereas the records/documents/articles mentioned below are required for the purpose of proper investigation, you are hereby requested under the provisions of Section 94 of the BNSS, 2023, to produce and/or furnish the following documents/information:
+Whereas an investigation is being conducted in c/w above reference and whereas the records/documents/articles relating to complainant/informant $complainant and the above noted case are required for the purpose of proper investigation, you are hereby requested under the provisions of Section 94 of the BNSS, 2023, to produce and/or furnish the following documents/information:
 
 1. Admission Register Entry / relevant register entry.
 2. OPD/IPD tickets and complete treatment/official records.
@@ -116,6 +130,7 @@ Whereas an investigation is being conducted in c/w above reference and whereas t
 You are requested to provide the aforesaid documents, duly attested, at the earliest for the purpose of investigation.
 
 Failure to comply with this notice without lawful excuse may attract legal consequences as prescribed under law.''';
+  }
 
   String _prayer183(OfficerProfile officer, CaseFile caseFile) => '''In the Court of ${officer.courtName}
 
