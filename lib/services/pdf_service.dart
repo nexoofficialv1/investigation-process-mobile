@@ -182,7 +182,7 @@ class PdfService {
       ),
     );
     if (minHeight == null) return content;
-    return pw.Container(minHeight: minHeight, child: content);
+    return pw.Container(constraints: pw.BoxConstraints(minHeight: minHeight), child: content);
   }
 
   Future<Uint8List> buildStatementPdf({
