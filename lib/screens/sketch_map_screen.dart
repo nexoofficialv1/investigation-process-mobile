@@ -102,12 +102,17 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       );
 
   Future<void> _save({bool askCd = false}) async {
-    final updated = _currentMap();
-    await _store.saveSketchMap(updated);
-    if (!mounted) return;
-    setState(() => _map = updated);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sketch map saved')));
-    if (askCd) await _askMentionInCd();
+    try {
+      final updated = _currentMap();
+      await _store.saveSketchMap(updated);
+      if (!mounted) return;
+      setState(() => _map = updated);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sketch map saved')));
+      if (askCd) await _askMentionInCd();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sketch map save failed: $e')));
+    }
   }
 
   Future<void> _askMentionInCd() async {
@@ -128,7 +133,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       sourceType: 'Sketch Map',
       sourceId: _map.id,
       title: 'Rough Sketch Map prepared',
-      actionDate: _map.date,
+      actionDate: DateTime.now().toIso8601String().split('T').first,
       paragraph: 'Prepared rough sketch map of the PO with index.',
     );
     await _store.savePendingCdAction(action);

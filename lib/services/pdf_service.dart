@@ -12,12 +12,24 @@ import '../models/form_notice.dart';
 import '../models/sketch_map.dart';
 
 class PdfService {
+  Future<pw.ThemeData> _pdfTheme() async {
+    try {
+      final regular = await PdfGoogleFonts.notoSerifBengaliRegular();
+      final bold = await PdfGoogleFonts.notoSerifBengaliBold();
+      return pw.ThemeData.withFont(base: regular, bold: bold);
+    } catch (_) {
+      final regular = await PdfGoogleFonts.notoSansBengaliRegular();
+      final bold = await PdfGoogleFonts.notoSansBengaliBold();
+      return pw.ThemeData.withFont(base: regular, bold: bold);
+    }
+  }
+
   Future<Uint8List> buildCaseDiaryPdf({
     required OfficerProfile officer,
     required CaseFile caseFile,
     required CdEntry cd,
   }) async {
-    final doc = pw.Document();
+    final doc = pw.Document(theme: await _pdfTheme());
 
     // STRICT OFFICIAL CD FORMAT - West Bengal Form No. 5363 / P.R.B Form No. 43.
     // Important: no horizontal lines between individual diary entries. Entry no/time,
@@ -38,8 +50,7 @@ class PdfService {
         build: (context) => [
           _wbOfficialCdHeader(officer: officer, caseFile: caseFile, cd: cd),
           _wbOfficialCdStatusRow(),
-          _wbOfficialCdContinuousTable(cd),
-          _wbOfficialCdSignature(officer: officer),
+          _wbOfficialCdContinuousTable(cd, officer),
         ],
       ),
     );
@@ -116,7 +127,7 @@ class PdfService {
     );
   }
 
-  pw.Widget _wbOfficialCdContinuousTable(CdEntry cd) {
+  pw.Widget _wbOfficialCdContinuousTable(CdEntry cd, OfficerProfile officer) {
     final lines = cd.tableLines.isNotEmpty
         ? cd.tableLines
         : [CdTableLine(noAndHour: 'I\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation', proceedings: cd.body)];
@@ -126,10 +137,10 @@ class PdfService {
     final synopsisColumn = lines.map((line) => line.synopsis).join('\n\n\n');
     final proceedingsColumn = lines.map((line) => line.proceedings).where((e) => e.trim().isNotEmpty).join('\n\n');
 
-    // Official PRB Form No. 43 layout: "Particulars of Enquiry." is a single
-    // heading spread across the three marginal columns. The right proceedings
-    // column begins independently and no horizontal rule is inserted between
-    // daily entries. Only the column boundaries remain visible.
+    // Official PRB Form No. 43 layout:
+    // Row 1: "Particulars of Enquiry." is merged only over the three marginal columns.
+    // Row 2: three marginal columns + the large proceedings column.
+    // No horizontal line is inserted between individual CD entries.
     return pw.Table(
       border: pw.TableBorder.all(width: 0.55),
       columnWidths: const {
@@ -137,57 +148,66 @@ class PdfService {
         1: pw.FlexColumnWidth(7.10),
       },
       children: [
+        pw.TableRow(children: [
+          pw.Container(
+            padding: const pw.EdgeInsets.fromLTRB(8, 3, 8, 3),
+            child: pw.Text('Particulars of Enquiry.', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold)),
+          ),
+          pw.SizedBox(height: 22),
+        ]),
         pw.TableRow(
           verticalAlignment: pw.TableCellVerticalAlignment.top,
           children: [
-            pw.Container(
-              decoration: const pw.BoxDecoration(
-                border: pw.Border(right: pw.BorderSide(width: 0.55)),
+            pw.Table(
+              border: const pw.TableBorder(
+                verticalInside: pw.BorderSide(width: 0.55),
+                horizontalInside: pw.BorderSide(width: 0.55),
               ),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-                children: [
-                  pw.Container(
-                    decoration: const pw.BoxDecoration(
-                      border: pw.Border(bottom: pw.BorderSide(width: 0.55)),
-                    ),
-                    padding: const pw.EdgeInsets.fromLTRB(8, 3, 8, 3),
-                    child: pw.Text('Particulars of Enquiry.', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold)),
-                  ),
-                  pw.Table(
-                    border: const pw.TableBorder(
-                      verticalInside: pw.BorderSide(width: 0.55),
-                      horizontalInside: pw.BorderSide(width: 0.55),
-                    ),
-                    columnWidths: const {
-                      0: pw.FlexColumnWidth(0.86),
-                      1: pw.FlexColumnWidth(0.90),
-                      2: pw.FlexColumnWidth(1.14),
-                    },
-                    children: [
-                      pw.TableRow(children: [
-                        _officialCell('No. and\nhour of\nentry.', center: true, fontSize: 9.4),
-                        _officialCell('Place of\nentry.', center: true, fontSize: 9.4),
-                        _officialCell('Synopsis of\nentry.', center: true, fontSize: 9.4),
-                      ]),
-                      pw.TableRow(
-                        verticalAlignment: pw.TableCellVerticalAlignment.top,
-                        children: [
-                          _officialCell(leftEntryColumn, center: true, fontSize: 9.4),
-                          _officialCell(placeColumn, center: true, fontSize: 9.4),
-                          _officialCell(synopsisColumn, center: true, fontSize: 9.4),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              columnWidths: const {
+                0: pw.FlexColumnWidth(0.86),
+                1: pw.FlexColumnWidth(0.90),
+                2: pw.FlexColumnWidth(1.14),
+              },
+              children: [
+                pw.TableRow(children: [
+                  _officialCell('No. and\nhour of\nentry.', center: true, fontSize: 9.4),
+                  _officialCell('Place of\nentry.', center: true, fontSize: 9.4),
+                  _officialCell('Synopsis of\nentry.', center: true, fontSize: 9.4),
+                ]),
+                pw.TableRow(
+                  verticalAlignment: pw.TableCellVerticalAlignment.top,
+                  children: [
+                    _officialCell(leftEntryColumn, center: true, fontSize: 9.4, minHeight: 520),
+                    _officialCell(placeColumn, center: true, fontSize: 9.4, minHeight: 520),
+                    _officialCell(synopsisColumn, center: true, fontSize: 9.4, minHeight: 520),
+                  ],
+                ),
+              ],
             ),
             pw.Container(
-              constraints: const pw.BoxConstraints(minHeight: 610),
+              constraints: const pw.BoxConstraints(minHeight: 575),
               child: pw.Padding(
                 padding: const pw.EdgeInsets.fromLTRB(6, 4, 6, 4),
-                child: pw.Text(proceedingsColumn, style: const pw.TextStyle(fontSize: 10.2), textAlign: pw.TextAlign.justify),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                  children: [
+                    pw.Text(proceedingsColumn, style: const pw.TextStyle(fontSize: 10.2), textAlign: pw.TextAlign.justify),
+                    pw.SizedBox(height: 18),
+                    pw.Align(
+                      alignment: pw.Alignment.centerRight,
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.center,
+                        children: [
+                          pw.Text('Submitted', style: const pw.TextStyle(fontSize: 10.5)),
+                          pw.SizedBox(height: 28),
+                          pw.Text('(${officer.name})', style: const pw.TextStyle(fontSize: 10.5)),
+                          pw.Text(officer.rank, style: const pw.TextStyle(fontSize: 10.5)),
+                          pw.Text(_shortPsName(officer.policeStation), style: const pw.TextStyle(fontSize: 10.5)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -195,6 +215,7 @@ class PdfService {
       ],
     );
   }
+
 
 
   pw.Widget _wbOfficialCdSignature({required OfficerProfile officer}) {
@@ -236,7 +257,7 @@ class PdfService {
     required CaseFile caseFile,
     required StatementEntry statement,
   }) async {
-    final doc = pw.Document();
+    final doc = pw.Document(theme: await _pdfTheme());
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -297,7 +318,7 @@ class PdfService {
     required CaseFile caseFile,
     required FormNotice form,
   }) async {
-    final doc = pw.Document();
+    final doc = pw.Document(theme: await _pdfTheme());
     final body = form.body;
     final is35 = form.templateId == 'bnss_35_3';
     final is94 = form.templateId == 'bnss_94' || form.templateId == 'medical_exam' || form.templateId == 'bht_injury';
@@ -394,7 +415,7 @@ class PdfService {
     required OfficerProfile officer,
     required FormNotice form,
   }) async {
-    final doc = pw.Document();
+    final doc = pw.Document(theme: await _pdfTheme());
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -440,7 +461,7 @@ class PdfService {
     required CaseFile caseFile,
     required SketchMapEntry sketch,
   }) async {
-    final doc = pw.Document();
+    final doc = pw.Document(theme: await _pdfTheme());
     const canvasW = 500.0;
     const canvasH = 430.0;
 
@@ -530,7 +551,7 @@ class PdfService {
       case SketchObjectType.tree:
         return pw.Column(children: [
           pw.Container(width: w * .70, height: h * .62, decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(width: .8), color: PdfColors.green100), child: pw.Center(child: pw.Text(o.marker, style: const pw.TextStyle(fontSize: 7)))),
-          pw.Container(width: w * .12, height: h * .28, color: PdfColors.brown300),
+          pw.Container(width: w * .12, height: h * .28, color: PdfColors.brown),
           pw.Text(o.label, style: const pw.TextStyle(fontSize: 5.5)),
         ]);
       case SketchObjectType.road:

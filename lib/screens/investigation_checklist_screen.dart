@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../models/case_file.dart';
 
-class InvestigationChecklistScreen extends StatelessWidget {
+class InvestigationChecklistScreen extends StatefulWidget {
   final CaseFile caseFile;
 
   const InvestigationChecklistScreen({super.key, required this.caseFile});
 
   @override
+  State<InvestigationChecklistScreen> createState() => _InvestigationChecklistScreenState();
+}
+
+class _InvestigationChecklistScreenState extends State<InvestigationChecklistScreen> {
+  final Set<String> _checked = <String>{};
+
+  @override
   Widget build(BuildContext context) {
-    final sections = _buildChecklist(caseFile);
+    final sections = _buildChecklist(widget.caseFile);
+    final total = sections.fold<int>(0, (sum, sec) => sum + sec.items.length);
     return Scaffold(
       appBar: AppBar(title: const Text('Investigation Checklists')),
       body: ListView(
@@ -21,12 +29,14 @@ class InvestigationChecklistScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(caseFile.displayTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+                  Text(widget.caseFile.displayTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 6),
-                  Text('Sections: ${caseFile.sections}'),
+                  Text('Sections: ${widget.caseFile.sections}'),
+                  const SizedBox(height: 8),
+                  Text('Checked: ${_checked.length} / $total', style: const TextStyle(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 8),
                   const Text(
-                    'এই screen investigation-এর জন্য কী কী document/action লাগতে পারে সেটার working checklist। CD/IF5 final করার আগে এগুলো verify করুন।',
+                    'প্রতিটা item tap করলে tick/untick হবে। CD/IF5 final করার আগে এগুলো verify করুন।',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],
@@ -34,7 +44,19 @@ class InvestigationChecklistScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          ...sections.map((section) => _ChecklistBlock(section: section)),
+          ...sections.map((section) => _ChecklistBlock(
+                section: section,
+                checked: _checked,
+                onToggle: (item, value) {
+                  setState(() {
+                    if (value) {
+                      _checked.add(item);
+                    } else {
+                      _checked.remove(item);
+                    }
+                  });
+                },
+              )),
           const SizedBox(height: 70),
         ],
       ),
@@ -43,7 +65,7 @@ class InvestigationChecklistScreen extends StatelessWidget {
 
   List<_ChecklistSection> _buildChecklist(CaseFile file) {
     final lower = file.sections.toLowerCase();
-    final pocso = lower.contains('pocso') || lower.contains('6') || lower.contains('4');
+    final pocso = lower.contains('pocso');
     final hurt = lower.contains('115') || lower.contains('117') || lower.contains('118') || lower.contains('109');
     final property = lower.contains('303') || lower.contains('305') || lower.contains('309') || lower.contains('317') || lower.contains('318');
 
@@ -124,7 +146,10 @@ class InvestigationChecklistScreen extends StatelessWidget {
 
 class _ChecklistBlock extends StatelessWidget {
   final _ChecklistSection section;
-  const _ChecklistBlock({required this.section});
+  final Set<String> checked;
+  final void Function(String item, bool value) onToggle;
+
+  const _ChecklistBlock({required this.section, required this.checked, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -133,15 +158,16 @@ class _ChecklistBlock extends StatelessWidget {
       child: ExpansionTile(
         initiallyExpanded: true,
         title: Text(section.title, style: const TextStyle(fontWeight: FontWeight.w900)),
-        children: section.items
-            .map((item) => CheckboxListTile(
-                  value: false,
-                  onChanged: (_) {},
-                  controlAffinity: ListTileControlAffinity.leading,
-                  title: Text(item),
-                  dense: true,
-                ))
-            .toList(),
+        children: section.items.map((item) {
+          final key = '${section.title}::$item';
+          return CheckboxListTile(
+            value: checked.contains(key),
+            onChanged: (value) => onToggle(key, value ?? false),
+            controlAffinity: ListTileControlAffinity.leading,
+            title: Text(item),
+            dense: true,
+          );
+        }).toList(),
       ),
     );
   }

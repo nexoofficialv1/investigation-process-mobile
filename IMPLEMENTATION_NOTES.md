@@ -1,32 +1,31 @@
-# v1.7 Official CD Particulars + Case-tagged Forms Patch
+# v1.9 Implementation Notes
 
-Changes:
+## Fixes
 
-1. Case Diary PDF official layout corrected again:
-   - `Particulars of Enquiry.` is now a single heading spanning the three marginal columns.
-   - Below it, the three official marginal columns remain separate:
-     - No. and hour of entry
-     - Place of entry
-     - Synopsis of entry
-   - The right side proceedings/body column remains separate.
-   - No horizontal line is inserted between individual CD entries.
-   - Continued pages keep the official CD header and status row.
+1. CD official template
+   - `Particulars of Enquiry.` row is now separated from the entry/body row.
+   - Marginal columns remain: `No. and hour of entry`, `Place of entry`, `Synopsis of entry`.
+   - Proceedings/body is in the right-side official column.
+   - Signature is kept inside the proceedings cell to avoid unwanted second page creation.
 
-2. Forms section now has a case tagging / case selection dropdown:
-   - IO can select which case the form belongs to before generating the form.
-   - Saved forms are loaded case-wise for the selected case.
+2. Bengali PDF support
+   - PDF documents now use Noto Bengali PDF fonts via `PdfGoogleFonts`.
+   - Applies to CD, Statement, Forms/Notices, Reports and Sketch Map PDFs.
 
-3. Auto-fill rules added:
-   - 35(3) BNSS Notice auto-fills accused name from selected case.
-   - 94 BNSS Notice auto-fills complainant/informant name from selected case.
-   - IO can edit generated body before preview/export.
+3. Checklist
+   - Checklist items can now be ticked/unticked.
 
-4. PDF + DOC export continues to be available through preview screen.
+4. Evidence Manager
+   - Added `EvidenceScreen` for physical/digital/medical/seizure evidence entry.
+   - Dashboard Evidence card and Case Detail Evidence module now open the Evidence Manager.
+   - Save + CD creates pending CD action.
 
-## v1.8 Case Parser Patch
-- Added Case Parser dashboard module.
-- Text parser supports structured police case text using labels: Ref, P.O, D.O, D.R, Complt, FIR Named Accd, I.O, Gist, Arrest.
-- Extracted fields are shown in an editable review screen before saving.
-- IO can create a new case or update an existing selected case.
-- Camera/Scan Document button is reserved for the OCR phase; this patch keeps OCR as a safe placeholder and uses paste-text parsing first.
-- Parsed data will feed Case Entry and later CD-I, forms, statements, final CD and IF5.
+5. Sketch Map save
+   - Added try/catch error handling for save.
+   - CD mention date made safe.
+
+## Next required work
+
+- IF5 official serial template fine-tuning.
+- Camera/OCR parser activation.
+- PDF pixel-level comparison against live official forms.

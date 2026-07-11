@@ -11,6 +11,7 @@ import 'forms_screen.dart';
 import 'statement_screen.dart';
 import 'compliance_screen.dart';
 import 'sketch_map_screen.dart';
+import 'evidence_screen.dart';
 
 class CaseDetailScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -98,6 +99,14 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
     await _load();
   }
 
+  Future<void> _openEvidence() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => EvidenceScreen(profile: widget.profile, caseFile: _caseFile)),
+    );
+    await _load();
+  }
+
   Future<void> _openCompliance() async {
     await Navigator.push(
       context,
@@ -150,6 +159,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                 _moduleCard('Statements', Icons.record_voice_over, _openStatements),
                 _moduleCard('Forms', Icons.description, _openForms),
                 _moduleCard('Compliance', Icons.checklist, _openCompliance),
+                _moduleCard('Evidence', Icons.inventory_2, _openEvidence),
                 _moduleCard('Sketch Map', Icons.map, _openSketchMap),
               ],
             ),

@@ -1,19 +1,12 @@
-# Investigation & Process Mobile MVP
+# Investigation & Process Mobile MVP v1.9
 
-Flutter Android MVP for police investigation workflow, CD writing, official forms, statement, reports, sketch map, PDF/DOC export and preview.
+This patch fixes field-test issues:
 
-## v1.7 Update
+- CD PDF: official PRB Form No. 43 / West Bengal Form No. 5363 layout refinement.
+- CD PDF: no extra second page unless content genuinely overflows.
+- CD PDF: Bengali-capable PDF font theme added for statement/forms/report/sketch map exports.
+- Checklists: checkbox items are now tappable and stateful.
+- Evidence: added separate Evidence Manager instead of opening case entry.
+- Sketch Map: save flow hardened with error handling and CD mention option.
 
-- Official CD format corrected so `Particulars of Enquiry.` spans the three marginal cells and the entry columns remain separate.
-- CD entries keep separate editable fields: Entry No/Time, Place of Entry, Synopsis of Entry and Proceedings.
-- No line is drawn between individual CD entries.
-- Forms module now supports selecting/tagging the case before generating forms.
-- 35(3) Notice auto-fills accused name from selected case.
-- 94 BNSS Notice auto-fills complainant name from selected case.
-- IO can edit generated forms before preview and export.
-
-## Build
-Push to GitHub and use the included GitHub Actions workflow to build debug APK.
-
-### v1.8 Case Parser
-Dashboard now includes **Case Parser**. Paste structured case text such as Ref, P.O, D.O, D.R, Complt, FIR Named Accd, I.O, Gist and Arrest. The app extracts the case fields, shows a review/edit screen, and then saves as a new case or updates an existing case. Camera/OCR support is planned for the next online/OCR phase.
+Official document format rule: CD, IF5, statement, notice, forwarding and requisition output must remain locked official templates. App UI may be modern, but export layout must not be redesigned.
