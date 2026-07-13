@@ -109,7 +109,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       await _store.saveSketchMap(updated);
       if (!mounted) return;
       setState(() => _map = updated);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sketch map saved')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sketch map saved • Symbol mode v2.2')));
       if (askCd) await _askMentionInCd();
     } catch (e) {
       if (!mounted) return;
@@ -278,14 +278,33 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.cream,
-      appBar: AppBar(title: const Text('Sketch Map Builder')),
+      appBar: AppBar(title: const Text('Sketch Map Builder v2.2')),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               Expanded(child: OutlinedButton.icon(onPressed: () => _save(), icon: const Icon(Icons.save), label: const Text('Save'))),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
+              IconButton.filledTonal(
+                tooltip: 'Clear map objects',
+                onPressed: () async {
+                  final ok = await showDialog<bool>(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text('Clear sketch map?'),
+                      content: const Text('This will remove all map objects from this case sketch. Continue?'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+                        FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes')),
+                      ],
+                    ),
+                  );
+                  if (ok == true) setState(() => _map = _map.copyWith(objects: const []));
+                },
+                icon: const Icon(Icons.delete_sweep_outlined),
+              ),
+              const SizedBox(width: 8),
               Expanded(child: FilledButton.icon(onPressed: _preview, icon: const Icon(Icons.picture_as_pdf), label: const Text('Preview'))),
             ],
           ),
@@ -319,7 +338,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
             Text(widget.caseFile.displayTitle, style: const TextStyle(fontWeight: FontWeight.w900)),
             Text('PO: ${widget.caseFile.placeOfOccurrence.isEmpty ? 'Not mentioned' : widget.caseFile.placeOfOccurrence}'),
             const SizedBox(height: 4),
-            const Text('Object button চাপুন → map-এ বসবে → আঙুল দিয়ে drag করুন → tap করে label/index/size/rotate সেট করুন।', style: TextStyle(fontWeight: FontWeight.w600)),
+            const Text('v2.2 SYMBOL MODE: House/Shop/Pond/Tree/Road/Field now use drawn symbols in app and PDF. Tap object to edit label/index/size/rotate.', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF004D40))),
           ],
         ),
       ),
@@ -345,8 +364,8 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
           runSpacing: 8,
           children: items
               .map((e) => ActionChip(
-                    avatar: Icon(e.icon, size: 18),
-                    label: Text(e.label),
+                    avatar: SizedBox(width: 26, height: 22, child: CustomPaint(painter: _MapSymbolPainter(type: e.type))),
+                    label: Text(e.label, style: const TextStyle(fontWeight: FontWeight.w700)),
                     onPressed: () => _addObject(e.type),
                   ))
               .toList(),
@@ -364,7 +383,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(8),
             color: const Color(0xFF004D40),
-            child: const Text('Rough Sketch Canvas', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Rough Sketch Canvas • v2.2 drawn symbols + rotation', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
           AspectRatio(
             aspectRatio: 1.12,
@@ -408,8 +427,8 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
         behavior: HitTestBehavior.translucent,
         onTap: () => _editObjectDialog(obj),
         onPanUpdate: (details) {
-          final nx = (((left + details.delta.dx) / w).clamp(0.0, 0.96)).toDouble();
-          final ny = (((top + details.delta.dy) / h).clamp(0.0, 0.96)).toDouble();
+          final nx = (obj.x + details.delta.dx / w).clamp(0.0, 0.96).toDouble();
+          final ny = (obj.y + details.delta.dy / h).clamp(0.0, 0.96).toDouble();
           _updateObject(obj.copyWith(x: nx, y: ny));
         },
         child: Transform.rotate(

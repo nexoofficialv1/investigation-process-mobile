@@ -13,3 +13,6 @@ Official document format rule: CD, IF5, statement, notice, forwarding and requis
 
 ### v2.1 Sketch Map Fix
 Sketch Map Builder now uses object-like drawn symbols for house, shop, pond, tree, road, field, PO and arrow instead of plain boxes/circles. Road and arrow can be rotated from the object edit dialog. Object size can also be adjusted before preview/export.
+
+### v2.2 Sketch Map Force Fix
+Open Sketch Map and check the title `Sketch Map Builder v2.2`. If it is not visible, the new APK is not installed. Use the clear-map button once for old saved sketches, then add House/Road/Pond/Tree again.

@@ -36,3 +36,11 @@
 - Added rotation support for Road and North Arrow so roads can be East-West, North-South, or diagonal.
 - Added object size controls in the object edit dialog.
 - Improved drag/placement behavior and label/index editing flow.
+
+## v2.2 Sketch Map Force Fix
+- Active SketchMapScreen title now shows `Sketch Map Builder v2.2` so the installed APK can be verified.
+- Toolbar buttons now show drawn symbol previews instead of only generic Material icons.
+- Canvas header now shows v2.2 symbol/rotation mode.
+- Drag behavior changed to normalized incremental movement for smoother adjustment.
+- Clear map objects button added to remove old saved placeholder-style objects and recreate the sketch using symbol mode.
+- PDF output continues to use SVG-based house/shop/pond/tree/road/field/PO/north-arrow objects.
