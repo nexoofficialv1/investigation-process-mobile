@@ -62,6 +62,7 @@ class SketchMapObject {
   final double y;
   final double width;
   final double height;
+  final double rotationDeg;
 
   const SketchMapObject({
     required this.id,
@@ -74,6 +75,7 @@ class SketchMapObject {
     required this.y,
     required this.width,
     required this.height,
+    required this.rotationDeg,
   });
 
   factory SketchMapObject.create({
@@ -83,17 +85,21 @@ class SketchMapObject {
     double y = 0.40,
   }) {
     final now = DateTime.now();
+    final bool isRoad = type == SketchObjectType.road;
+    final bool isArrow = type == SketchObjectType.arrow;
+    final bool isTree = type == SketchObjectType.tree;
     return SketchMapObject(
       id: 'sketch_obj_${now.microsecondsSinceEpoch}',
       type: type,
       marker: marker,
-      label: '$marker (${type.label})',
+      label: type == SketchObjectType.po ? 'PO' : '$marker (${type.label})',
       direction: '',
       indexDescription: '',
       x: x,
       y: y,
-      width: type == SketchObjectType.road ? 0.34 : 0.18,
-      height: type == SketchObjectType.road ? 0.08 : 0.12,
+      width: isRoad ? 0.46 : (isTree || isArrow ? 0.15 : 0.20),
+      height: isRoad ? 0.08 : (isTree || isArrow ? 0.18 : 0.14),
+      rotationDeg: 0,
     );
   }
 
@@ -105,6 +111,7 @@ class SketchMapObject {
     double? y,
     double? width,
     double? height,
+    double? rotationDeg,
   }) {
     return SketchMapObject(
       id: id,
@@ -117,6 +124,7 @@ class SketchMapObject {
       y: y ?? this.y,
       width: width ?? this.width,
       height: height ?? this.height,
+      rotationDeg: rotationDeg ?? this.rotationDeg,
     );
   }
 
@@ -131,6 +139,7 @@ class SketchMapObject {
         'y': y,
         'width': width,
         'height': height,
+        'rotationDeg': rotationDeg,
       };
 
   factory SketchMapObject.fromJson(Map<String, dynamic> json) {
@@ -145,6 +154,7 @@ class SketchMapObject {
       y: (json['y'] ?? 0.40).toDouble(),
       width: (json['width'] ?? 0.18).toDouble(),
       height: (json['height'] ?? 0.12).toDouble(),
+      rotationDeg: (json['rotationDeg'] ?? 0).toDouble(),
     );
   }
 }
@@ -242,15 +252,13 @@ class SketchMapEntry {
       id: json['id'] ?? 'sketch_${DateTime.now().microsecondsSinceEpoch}',
       caseId: json['caseId'] ?? '',
       title: json['title'] ?? 'Rough Sketch Map with Index',
-      date: json['date'] ?? '',
+      date: json['date'] ?? DateTime.now().toIso8601String().split('T').first,
       poDescription: json['poDescription'] ?? '',
       north: json['north'] ?? '',
       south: json['south'] ?? '',
       east: json['east'] ?? '',
       west: json['west'] ?? '',
-      objects: (json['objects'] as List<dynamic>? ?? [])
-          .map((e) => SketchMapObject.fromJson(Map<String, dynamic>.from(e)))
-          .toList(),
+      objects: ((json['objects'] as List?) ?? const []).map((e) => SketchMapObject.fromJson(Map<String, dynamic>.from(e))).toList(),
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
     );

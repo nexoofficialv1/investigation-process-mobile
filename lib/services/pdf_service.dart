@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:pdf/pdf.dart';
@@ -534,40 +535,85 @@ class PdfService {
   pw.Widget _pdfSketchObject(SketchMapObject o, double canvasW, double canvasH) {
     final w = o.width * canvasW;
     final h = o.height * canvasH;
-    final label = '${o.marker} ${o.label}'.trim();
-    switch (o.type) {
+    final label = o.label.trim().isEmpty ? o.marker : o.label.trim();
+    final symbol = pw.Stack(children: [
+      pw.Positioned.fill(child: pw.SvgImage(svg: _sketchObjectSvg(o.type))),
+      pw.Positioned(
+        left: 2,
+        right: 2,
+        top: h * .34,
+        child: pw.Container(
+          color: PdfColors.white,
+          padding: const pw.EdgeInsets.all(1.2),
+          child: pw.Text(label, textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: o.type == SketchObjectType.road ? 5.4 : 5.8, fontWeight: pw.FontWeight.bold)),
+        ),
+      ),
+    ]);
+    return pw.Transform.rotate(
+      angle: o.rotationDeg * math.pi / 180,
+      child: pw.Container(width: w, height: h, child: symbol),
+    );
+  }
+
+  String _sketchObjectSvg(SketchObjectType type) {
+    switch (type) {
       case SketchObjectType.house:
-        return pw.Column(children: [
-          pw.Container(width: w, height: h * .72, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), color: PdfColors.grey100), child: pw.Center(child: pw.Text(label, style: const pw.TextStyle(fontSize: 6.5)))),
-          pw.Container(width: w * .88, height: h * .20, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), color: PdfColors.grey300)),
-        ]);
+        return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80">
+          <polygon points="8,34 50,5 92,34" fill="#8D4B20" stroke="#111" stroke-width="2"/>
+          <rect x="18" y="34" width="64" height="38" fill="#FFE0B2" stroke="#111" stroke-width="2"/>
+          <rect x="44" y="52" width="12" height="20" fill="#FFF8E1" stroke="#111" stroke-width="1.5"/>
+          <rect x="26" y="43" width="14" height="10" fill="#FFFFFF" stroke="#111" stroke-width="1"/>
+          <rect x="60" y="43" width="14" height="10" fill="#FFFFFF" stroke="#111" stroke-width="1"/>
+        </svg>''';
       case SketchObjectType.shop:
-        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8)), child: pw.Column(children: [
-          pw.Container(width: w, height: h * .22, color: PdfColors.grey500, child: pw.Center(child: pw.Text('SHOP', style: const pw.TextStyle(fontSize: 5.5)))),
-          pw.Expanded(child: pw.Center(child: pw.Text(label, textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 6.2)))),
-        ]));
+        return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80">
+          <rect x="12" y="28" width="76" height="44" fill="#F3E5F5" stroke="#111" stroke-width="2"/>
+          <rect x="8" y="12" width="84" height="20" fill="#CE93D8" stroke="#111" stroke-width="2"/>
+          <rect x="14" y="12" width="12" height="20" fill="#FFFFFF" stroke="#111" stroke-width="1"/>
+          <rect x="38" y="12" width="12" height="20" fill="#FFFFFF" stroke="#111" stroke-width="1"/>
+          <rect x="62" y="12" width="12" height="20" fill="#FFFFFF" stroke="#111" stroke-width="1"/>
+          <rect x="42" y="48" width="16" height="24" fill="#FFFFFF" stroke="#111" stroke-width="1.5"/>
+        </svg>''';
       case SketchObjectType.pond:
-        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), borderRadius: pw.BorderRadius.circular(18), color: PdfColors.blue100), child: pw.Center(child: pw.Text(label.isEmpty ? 'POND' : label, textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 6.2))));
+        return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80">
+          <path d="M10 38 C8 12, 40 4, 65 14 C96 24, 94 62, 64 72 C36 82, 8 66, 10 38 Z" fill="#B3E5FC" stroke="#01579B" stroke-width="2"/>
+          <path d="M25 34 H75 M24 47 H74 M30 60 H68" stroke="#0277BD" stroke-width="2"/>
+        </svg>''';
       case SketchObjectType.tree:
-        return pw.Column(children: [
-          pw.Container(width: w * .70, height: h * .62, decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, border: pw.Border.all(width: .8), color: PdfColors.green100), child: pw.Center(child: pw.Text(o.marker, style: const pw.TextStyle(fontSize: 7)))),
-          pw.Container(width: w * .12, height: h * .28, color: PdfColors.brown),
-          pw.Text(o.label, style: const pw.TextStyle(fontSize: 5.5)),
-        ]);
+        return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 90">
+          <rect x="45" y="52" width="10" height="30" fill="#795548"/>
+          <circle cx="50" cy="34" r="24" fill="#A5D6A7" stroke="#111" stroke-width="1.5"/>
+          <circle cx="36" cy="43" r="20" fill="#81C784" stroke="#111" stroke-width="1.2"/>
+          <circle cx="64" cy="43" r="20" fill="#66BB6A" stroke="#111" stroke-width="1.2"/>
+        </svg>''';
       case SketchObjectType.road:
-        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), color: PdfColors.grey300), child: pw.Center(child: pw.Text(label.isEmpty ? 'ROAD' : label, textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 6.2))));
+        return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 45">
+          <rect x="2" y="8" width="176" height="29" rx="2" fill="#BDBDBD" stroke="#111" stroke-width="2"/>
+          <path d="M15 23 H35 M55 23 H75 M95 23 H115 M135 23 H160" stroke="#FFFFFF" stroke-width="4"/>
+        </svg>''';
       case SketchObjectType.field:
-        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: .8), color: PdfColors.green50), child: pw.Center(child: pw.Text(label.isEmpty ? 'FIELD' : label, textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 6.2))));
+        return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80">
+          <rect x="8" y="10" width="84" height="60" fill="#DCECC5" stroke="#33691E" stroke-width="2"/>
+          <path d="M24 10 V70 M40 10 V70 M56 10 V70 M72 10 V70" stroke="#7CB342" stroke-width="1.5"/>
+          <path d="M8 30 H92 M8 50 H92" stroke="#AED581" stroke-width="1"/>
+        </svg>''';
       case SketchObjectType.po:
-        return pw.Container(width: w, height: h, decoration: pw.BoxDecoration(border: pw.Border.all(width: 1.4), color: PdfColors.red50), child: pw.Center(child: pw.Text(label.isEmpty ? 'PO' : label, textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))));
+        return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 70">
+          <rect x="10" y="10" width="80" height="50" fill="#FFEBEE" stroke="#B71C1C" stroke-width="4"/>
+          <line x1="15" y1="15" x2="85" y2="55" stroke="#B71C1C" stroke-width="2"/>
+          <line x1="85" y1="15" x2="15" y2="55" stroke="#B71C1C" stroke-width="2"/>
+        </svg>''';
       case SketchObjectType.arrow:
-        return pw.Container(width: w, height: h, child: pw.Center(child: pw.Text('↑\nN\n$label', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold))));
+        return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 100">
+          <path d="M30 90 V18" stroke="#111" stroke-width="5"/>
+          <polygon points="30,5 10,28 50,28" fill="#111"/>
+        </svg>''';
     }
   }
 
   pw.Widget _sketchIndexTable(SketchMapEntry sketch) {
     final rows = sketch.objects.isEmpty
-        ? [const SketchMapObject(id: '', type: SketchObjectType.house, marker: '-', label: 'No object added', direction: '', indexDescription: '', x: 0, y: 0, width: 0, height: 0)]
+        ? [const SketchMapObject(id: '', type: SketchObjectType.house, marker: '-', label: 'No object added', direction: '', indexDescription: '', x: 0, y: 0, width: 0, height: 0, rotationDeg: 0)]
         : sketch.objects;
     return pw.Table(
       border: pw.TableBorder.all(width: 0.5),

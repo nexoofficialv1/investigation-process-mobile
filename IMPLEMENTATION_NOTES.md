@@ -29,3 +29,10 @@
 - IF5 official serial template fine-tuning.
 - Camera/OCR parser activation.
 - PDF pixel-level comparison against live official forms.
+
+## v2.1 Sketch Map Usability Fix
+- Sketch map output no longer uses plain box/circle placeholders for House/Shop/Pond/Tree/Road/Field.
+- Added drawn symbol-style objects in the mobile canvas and final PDF output.
+- Added rotation support for Road and North Arrow so roads can be East-West, North-South, or diagonal.
+- Added object size controls in the object edit dialog.
+- Improved drag/placement behavior and label/index editing flow.

@@ -10,3 +10,6 @@ This patch fixes field-test issues:
 - Sketch Map: save flow hardened with error handling and CD mention option.
 
 Official document format rule: CD, IF5, statement, notice, forwarding and requisition output must remain locked official templates. App UI may be modern, but export layout must not be redesigned.
+
+### v2.1 Sketch Map Fix
+Sketch Map Builder now uses object-like drawn symbols for house, shop, pond, tree, road, field, PO and arrow instead of plain boxes/circles. Road and arrow can be rotated from the object edit dialog. Object size can also be adjusted before preview/export.

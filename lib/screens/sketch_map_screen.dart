@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
@@ -163,6 +165,9 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
     final labelCtrl = TextEditingController(text: obj.label);
     final indexCtrl = TextEditingController(text: obj.indexDescription);
     String direction = obj.direction;
+    double width = obj.width;
+    double height = obj.height;
+    double rotationDeg = obj.rotationDeg;
     final result = await showDialog<SketchMapObject?>(
       context: context,
       builder: (_) => StatefulBuilder(
@@ -171,6 +176,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TextField(controller: labelCtrl, decoration: const InputDecoration(labelText: 'Map label e.g. A (House)')),
                 const SizedBox(height: 8),
@@ -190,6 +196,43 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
                   decoration: const InputDecoration(labelText: 'Index description e.g. East - A - House of ...'),
                 ),
                 const SizedBox(height: 12),
+                const Text('Size / Rotation', style: TextStyle(fontWeight: FontWeight.w900)),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(child: OutlinedButton(onPressed: () => setLocal(() => width = (width - .03).clamp(.08, .80).toDouble()), child: const Text('Width -'))),
+                    const SizedBox(width: 6),
+                    Expanded(child: OutlinedButton(onPressed: () => setLocal(() => width = (width + .03).clamp(.08, .80).toDouble()), child: const Text('Width +'))),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(child: OutlinedButton(onPressed: () => setLocal(() => height = (height - .03).clamp(.05, .65).toDouble()), child: const Text('Height -'))),
+                    const SizedBox(width: 6),
+                    Expanded(child: OutlinedButton(onPressed: () => setLocal(() => height = (height + .03).clamp(.05, .65).toDouble()), child: const Text('Height +'))),
+                  ],
+                ),
+                if (obj.type == SketchObjectType.road || obj.type == SketchObjectType.arrow) ...[
+                  const SizedBox(height: 8),
+                  Text('Rotation: ${rotationDeg.round()}°'),
+                  Slider(
+                    min: 0,
+                    max: 360,
+                    divisions: 24,
+                    value: rotationDeg.clamp(0, 360).toDouble(),
+                    label: '${rotationDeg.round()}°',
+                    onChanged: (v) => setLocal(() => rotationDeg = v),
+                  ),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      ActionChip(label: const Text('East-West'), onPressed: () => setLocal(() => rotationDeg = 0)),
+                      ActionChip(label: const Text('North-South'), onPressed: () => setLocal(() => rotationDeg = 90)),
+                      ActionChip(label: const Text('Diagonal'), onPressed: () => setLocal(() => rotationDeg = 45)),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(child: OutlinedButton(onPressed: () => Navigator.pop(context, null), child: const Text('Cancel'))),
@@ -198,7 +241,14 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
                       child: FilledButton(
                         onPressed: () => Navigator.pop(
                           context,
-                          obj.copyWith(label: labelCtrl.text.trim(), direction: direction, indexDescription: indexCtrl.text.trim()),
+                          obj.copyWith(
+                            label: labelCtrl.text.trim(),
+                            direction: direction,
+                            indexDescription: indexCtrl.text.trim(),
+                            width: width,
+                            height: height,
+                            rotationDeg: rotationDeg,
+                          ),
                         ),
                         child: const Text('Save'),
                       ),
@@ -269,7 +319,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
             Text(widget.caseFile.displayTitle, style: const TextStyle(fontWeight: FontWeight.w900)),
             Text('PO: ${widget.caseFile.placeOfOccurrence.isEmpty ? 'Not mentioned' : widget.caseFile.placeOfOccurrence}'),
             const SizedBox(height: 4),
-            const Text('Object button চাপুন → map-এ বসবে → আঙুল দিয়ে drag করুন → tap করে label/index লিখুন।', style: TextStyle(fontWeight: FontWeight.w600)),
+            const Text('Object button চাপুন → map-এ বসবে → আঙুল দিয়ে drag করুন → tap করে label/index/size/rotate সেট করুন।', style: TextStyle(fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -282,7 +332,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       _SketchTool(SketchObjectType.pond, Icons.water, 'Pond'),
       _SketchTool(SketchObjectType.tree, Icons.park, 'Tree'),
       _SketchTool(SketchObjectType.shop, Icons.store, 'Shop'),
-      _SketchTool(SketchObjectType.road, Icons.add_road, 'Road'),
+      _SketchTool(SketchObjectType.road, Icons.add_road, 'Road ↔/↕'),
       _SketchTool(SketchObjectType.field, Icons.crop_square, 'Field'),
       _SketchTool(SketchObjectType.po, Icons.location_on, 'PO'),
       _SketchTool(SketchObjectType.arrow, Icons.navigation, 'North'),
@@ -317,7 +367,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
             child: const Text('Rough Sketch Canvas', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
           AspectRatio(
-            aspectRatio: 1.05,
+            aspectRatio: 1.12,
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final w = constraints.maxWidth;
@@ -355,124 +405,42 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       left: left,
       top: top,
       child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
         onTap: () => _editObjectDialog(obj),
         onPanUpdate: (details) {
-          final nx = (((left + details.delta.dx) / w).clamp(0.0, 0.92)).toDouble();
-          final ny = (((top + details.delta.dy) / h).clamp(0.0, 0.92)).toDouble();
+          final nx = (((left + details.delta.dx) / w).clamp(0.0, 0.96)).toDouble();
+          final ny = (((top + details.delta.dy) / h).clamp(0.0, 0.96)).toDouble();
           _updateObject(obj.copyWith(x: nx, y: ny));
         },
-        child: SizedBox(width: width, height: height, child: _realisticSketchObject(obj)),
+        child: Transform.rotate(
+          angle: obj.rotationDeg * math.pi / 180,
+          child: SizedBox(width: width, height: height, child: _realisticSketchObject(obj)),
+        ),
       ),
     );
   }
 
   Widget _realisticSketchObject(SketchMapObject obj) {
-    final text = '${obj.marker} ${obj.label}'.trim();
-    switch (obj.type) {
-      case SketchObjectType.house:
-        return Column(
-          children: [
-            const Icon(Icons.roofing, size: 28, color: Color(0xFF7B3F00)),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(color: Colors.orange.shade100, border: Border.all(color: Colors.black87)),
-                alignment: Alignment.center,
-                child: Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ],
-        );
-      case SketchObjectType.shop:
-        return Container(
-          decoration: BoxDecoration(color: Colors.purple.shade50, border: Border.all(color: Colors.black87)),
-          child: Column(
-            children: [
-              Container(height: 18, width: double.infinity, color: Colors.purple.shade200, alignment: Alignment.center, child: const Text('SHOP', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold))),
-              Expanded(child: Center(child: Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)))),
-            ],
+    final text = obj.label.trim().isEmpty ? obj.marker : obj.label.trim();
+    return CustomPaint(
+      painter: _MapSymbolPainter(type: obj.type),
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(3),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: obj.type == SketchObjectType.road ? 9 : 8,
+            fontWeight: FontWeight.w900,
+            color: obj.type == SketchObjectType.po ? Colors.red.shade900 : Colors.black,
+            backgroundColor: Colors.white.withOpacity(0.55),
           ),
-        );
-      case SketchObjectType.pond:
-        return Container(
-          decoration: BoxDecoration(color: Colors.lightBlue.shade100, border: Border.all(color: Colors.blue.shade900), borderRadius: BorderRadius.circular(28)),
-          alignment: Alignment.center,
-          child: Text(text.isEmpty ? 'Pond' : text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-        );
-      case SketchObjectType.tree:
-        return Column(
-          children: [
-            Icon(Icons.park, size: 34, color: Colors.green.shade800),
-            Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
-          ],
-        );
-      case SketchObjectType.road:
-        return Container(
-          decoration: BoxDecoration(color: Colors.grey.shade400, border: Border.all(color: Colors.black87)),
-          alignment: Alignment.center,
-          child: Text(text.isEmpty ? 'Road' : text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-        );
-      case SketchObjectType.field:
-        return Container(
-          decoration: BoxDecoration(color: Colors.green.shade100, border: Border.all(color: Colors.green.shade900)),
-          alignment: Alignment.center,
-          child: Text(text.isEmpty ? 'Field' : text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-        );
-      case SketchObjectType.po:
-        return Container(
-          decoration: BoxDecoration(color: Colors.red.shade50, border: Border.all(color: Colors.red.shade900, width: 2)),
-          alignment: Alignment.center,
-          child: Text(text.isEmpty ? 'PO' : text, textAlign: TextAlign.center, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.red.shade900)),
-        );
-      case SketchObjectType.arrow:
-        return Column(
-          children: [
-            const Icon(Icons.navigation, size: 34, color: Colors.black87),
-            Text(text.isEmpty ? 'N' : text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-          ],
-        );
-    }
-  }
-
-  Color _objectColor(SketchObjectType type) {
-    switch (type) {
-      case SketchObjectType.house:
-        return Colors.orange.shade100;
-      case SketchObjectType.pond:
-        return Colors.blue.shade100;
-      case SketchObjectType.tree:
-        return Colors.green.shade100;
-      case SketchObjectType.shop:
-        return Colors.purple.shade100;
-      case SketchObjectType.road:
-        return Colors.grey.shade300;
-      case SketchObjectType.field:
-        return Colors.lime.shade100;
-      case SketchObjectType.po:
-        return Colors.red.shade50;
-      case SketchObjectType.arrow:
-        return Colors.white;
-    }
-  }
-
-  IconData _objectIcon(SketchObjectType type) {
-    switch (type) {
-      case SketchObjectType.house:
-        return Icons.home;
-      case SketchObjectType.pond:
-        return Icons.water;
-      case SketchObjectType.tree:
-        return Icons.park;
-      case SketchObjectType.shop:
-        return Icons.store;
-      case SketchObjectType.road:
-        return Icons.add_road;
-      case SketchObjectType.field:
-        return Icons.crop_square;
-      case SketchObjectType.po:
-        return Icons.location_on;
-      case SketchObjectType.arrow:
-        return Icons.navigation;
-    }
+        ),
+      ),
+    );
   }
 
   Widget _poAndDirections() {
@@ -529,4 +497,106 @@ class _SketchTool {
   final IconData icon;
   final String label;
   const _SketchTool(this.type, this.icon, this.label);
+}
+
+class _MapSymbolPainter extends CustomPainter {
+  final SketchObjectType type;
+  const _MapSymbolPainter({required this.type});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final border = Paint()
+      ..color = Colors.black87
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.3;
+    final fill = Paint()..style = PaintingStyle.fill;
+
+    switch (type) {
+      case SketchObjectType.house:
+        fill.color = const Color(0xFFFFE0B2);
+        final body = Rect.fromLTWH(size.width * .18, size.height * .38, size.width * .64, size.height * .48);
+        final roof = Path()
+          ..moveTo(size.width * .10, size.height * .40)
+          ..lineTo(size.width * .50, size.height * .08)
+          ..lineTo(size.width * .90, size.height * .40)
+          ..close();
+        canvas.drawPath(roof, Paint()..color = const Color(0xFF8D4B20));
+        canvas.drawPath(roof, border);
+        canvas.drawRect(body, fill);
+        canvas.drawRect(body, border);
+        canvas.drawRect(Rect.fromLTWH(size.width * .44, size.height * .62, size.width * .12, size.height * .24), border);
+        break;
+      case SketchObjectType.shop:
+        final base = Rect.fromLTWH(size.width * .10, size.height * .24, size.width * .80, size.height * .62);
+        canvas.drawRect(base, Paint()..color = const Color(0xFFF3E5F5));
+        canvas.drawRect(base, border);
+        canvas.drawRect(Rect.fromLTWH(size.width * .06, size.height * .10, size.width * .88, size.height * .22), Paint()..color = const Color(0xFFCE93D8));
+        canvas.drawRect(Rect.fromLTWH(size.width * .06, size.height * .10, size.width * .88, size.height * .22), border);
+        for (var i = 0; i < 4; i++) {
+          final x = size.width * (.08 + i * .21);
+          canvas.drawRect(Rect.fromLTWH(x, size.height * .10, size.width * .11, size.height * .22), Paint()..color = i.isEven ? Colors.white : const Color(0xFFE1BEE7));
+          canvas.drawRect(Rect.fromLTWH(x, size.height * .10, size.width * .11, size.height * .22), border);
+        }
+        break;
+      case SketchObjectType.pond:
+        fill.color = const Color(0xFFB3E5FC);
+        final path = Path()
+          ..moveTo(size.width * .10, size.height * .45)
+          ..cubicTo(size.width * .10, size.height * .14, size.width * .45, size.height * .06, size.width * .68, size.height * .18)
+          ..cubicTo(size.width * .96, size.height * .30, size.width * .92, size.height * .72, size.width * .62, size.height * .82)
+          ..cubicTo(size.width * .34, size.height * .92, size.width * .08, size.height * .76, size.width * .10, size.height * .45)
+          ..close();
+        canvas.drawPath(path, fill);
+        canvas.drawPath(path, border);
+        final wave = Paint()..color = const Color(0xFF0277BD)..strokeWidth = 1..style = PaintingStyle.stroke;
+        for (var i = 0; i < 3; i++) {
+          final y = size.height * (.36 + i * .15);
+          canvas.drawLine(Offset(size.width * .28, y), Offset(size.width * .72, y), wave);
+        }
+        break;
+      case SketchObjectType.tree:
+        canvas.drawRect(Rect.fromLTWH(size.width * .45, size.height * .52, size.width * .10, size.height * .32), Paint()..color = const Color(0xFF795548));
+        canvas.drawCircle(Offset(size.width * .50, size.height * .34), size.shortestSide * .25, Paint()..color = const Color(0xFFA5D6A7));
+        canvas.drawCircle(Offset(size.width * .38, size.height * .43), size.shortestSide * .20, Paint()..color = const Color(0xFF81C784));
+        canvas.drawCircle(Offset(size.width * .62, size.height * .43), size.shortestSide * .20, Paint()..color = const Color(0xFF66BB6A));
+        break;
+      case SketchObjectType.road:
+        canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(0, size.height * .16, size.width, size.height * .68), const Radius.circular(2)), Paint()..color = const Color(0xFFBDBDBD));
+        canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(0, size.height * .16, size.width, size.height * .68), const Radius.circular(2)), border);
+        final mid = Paint()..color = Colors.white..strokeWidth = 2..style = PaintingStyle.stroke;
+        var x = size.width * .08;
+        while (x < size.width * .95) {
+          canvas.drawLine(Offset(x, size.height * .50), Offset(x + size.width * .08, size.height * .50), mid);
+          x += size.width * .16;
+        }
+        break;
+      case SketchObjectType.field:
+        canvas.drawRect(Rect.fromLTWH(size.width * .06, size.height * .12, size.width * .88, size.height * .76), Paint()..color = const Color(0xFFDCECC5));
+        canvas.drawRect(Rect.fromLTWH(size.width * .06, size.height * .12, size.width * .88, size.height * .76), border);
+        final line = Paint()..color = const Color(0xFF7CB342)..strokeWidth = 1;
+        for (var i = 1; i < 5; i++) {
+          final x = size.width * (.06 + i * .17);
+          canvas.drawLine(Offset(x, size.height * .12), Offset(x, size.height * .88), line);
+        }
+        break;
+      case SketchObjectType.po:
+        canvas.drawRect(Rect.fromLTWH(size.width * .12, size.height * .18, size.width * .76, size.height * .64), Paint()..color = const Color(0xFFFFEBEE));
+        final poBorder = Paint()..color = const Color(0xFFB71C1C)..style = PaintingStyle.stroke..strokeWidth = 2.2;
+        canvas.drawRect(Rect.fromLTWH(size.width * .12, size.height * .18, size.width * .76, size.height * .64), poBorder);
+        break;
+      case SketchObjectType.arrow:
+        final p = Paint()..color = Colors.black87..strokeWidth = 3..style = PaintingStyle.stroke;
+        canvas.drawLine(Offset(size.width * .50, size.height * .86), Offset(size.width * .50, size.height * .18), p);
+        final head = Path()
+          ..moveTo(size.width * .50, size.height * .08)
+          ..lineTo(size.width * .32, size.height * .28)
+          ..lineTo(size.width * .68, size.height * .28)
+          ..close();
+        canvas.drawPath(head, Paint()..color = Colors.black87);
+        break;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MapSymbolPainter oldDelegate) => oldDelegate.type != type;
 }
