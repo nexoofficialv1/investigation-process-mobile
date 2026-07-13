@@ -1,46 +1,7 @@
-# v1.9 Implementation Notes
+# v2.3 Sketch Map Label Editor Crash Fix
 
-## Fixes
-
-1. CD official template
-   - `Particulars of Enquiry.` row is now separated from the entry/body row.
-   - Marginal columns remain: `No. and hour of entry`, `Place of entry`, `Synopsis of entry`.
-   - Proceedings/body is in the right-side official column.
-   - Signature is kept inside the proceedings cell to avoid unwanted second page creation.
-
-2. Bengali PDF support
-   - PDF documents now use Noto Bengali PDF fonts via `PdfGoogleFonts`.
-   - Applies to CD, Statement, Forms/Notices, Reports and Sketch Map PDFs.
-
-3. Checklist
-   - Checklist items can now be ticked/unticked.
-
-4. Evidence Manager
-   - Added `EvidenceScreen` for physical/digital/medical/seizure evidence entry.
-   - Dashboard Evidence card and Case Detail Evidence module now open the Evidence Manager.
-   - Save + CD creates pending CD action.
-
-5. Sketch Map save
-   - Added try/catch error handling for save.
-   - CD mention date made safe.
-
-## Next required work
-
-- IF5 official serial template fine-tuning.
-- Camera/OCR parser activation.
-- PDF pixel-level comparison against live official forms.
-
-## v2.1 Sketch Map Usability Fix
-- Sketch map output no longer uses plain box/circle placeholders for House/Shop/Pond/Tree/Road/Field.
-- Added drawn symbol-style objects in the mobile canvas and final PDF output.
-- Added rotation support for Road and North Arrow so roads can be East-West, North-South, or diagonal.
-- Added object size controls in the object edit dialog.
-- Improved drag/placement behavior and label/index editing flow.
-
-## v2.2 Sketch Map Force Fix
-- Active SketchMapScreen title now shows `Sketch Map Builder v2.2` so the installed APK can be verified.
-- Toolbar buttons now show drawn symbol previews instead of only generic Material icons.
-- Canvas header now shows v2.2 symbol/rotation mode.
-- Drag behavior changed to normalized incremental movement for smoother adjustment.
-- Clear map objects button added to remove old saved placeholder-style objects and recreate the sketch using symbol mode.
-- PDF output continues to use SVG-based house/shop/pond/tree/road/field/PO/north-arrow objects.
+- Fixed crash when tapping sketch object and changing label / marker / ABCD.
+- Replaced unstable AlertDialog controller editor with bottom-sheet editor.
+- Added editable marker/index letter field (A/B/C/PO).
+- Labels, index description, size and rotation can be edited safely.
+- Sketch Map screen now shows `Sketch Map Builder v2.3` so the installed patch is visible.

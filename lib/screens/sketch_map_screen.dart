@@ -109,7 +109,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       await _store.saveSketchMap(updated);
       if (!mounted) return;
       setState(() => _map = updated);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sketch map saved • Symbol mode v2.2')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sketch map saved • Symbol mode v2.3')));
       if (askCd) await _askMentionInCd();
     } catch (e) {
       if (!mounted) return;
@@ -162,26 +162,71 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
   }
 
   Future<void> _editObjectDialog(SketchMapObject obj) async {
-    final labelCtrl = TextEditingController(text: obj.label);
-    final indexCtrl = TextEditingController(text: obj.indexDescription);
+    // v2.3 fix: use a modal bottom sheet with simple local variables instead of
+    // controller-heavy AlertDialog. This prevents Flutter inherited-widget
+    // assertion crashes while editing labels/markers from draggable objects.
+    String marker = obj.marker;
+    String label = obj.label;
     String direction = obj.direction;
+    String indexDescription = obj.indexDescription;
     double width = obj.width;
     double height = obj.height;
     double rotationDeg = obj.rotationDeg;
-    final result = await showDialog<SketchMapObject?>(
+
+    final result = await showModalBottomSheet<SketchMapObject?>(
       context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (context, setLocal) => AlertDialog(
-          title: Text('${obj.marker} - ${obj.type.label}'),
-          content: SingleChildScrollView(
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setLocal) => Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 14,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextField(controller: labelCtrl, decoration: const InputDecoration(labelText: 'Map label e.g. A (House)')),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${obj.marker} - ${obj.type.label}',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Close',
+                      onPressed: () => Navigator.pop(sheetContext),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  initialValue: marker,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'Marker / Index letter',
+                    helperText: 'Example: A, B, C or PO',
+                  ),
+                  onChanged: (v) => marker = v.trim().isEmpty ? obj.marker : v.trim(),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  initialValue: label,
+                  decoration: const InputDecoration(
+                    labelText: 'Map label',
+                    helperText: 'Example: A (House), B (Pond), C (Road)',
+                  ),
+                  onChanged: (v) => label = v,
+                ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: direction.isEmpty ? null : direction,
+                  value: ['North', 'South', 'East', 'West', 'Inside PO', 'Near PO'].contains(direction) ? direction : null,
                   decoration: const InputDecoration(labelText: 'Direction for index'),
                   items: const ['North', 'South', 'East', 'West', 'Inside PO', 'Near PO']
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
@@ -189,15 +234,19 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
                   onChanged: (v) => setLocal(() => direction = v ?? ''),
                 ),
                 const SizedBox(height: 8),
-                TextField(
-                  controller: indexCtrl,
+                TextFormField(
+                  initialValue: indexDescription,
                   minLines: 2,
                   maxLines: 4,
-                  decoration: const InputDecoration(labelText: 'Index description e.g. East - A - House of ...'),
+                  decoration: const InputDecoration(
+                    labelText: 'Index description',
+                    helperText: 'Example: East - A - House of ...',
+                  ),
+                  onChanged: (v) => indexDescription = v,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 const Text('Size / Rotation', style: TextStyle(fontWeight: FontWeight.w900)),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Row(
                   children: [
                     Expanded(child: OutlinedButton(onPressed: () => setLocal(() => width = (width - .03).clamp(.08, .80).toDouble()), child: const Text('Width -'))),
@@ -205,6 +254,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
                     Expanded(child: OutlinedButton(onPressed: () => setLocal(() => width = (width + .03).clamp(.08, .80).toDouble()), child: const Text('Width +'))),
                   ],
                 ),
+                const SizedBox(height: 6),
                 Row(
                   children: [
                     Expanded(child: OutlinedButton(onPressed: () => setLocal(() => height = (height - .03).clamp(.05, .65).toDouble()), child: const Text('Height -'))),
@@ -213,8 +263,8 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
                   ],
                 ),
                 if (obj.type == SketchObjectType.road || obj.type == SketchObjectType.arrow) ...[
-                  const SizedBox(height: 8),
-                  Text('Rotation: ${rotationDeg.round()}°'),
+                  const SizedBox(height: 10),
+                  Text('Rotation: ${rotationDeg.round()}°', style: const TextStyle(fontWeight: FontWeight.w800)),
                   Slider(
                     min: 0,
                     max: 360,
@@ -225,6 +275,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
                   ),
                   Wrap(
                     spacing: 8,
+                    runSpacing: 8,
                     children: [
                       ActionChip(label: const Text('East-West'), onPressed: () => setLocal(() => rotationDeg = 0)),
                       ActionChip(label: const Text('North-South'), onPressed: () => setLocal(() => rotationDeg = 90)),
@@ -232,53 +283,57 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
                     ],
                   ),
                 ],
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Row(
                   children: [
-                    Expanded(child: OutlinedButton(onPressed: () => Navigator.pop(context, null), child: const Text('Cancel'))),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.pop(sheetContext, obj.copyWith(label: '__DELETE__')),
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Delete'),
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: FilledButton(
+                      child: FilledButton.icon(
                         onPressed: () => Navigator.pop(
-                          context,
+                          sheetContext,
                           obj.copyWith(
-                            label: labelCtrl.text.trim(),
+                            marker: marker.trim().isEmpty ? obj.marker : marker.trim().toUpperCase(),
+                            label: label.trim().isEmpty ? '${marker.trim().isEmpty ? obj.marker : marker.trim().toUpperCase()} (${obj.type.label})' : label.trim(),
                             direction: direction,
-                            indexDescription: indexCtrl.text.trim(),
+                            indexDescription: indexDescription.trim(),
                             width: width,
                             height: height,
                             rotationDeg: rotationDeg,
                           ),
                         ),
-                        child: const Text('Save'),
+                        icon: const Icon(Icons.check),
+                        label: const Text('Save'),
                       ),
                     ),
                   ],
                 ),
-                TextButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _deleteObject(obj);
-                  },
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text('Delete this object'),
-                )
               ],
             ),
           ),
         ),
       ),
     );
-    labelCtrl.dispose();
-    indexCtrl.dispose();
-    if (result != null) _updateObject(result);
+
+    if (!mounted || result == null) return;
+    if (result.label == '__DELETE__') {
+      _deleteObject(obj);
+      return;
+    }
+    _updateObject(result);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.cream,
-      appBar: AppBar(title: const Text('Sketch Map Builder v2.2')),
+      appBar: AppBar(title: const Text('Sketch Map Builder v2.3')),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -338,7 +393,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
             Text(widget.caseFile.displayTitle, style: const TextStyle(fontWeight: FontWeight.w900)),
             Text('PO: ${widget.caseFile.placeOfOccurrence.isEmpty ? 'Not mentioned' : widget.caseFile.placeOfOccurrence}'),
             const SizedBox(height: 4),
-            const Text('v2.2 SYMBOL MODE: House/Shop/Pond/Tree/Road/Field now use drawn symbols in app and PDF. Tap object to edit label/index/size/rotate.', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF004D40))),
+            const Text('v2.3 SYMBOL MODE: House/Shop/Pond/Tree/Road/Field now use drawn symbols in app and PDF. Tap object to edit label/index/size/rotate.', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF004D40))),
           ],
         ),
       ),
@@ -383,7 +438,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(8),
             color: const Color(0xFF004D40),
-            child: const Text('Rough Sketch Canvas • v2.2 drawn symbols + rotation', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Rough Sketch Canvas • v2.3 crash-free label editor', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
           AspectRatio(
             aspectRatio: 1.12,

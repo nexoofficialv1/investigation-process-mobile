@@ -104,6 +104,7 @@ class SketchMapObject {
   }
 
   SketchMapObject copyWith({
+    String? marker,
     String? label,
     String? direction,
     String? indexDescription,
@@ -116,7 +117,7 @@ class SketchMapObject {
     return SketchMapObject(
       id: id,
       type: type,
-      marker: marker,
+      marker: marker ?? this.marker,
       label: label ?? this.label,
       direction: direction ?? this.direction,
       indexDescription: indexDescription ?? this.indexDescription,
