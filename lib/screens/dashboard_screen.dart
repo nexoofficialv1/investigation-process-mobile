@@ -16,6 +16,10 @@ import 'officer_profile_screen.dart';
 import 'sketch_map_screen.dart';
 import 'case_parser_screen.dart';
 import 'evidence_screen.dart';
+import 'backend_settings_screen.dart';
+import 'ud_case_screen.dart';
+import 'sop_compliance_screen.dart';
+import 'investigation_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -155,6 +159,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await _load();
   }
 
+  Future<void> _openInvestigation() async {
+    final file = _latestCase;
+    if (file == null) {
+      _needCaseMessage();
+      return;
+    }
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => InvestigationScreen(profile: _profile, caseFile: file)));
+    await _load();
+  }
+
   Future<void> _openEvidence() async {
     final file = _latestCase;
     if (file == null) {
@@ -163,6 +177,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
     await Navigator.push(context, MaterialPageRoute(builder: (_) => EvidenceScreen(profile: _profile, caseFile: file)));
     await _load();
+  }
+
+  Future<void> _openBackendSettings() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => BackendSettingsScreen(profile: _profile)));
+  }
+
+  Future<void> _openUdCase() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => UdCaseScreen(profile: _profile)));
+  }
+
+  Future<void> _openSopCompliance() async {
+    final file = _latestCase;
+    if (file == null) {
+      _needCaseMessage();
+      return;
+    }
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => SopComplianceScreen(caseFile: file)));
   }
 
   void _comingSoon(String module) {
@@ -230,6 +261,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _gridMenu() {
     final items = [
+      _Menu('Investigation', 'SOP guided', Icons.manage_search_rounded, const Color(0xFF00695C), _openInvestigation),
       _Menu('Case Diary', 'CD writer', Icons.menu_book_rounded, AppTheme.gold, _openCdWriter),
       _Menu('New Case', 'case entry', Icons.add_box_rounded, AppTheme.teal, _newCase),
       _Menu('Case Parser', 'auto extract', Icons.document_scanner_rounded, const Color(0xFF0E7C86), _openCaseParser),
@@ -238,8 +270,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _Menu('Checklists', 'investigation needs', Icons.checklist_rounded, AppTheme.blue, _openInvestigationChecklist),
       _Menu('Report', 'SP/SDPO/SDO', Icons.summarize_rounded, const Color(0xFFD68A00), _openReport),
       _Menu('Compliance', 'legal checklist', Icons.event_available_rounded, const Color(0xFF1B5E4B), _openCompliance),
+      _Menu('SOP', 'DGP directions', Icons.policy_rounded, const Color(0xFF004D40), _openSopCompliance),
       _Menu('IF5 / CS', 'from final CD', Icons.fact_check_rounded, AppTheme.coral, () => _comingSoon('IF5 / CS')),
       _Menu('Evidence', 'evidence manager', Icons.inventory_2_rounded, const Color(0xFF795000), _openEvidence),
+      _Menu('UD Case', 'inquest/final report', Icons.assignment_rounded, const Color(0xFF5D4037), _openUdCase),
       _Menu('PDF Export', 'preview first', Icons.picture_as_pdf_rounded, const Color(0xFF42A5F5), () => _comingSoon('PDF Export')),
       _Menu('Final CD', 'investigation summary', Icons.verified_rounded, const Color(0xFFC2188B), _openCdWriter),
       _Menu('Sketch Map', 'builder/index', Icons.map_rounded, const Color(0xFF006B57), _openSketchMap),

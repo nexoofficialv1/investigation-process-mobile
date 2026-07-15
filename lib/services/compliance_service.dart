@@ -1,4 +1,5 @@
 import '../models/case_file.dart';
+import 'sop_compliance_service.dart';
 
 class ComplianceTask {
   final String title;
@@ -118,9 +119,19 @@ class ComplianceService {
       ]);
     }
 
+    final sopRules = SopComplianceService().buildRules(caseFile);
+    for (final rule in sopRules.where((r) => r.mandatory)) {
+      tasks.add(ComplianceTask(
+        title: 'SOP: ${rule.title}',
+        detail: '${rule.sectionRef} • ${rule.detail}',
+        priority: 'High',
+        mandatory: true,
+      ));
+    }
+
     tasks.add(const ComplianceTask(
       title: 'CS/FR pre-check',
-      detail: 'Before final report, generate CS/FR checklist from Forms module.',
+      detail: 'Before final report, generate CS/FR checklist from Forms module and confirm SOP compliance.',
       priority: 'Medium',
       mandatory: true,
     ));

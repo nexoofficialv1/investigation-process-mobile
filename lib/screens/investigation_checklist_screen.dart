@@ -105,6 +105,14 @@ class _InvestigationChecklistScreenState extends State<InvestigationChecklistScr
         'CDR / CAF / bank / UPI / CCTV requisition if needed',
         'Electronic evidence certificate u/s 63(4) BSA considered if required',
       ]),
+      _ChecklistSection('SOP Mandatory Checks', [
+        'If information received electronically, informant signature obtained within 3 days',
+        'PO photography/videography recorded where applicable u/s 176(3) BNSS',
+        'For serious offence punishable over 7 years, forensic expert call/requirement checked',
+        'Victim/informant progress/result intimation within 90 days tracked',
+        'If investigation not concluded within 90 days, extension prayer before expiry prepared',
+        'If electronic device/evidence involved, sequence/chain of custody maintained',
+      ]),
       _ChecklistSection('Final Stage / IF5 Preparation', [
         'All CDs reviewed up to final investigation CD',
         'Final CD contains total investigation summary',
@@ -112,6 +120,7 @@ class _InvestigationChecklistScreenState extends State<InvestigationChecklistScr
         'Accused charge-sheeted / not charge-sheeted list ready',
         'Enclosures list prepared',
         'Informant/victim informed about result/progress as applicable',
+        'SOP Compliance screen verified before final report',
       ]),
     ];
 

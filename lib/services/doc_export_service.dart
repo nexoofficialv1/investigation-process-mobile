@@ -7,6 +7,7 @@ import '../models/form_notice.dart';
 import '../models/officer_profile.dart';
 import '../models/sketch_map.dart';
 import '../models/statement_entry.dart';
+import '../models/ud_case.dart';
 
 class DocExportService {
   Uint8List _docBytes(String html) => Uint8List.fromList(utf8.encode(html));
@@ -130,5 +131,67 @@ class DocExportService {
 <div class="right" style="margin-top:36px">Prepared by<br/><br/>(${_e(officer.name)})<br/>${_e(officer.rank)}<br/>${_e(officer.policeStation)}</div>
 ''';
     return _docBytes(_page('Sketch Map', html));
+  }
+}
+
+extension UdInquestDocExport on DocExportService {
+  Future<Uint8List> buildUdInquestDoc({
+    required OfficerProfile officer,
+    required UdCase ud,
+  }) async {
+    String e(String v) => const HtmlEscape().convert(v).replaceAll('\n', '<br/>');
+    String row(String label, String value) => '<p>$label <span style="border-bottom:1px dotted #777;display:inline-block;min-width:480px">${e(value)}</span></p>';
+    final html = _page('UD Inquest', '''
+<div class="center bold">INQUEST FORM</div>
+<div class="center bold">Section 194 / 196 OF BNSS</div>
+${row('1. District:', ud.district)}
+${row('PS:', ud.policeStation)}
+${row('Date & Time:', ud.dateTime)}
+${row('2. FIR/UD No.:', ud.udNo)}
+${row('GDE No. & Date:', ud.gdeNo)}
+${row('3. a) Distance from PS:', ud.distanceFromPs)}
+${row('b) Direction from PS:', ud.directionFromPs)}
+${row('c) Place Where Dead Body Found:', ud.placeFound)}
+${row('Longitude:', ud.longitude)} ${row('Latitude:', ud.latitude)}
+${row('d) Dead body found/traced Date:', ud.deadBodyFoundDate)} ${row('Time:', ud.deadBodyFoundTime)}
+${row('4. Informant’s Particulars: Name:', ud.informantName)}
+${row('Age:', ud.informantAge)} ${row('Sex:', ud.informantSex)}
+${row('Address:', ud.informantAddress)}
+${row('5. Dead Body identified by: Name:', ud.identifiedByName)}
+${row('Age:', ud.identifiedByAge)} ${row('Sex:', ud.identifiedBySex)}
+${row('Relation (if any):', ud.identifiedByRelation)}
+${row('Address:', ud.identifiedByAddress)}
+${row('6. Name & address of deceased: Name:', ud.deceasedName)}
+${row('Sex: Male/Female:', ud.deceasedSex)} ${row('Approx. Age:', ud.deceasedAge)}
+${row('Address:', ud.deceasedAddress)}
+${row('7. Position of dead body (including PM staining):', ud.bodyPosition)}
+${row('8. Description of Dead Body Build:', ud.build)} ${row('Height:', ud.height)}
+${row('(Rigor Mortis):', ud.rigorMortis)} ${row('Complexion:', ud.complexion)}
+${row('Deformities, if any:', ud.deformities)} ${row('Religion/Race/Community:', ud.religionRaceCommunity)}
+${row('9. Identification Mark Teeth:', ud.teeth)} ${row('Eyes:', ud.eyes)} ${row('Lace derma:', ud.laceDerma)}
+${row('Mole:', ud.mole)} ${row('Tattoo:', ud.tattoo)}
+${row('Dress/wearing apparel:', ud.dress)}
+${row('Other features (if any):', ud.otherFeatures)}
+<p>10. Description of external injuries found on Dead Body (if any). Use separate sheet if required.</p>
+${row('a. Head:', ud.injuryHead)} ${row('b. Face:', ud.injuryFace)} ${row('c. Neck:', ud.injuryNeck)} ${row('d. Chest:', ud.injuryChest)}
+${row('e. Stomach:', ud.injuryStomach)} ${row('f. Shoulder:', ud.injuryShoulder)} ${row('g. Right Hand:', ud.injuryRightHand)}
+${row('h. Left Hand:', ud.injuryLeftHand)} ${row('i. Right Leg:', ud.injuryRightLeg)} ${row('j. Left Leg:', ud.injuryLeftLeg)}
+${row('k. Private parts:', ud.injuryPrivateParts)} ${row('l. Back:', ud.injuryBack)} ${row('m. Any other injury:', ud.injuryOther)}
+${row('11. a. Nostrils:', ud.nostrils)} ${row('b. Ears/Eyes:', ud.earsEyes)} ${row('c. Mouth:', ud.mouth)}
+${row('d. Penis/Vagina:', ud.penisVagina)} ${row('e. Anus:', ud.anus)}
+${row('12. Opinion on nature of weapon used and manner in which injuries may have been caused/inflicted:', ud.weaponOpinion)}
+${row('13. If death by hanging strangulation, description of ligature mark, rope & knot around the neck:', ud.ligatureDescription)}
+${row('14. Foreign material:', ud.foreignMaterial)}
+${row('15. Description of place of occurrence:', ud.poDescription)}
+${row('16. Description of articles at the PO including weapon, ornaments etc.:', ud.articlesAtPo)}
+${row('17. Opinion as to probable cause to death:', ud.probableCauseOfDeath)}
+${row('18. Remarks:', ud.remarks)}
+${row('19. Witness (i) Name/Address:', ud.witness1NameAddress)}
+${row('Witness (ii) Name/Address:', ud.witness2NameAddress)}
+<p>Brief facts (please attach separate sheets)</p>
+<p>${e(ud.briefFacts)}</p>
+<div class="right" style="margin-top:40px">Signature of Investigation Officer<br/><br/>Name: ${e(officer.name)}<br/>Rank: ${e(officer.rank)}</div>
+''');
+    return _docBytes(html);
   }
 }

@@ -11,6 +11,7 @@ import '../models/officer_profile.dart';
 import '../models/statement_entry.dart';
 import '../models/form_notice.dart';
 import '../models/sketch_map.dart';
+import '../models/ud_case.dart';
 
 class PdfService {
   Future<pw.ThemeData> _pdfTheme() async {
@@ -658,5 +659,137 @@ class PdfService {
       padding: const pw.EdgeInsets.all(6),
       child: pw.Text(text, style: pw.TextStyle(fontSize: 10, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
     );
+  }
+}
+
+extension UdInquestPdfService on PdfService {
+  Future<Uint8List> buildUdInquestPdf({
+    required OfficerProfile officer,
+    required UdCase ud,
+  }) async {
+    final doc = pw.Document(theme: await _pdfTheme());
+    pw.TextStyle normal() => const pw.TextStyle(fontSize: 10.2);
+    pw.TextStyle bold() => pw.TextStyle(fontSize: 10.2, fontWeight: pw.FontWeight.bold);
+    pw.Widget line(String label, String value, {double height = 18}) => pw.Padding(
+          padding: const pw.EdgeInsets.only(bottom: 2),
+          child: pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+            pw.Text(label, style: normal()),
+            pw.Expanded(child: pw.Container(
+              height: height,
+              decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(width: .35, color: PdfColors.grey600))),
+              child: pw.Text(value, style: normal()),
+            )),
+          ]),
+        );
+
+    doc.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.fromLTRB(50, 44, 46, 36),
+        build: (context) => [
+          pw.Center(child: pw.Text('INQUEST FORM', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold))),
+          pw.SizedBox(height: 16),
+          pw.Center(child: pw.Text('Section 194 / 196 OF BNSS', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+          pw.SizedBox(height: 22),
+          line('1. District: ', ud.district),
+          line('   PS: ', ud.policeStation),
+          line('   Date & Time: ', ud.dateTime),
+          line('2. FIR/UD No. ', ud.udNo),
+          line('   GDE No. ', ud.gdeNo),
+          line('3. a) Distance from PS ', ud.distanceFromPs.isEmpty ? '' : '${ud.distanceFromPs} Km'),
+          line('   b) Direction from PS ', ud.directionFromPs),
+          line('   c) Place Where Dead Body Found ', ud.placeFound, height: 22),
+          line('      Longitude ', ud.longitude),
+          line('      Latitude ', ud.latitude),
+          line('   d) Dead body found /traced Date: ', ud.deadBodyFoundDate),
+          line('      Time ', ud.deadBodyFoundTime),
+          line('4. Informant’s Particulars: Name ', ud.informantName),
+          line('      Age ', ud.informantAge),
+          line('      Sex ', ud.informantSex),
+          line('      Address ', ud.informantAddress, height: 24),
+          line('5. Dead Body identified by: Name ', ud.identifiedByName),
+          line('      Age ', ud.identifiedByAge),
+          line('      Sex ', ud.identifiedBySex),
+          line('      Relation (if any) ', ud.identifiedByRelation),
+          line('      Address ', ud.identifiedByAddress, height: 24),
+          line('6. Name & address of deceased: Name ', ud.deceasedName),
+          line('      Sex: Male / Female ', ud.deceasedSex),
+          line('      Approx. Age ', ud.deceasedAge),
+          line('      Address ', ud.deceasedAddress, height: 24),
+          line('7. Position of dead body (including PM staining) ', ud.bodyPosition, height: 42),
+          line('8. Description of Dead Body     Build ', ud.build),
+          line('   Height ', ud.height),
+          line('   (Rigor Mortis) ', ud.rigorMortis),
+          line('   Complexion ', ud.complexion),
+          line('   Deformities, if any ', ud.deformities),
+          line('   Religion/Race/Community: ', ud.religionRaceCommunity),
+          line('9. Identification Mark: Teeth: ', ud.teeth),
+          line('   Eyes ', ud.eyes),
+          line('   Lace derma: ', ud.laceDerma),
+          line('   Mole: ', ud.mole),
+          line('   Tattoo: ', ud.tattoo),
+          line('   Dress/wearing apparel: ', ud.dress, height: 28),
+          line('   Other features (if any) ', ud.otherFeatures, height: 24),
+          pw.Text('10. Description of external injuries found on Dead Body (if any). Use separate sheet if required.', style: normal()),
+          line('a. Head: ', ud.injuryHead),
+          line('b. Face: ', ud.injuryFace),
+          line('c. Neck: ', ud.injuryNeck),
+          line('d. Chest: ', ud.injuryChest),
+          line('e. Stomach: ', ud.injuryStomach),
+          line('f. Shoulder: ', ud.injuryShoulder),
+          line('g. Right Hand: ', ud.injuryRightHand),
+          line('h. Left Hand: ', ud.injuryLeftHand),
+          line('i. Right Leg: ', ud.injuryRightLeg),
+          line('j. Left Leg: ', ud.injuryLeftLeg),
+          line('k. Private parts: ', ud.injuryPrivateParts),
+          line('l. Back: ', ud.injuryBack),
+          line('m. Any other injury: ', ud.injuryOther),
+          pw.SizedBox(height: 20),
+          pw.Text('11. Discharge form:', style: normal()),
+          line('a. Nostrils: ', ud.nostrils),
+          line('b. Ears / Eyes: ', ud.earsEyes),
+          line('c. Mouth: ', ud.mouth),
+          line('d. Penis/Vagina: ', ud.penisVagina),
+          line('e. Anus: ', ud.anus),
+          pw.SizedBox(height: 14),
+          line('12. Opinion on nature of weapon used and manner in which injuries may have been caused/inflicted. ', ud.weaponOpinion, height: 36),
+          line('13. If death by hanging strangulation, description of ligature mark, rope & Knot around the neck: ', ud.ligatureDescription, height: 36),
+          line('14. Any foreign material such as weeds, straw, hair, etc. clinched in the hand of the deceased or attaches on any part of the body: ', ud.foreignMaterial, height: 36),
+          line('15. Description of place of occurrence: ', ud.poDescription, height: 32),
+          line('16. Description of articles at the place of occurrence including weapon of offence, ornaments etc. ', ud.articlesAtPo, height: 32),
+          line('17. Opinion as to the probable cause to death: ', ud.probableCauseOfDeath, height: 26),
+          line('18. Remarks (comment on condition of body & other relevant information on crime): ', ud.remarks, height: 38),
+          pw.SizedBox(height: 8),
+          pw.Row(children: [
+            pw.Expanded(child: line('19. Witnesses: Name /Address: ', ud.witness1NameAddress, height: 22)),
+            pw.SizedBox(width: 16),
+            pw.Expanded(child: line('Signature ', '', height: 22)),
+          ]),
+          pw.Row(children: [
+            pw.Expanded(child: line('(ii) ', ud.witness2NameAddress, height: 22)),
+            pw.SizedBox(width: 16),
+            pw.Expanded(child: line('(ii) ', '', height: 22)),
+          ]),
+          pw.SizedBox(height: 14),
+          pw.Text('Brief facts (please attach separate sheets)', style: normal()),
+          pw.Container(
+            height: 70,
+            decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(width: .35, color: PdfColors.grey600))),
+            child: pw.Text(ud.briefFacts, style: normal()),
+          ),
+          pw.SizedBox(height: 40),
+          pw.Align(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+              pw.Text('Signature of Investigation Officer', style: normal()),
+              pw.SizedBox(height: 18),
+              pw.Text('Name: ${officer.name}', style: normal()),
+              pw.Text('Rank: ${officer.rank}', style: normal()),
+            ]),
+          ),
+        ],
+      ),
+    );
+    return doc.save();
   }
 }

@@ -9,6 +9,9 @@ import '../models/statement_entry.dart';
 import '../models/form_notice.dart';
 import '../models/pending_cd_action.dart';
 import '../models/sketch_map.dart';
+import '../models/backend_config.dart';
+import '../models/ud_case.dart';
+import '../models/investigation_action.dart';
 
 class LocalStoreService {
   static const _profileKey = 'officer_profile_v1';
@@ -18,6 +21,76 @@ class LocalStoreService {
   static const _formsKey = 'form_notice_entries_v1';
   static const _pendingCdActionsKey = 'pending_cd_actions_v1';
   static const _sketchMapsKey = 'sketch_maps_v1';
+  static const _backendConfigKey = 'backend_config_v1';
+  static const _udCasesKey = 'ud_cases_v1';
+  static const _investigationActionsKey = 'investigation_actions_v1';
+
+
+
+
+  Future<List<InvestigationActionEntry>> loadInvestigationActions(String caseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_investigationActionsKey);
+    if (raw == null || raw.isEmpty) return [];
+    final list = jsonDecode(raw) as List<dynamic>;
+    return list
+        .map((e) => InvestigationActionEntry.fromJson(Map<String, dynamic>.from(e)))
+        .where((e) => e.caseId == caseId)
+        .toList()
+      ..sort((a, b) => b.actionDate.compareTo(a.actionDate));
+  }
+
+  Future<void> saveInvestigationAction(InvestigationActionEntry entry) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_investigationActionsKey);
+    final all = raw == null || raw.isEmpty
+        ? <InvestigationActionEntry>[]
+        : (jsonDecode(raw) as List<dynamic>)
+            .map((e) => InvestigationActionEntry.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+    final index = all.indexWhere((e) => e.id == entry.id);
+    if (index >= 0) {
+      all[index] = entry;
+    } else {
+      all.add(entry);
+    }
+    await prefs.setString(_investigationActionsKey, jsonEncode(all.map((e) => e.toJson()).toList()));
+  }
+
+  Future<List<UdCase>> loadUdCases() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_udCasesKey);
+    if (raw == null || raw.isEmpty) return [];
+    final list = jsonDecode(raw) as List<dynamic>;
+    return list
+        .map((e) => UdCase.fromJson(Map<String, dynamic>.from(e)))
+        .toList()
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+  }
+
+  Future<void> saveUdCase(UdCase udCase) async {
+    final cases = await loadUdCases();
+    final index = cases.indexWhere((c) => c.id == udCase.id);
+    if (index >= 0) {
+      cases[index] = udCase;
+    } else {
+      cases.add(udCase);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_udCasesKey, jsonEncode(cases.map((e) => e.toJson()).toList()));
+  }
+
+  Future<BackendConfig> loadBackendConfig() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_backendConfigKey);
+    if (raw == null || raw.isEmpty) return BackendConfig.empty();
+    return BackendConfig.fromJson(Map<String, dynamic>.from(jsonDecode(raw)));
+  }
+
+  Future<void> saveBackendConfig(BackendConfig config) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_backendConfigKey, jsonEncode(config.toJson()));
+  }
 
   Future<OfficerProfile> loadOfficerProfile() async {
     final prefs = await SharedPreferences.getInstance();
