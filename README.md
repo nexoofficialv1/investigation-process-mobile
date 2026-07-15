@@ -1,11 +1,7 @@
-# Investigation & Process Mobile MVP v3.0
+# Investigation & Process Mobile MVP v3.1
 
-This build adds offline-first backup, manual backend server configuration, and license fee setup.
+Patch focus: Official CDR/SDR/CAF requisition and FSL Form + Challan + Label package.
 
-## New Modules
-- Backup: local JSON backup/share/restore.
-- Backend: manually add API Base URL/token, test connection, enable sync, upload local cases.
-- License: plan/fee/UPI/transaction/activation code record, with later server verification support.
-
-## Important
-Official document formats remain unchanged. This patch is for backup/server/license workflow only.
+Open Forms → select a case → choose:
+- CDR / SDR / CAF Requisition
+- FSL Form + Challan + Label Package

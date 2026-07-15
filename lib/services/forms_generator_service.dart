@@ -22,9 +22,9 @@ class FormsGeneratorService {
     FormTemplateInfo(id: 'bnss_183', title: '183 BNSS Prayer', subtitle: 'Judicial statement prayer before Ld. Court', category: 'Court Prayer'),
     FormTemplateInfo(id: 'medical_exam', title: 'Medical Examination Requisition', subtitle: 'Victim/injured/accused medical examination', category: 'Medical'),
     FormTemplateInfo(id: 'bht_injury', title: 'BHT / Injury Report Requisition', subtitle: 'Hospital records and injury report collection', category: 'Medical'),
-    FormTemplateInfo(id: 'cdr_caf', title: 'CDR / CAF Requisition', subtitle: 'Mobile number CDR/CAF/IPDR request draft', category: 'Digital Evidence'),
+    FormTemplateInfo(id: 'cdr_caf', title: 'CDR / SDR / CAF Requisition', subtitle: 'Official table format for CDR/SDR/CAF/IMEI request', category: 'Digital Evidence'),
     FormTemplateInfo(id: 'bank_details', title: 'Bank Account Details Requisition', subtitle: 'Account statement/KYC/lien/freeze details', category: 'Cyber/Bank'),
-    FormTemplateInfo(id: 'fsl', title: 'FSL Requisition', subtitle: 'Forward seized article/electronic exhibit to FSL', category: 'Expert'),
+    FormTemplateInfo(id: 'fsl', title: 'FSL Form + Challan + Label Package', subtitle: 'WB Form 5203 with exhibit list, challan and labels', category: 'Expert'),
     FormTemplateInfo(id: 'forwarding', title: 'Accused Forwarding Report', subtitle: 'Forwarding accused before Ld. Court', category: 'Court'),
     FormTemplateInfo(id: 'further_investigation', title: 'Further Investigation Prayer', subtitle: 'Prayer for further investigation/extension/compliance', category: 'Court Prayer'),
     FormTemplateInfo(id: 'cs_checklist', title: 'CS / FR Draft Checklist', subtitle: 'Pre-submission checklist for charge sheet/final report', category: 'Final Report'),
@@ -181,25 +181,56 @@ ${officer.rank} ${officer.name}
 Investigating Officer
 ${officer.policeStation}''';
 
-  String _cdrCaf(OfficerProfile officer, CaseFile caseFile) => '''To,
-The Nodal Officer,
-____________________________ Telecom Service Provider
+  String _cdrCaf(OfficerProfile officer, CaseFile caseFile) {
+    final ref = '${officer.policeStation} P.S. Case No-${caseFile.psCaseNo} Dated-${caseFile.caseDate}, U/S-${caseFile.sections}';
+    final gist = caseFile.firGist.trim().isEmpty ? '____________________________________________________________________________________________' : caseFile.firGist.trim();
+    return '''To: SP/${officer.district} =w= O/C SOG Cell, ${officer.district} =w= SDPO ____________________
 
-Sub: Requisition for CDR/CAF/IPDR in connection with ${_caseRef(officer, caseFile)}.
+From: I/C ${officer.policeStation}
 
-Sir/Madam,
-In connection with investigation of the above noted case, it is requested to provide CDR/CAF/IPDR/subscriber details of the following mobile number(s):
+                              REQUISITION FOR CDR/SDR/CAF
 
-1. Mobile No: ____________________ Period: From __________ To __________
-2. Mobile No: ____________________ Period: From __________ To __________
+NAME OF THE P.S / O.P                 ${officer.policeStation}
 
-The information is required for lawful investigation. Kindly provide the same with certificate as applicable.
+CASE REFERENCE / GDE NO.              $ref
 
-Yours faithfully,
+GIST OF THE CASE / GDE                $gist
 
-${officer.rank} ${officer.name}
-Investigating Officer
-${officer.policeStation}''';
+REQUIRED MOBILE NO'S / IMEI NO'S      ________________________________
+
+NAME OF THE ACTUAL USER OF THE        ________________________________
+MOBILENO/IMEI NO & HIS/HER            Involvement: ___________________
+INVOLVEMENT IN THE CASE
+
+JUSTIFICATION OF THE REQUIRED         ________________________________
+MOBILE NO./IMEI NO. IN CASE/GDE       ________________________________
+
+REQUIRED CDR (CALL DETAILS REPORT)    From ____________ To ____________
+FROM DATE ..... TO DATE
+
+REQUIRED SDR - (SUBSCRIBER DETAILS    Yes / No
+REPORT)
+
+REQUIRED CAF - (CUSTOMER APPLICATION  Yes / No
+FORM)
+
+REQUIRED IMEI SEARCHING - FROM DATE   ________________________________
+.... TO DATE
+
+NAME OF THE I.O / E.O.                ${officer.rank} ${officer.name}
+
+PHONE NO. OF THE I.O / E.O.           ${officer.mobile}
+
+ANY OTHER POINTS                      N/A / __________________________
+
+
+                                                                  Submitted
+
+
+                                                              ${officer.rank} ${officer.name}
+                                                              ${officer.policeStation}
+                                                              ${officer.district}''';
+  }
 
   String _bankDetails(OfficerProfile officer, CaseFile caseFile) => '''To,
 The Branch Manager / Nodal Officer,
@@ -222,28 +253,195 @@ ${officer.rank} ${officer.name}
 Investigating Officer
 ${officer.policeStation}''';
 
-  String _fsl(OfficerProfile officer, CaseFile caseFile) => '''To,
-The Director / Assistant Director,
-Forensic Science Laboratory,
-____________________________
+  String _fsl(OfficerProfile officer, CaseFile caseFile) {
+    final ref = '${officer.policeStation} PS Case No ${caseFile.psCaseNo} Date ${caseFile.caseDate} u/s ${caseFile.sections}';
+    final gist = caseFile.firGist.trim().isEmpty ? 'The fact of the case in brief is that ________________________________________________________________________________.' : caseFile.firGist.trim();
+    return '''West Bengal Form No- 5203
 
-Sub: Requisition for examination of seized article/exhibit in connection with ${_caseRef(officer, caseFile)}.
+                              WEST BENGAL POLICE
 
-Sir/Madam,
-The following seized article/exhibit is being forwarded for scientific examination and opinion:
+Case No:- ${caseFile.psCaseNo}  Date ${caseFile.caseDate}
 
-1. Description of exhibit: ____________________
-2. Seizure list reference: ____________________
-3. Malkhana reference: ____________________
-4. Required examination: ____________________
+Police Station:- ${officer.policeStation}
+Section of Law:- ${caseFile.sections}
+District:- ${officer.district}
 
-Kindly examine the exhibit and furnish expert opinion at the earliest.
+In all cases where the examination of any material is required at the Laboratory,
+a copy of this form duly filled in should accompany the exhibit.
+
+I. NATURE OF CRIME
+(This should include nature of charge, brief history and any relevant details)
+
+$gist
+
+Submitted -
+
+(${officer.name})
+${officer.rank}
+${officer.policeStation}
+Dist- ${officer.district}
+Date: ____________
+
+
+Page-2
+
+II. LIST OF EXHIBITS SENT FOR EXAMINATION
+
+Label No: EXHIBIT- "A"
+Description of the exhibit:
+One sealed packet/jar/container containing said to be ________________________________ in connection with the above noted case.
+
+How and when found and by whom:
+Seized on ____________ at ________________________________ by ${officer.rank} ${officer.name} / received from ________________________________.
+
+Ownership of exhibit:
+Ld. C.J.M / concerned Court / State.
+
+Remarks:
+May be confiscated to the State after examination / May be returned after examination.
+
+
+III. NATURE OF EXAMINATION REQUIRED
+(Including any information which will assist the examination)
+
+1) Whether any poison / blood / semen / biological material / chemical / explosive / narcotic / digital trace / other relevant material could be detected in Exhibit Mark "A" or not.
+2) If detected, nature/type/source of such material and whether the same is relevant to the facts of the case.
+3) Any other points raised during examination.
+
+
+Page-3
+
+IV. PARTICULARS OF PERSONS IN CUSTODY
+
+SL No.             1
+Full name          ________________________________
+Occupation         ________________________________
+Age                ____________
+Sex                ____________
+Date & time of arrest ________________________________
+Whether on bail or in custody ________________________________
+Court              ________________________________
+
+
+                                                        ________________________________
+                                                        Signature and Rank of the I.O
+                                                        Dated ________________________
+
+Memo No. ____________        Dated, the ____________ 20____
+
+Forwarded to
+Head of Office & Assistant Director
+Regional Forensic Science Laboratory
+Shankarpur, Durgapur
+Paschim Bardhaman, 713212
+
+Seal                                                    Ld. C.J.M / Magistrate
+                                                        District: ${officer.district}
+
+Note: In the “nature of crime” and “nature of examination” care should be taken to ensure that all necessary information regarding individual samples submitted is included.
+
+In the packing of material for expert examination it is important that the specimen or sample should be well protected against contamination from outside sources. The specimen when received at the Laboratory must be a true unadulterated sample of the material found at the scene of the crime.
+
+Each specimen must be in a separate package, and have a separate label with a distinguishing mark.
+
+
+Page-4
+
+Certified that the Head of Office & Assistant Director, Regional Forensic Science Laboratory, Shankarpur, Durgapur, Paschim Bardhaman 713212 to the Govt. of West Bengal has the authority to examine the exhibits sent to him in connection with the case of State versus ________________________________ under section ${caseFile.sections} and if necessary, to take them to pieces or remove portions for the purposes of the said examination.
+
+Date: ____________                         Signature: ________________________________
+Place: ___________                         CJM / MAGISTRATE
+
+Certified to be signed by Ld. Chief Judicial Magistrate / Magistrate and forwarded to the Head of Office & Assistant Director, Regional Forensic Science Laboratory, Shankarpur, Durgapur, Paschim Bardhaman 713212 with Exhibit.
+
+
+EXHIBIT CHALLAN
+
+To
+The Head of Office & Assistant Director
+Regional Forensic Science Laboratory
+Shankarpur, Durgapur
+Paschim Bardhaman, 713212
+
+Through Ld. C.J.M / Magistrate, ________________________________ Court
+
+Ref:- $ref
+
+Sir,
+I am sending herewith the following exhibit(s) in c/w above noted case before you for examination and your opinion in the interest of investigation of the case.
+
+Kindly arrange to acknowledge receipt of the same.
+
+1) Exhibit Mark "A" ---- One sealed packet/jar/container containing said to be ________________________________.
 
 Yours faithfully,
 
-${officer.rank} ${officer.name}
-Investigating Officer
-${officer.policeStation}''';
+Dated- ____________
+(${officer.name})
+${officer.rank}
+${officer.policeStation}
+Dist- ${officer.district}
+${officer.mobile.isEmpty ? '' : 'Mob- ${officer.mobile}'}
+
+I.O. Name:- ${officer.name}
+Designation:- ${officer.rank}
+Mobile No. of I.O.:- ${officer.mobile}
+CUG Mobile No. of PS:- ________________________________
+Email ID of PS:- ________________________________
+Name of the PS:- ${officer.policeStation}
+District:- ${officer.district}
+P.S. Address:- ________________________________
+Pin Code:- ________________________________
+WhatsApp No. (Optional):- ${officer.mobile}
+Hospital/Morgue:- ________________________________
+Messenger's Name & Phone No:- ________________________________
+
+
+LABEL
+
+To
+The Head of Office & Assistant Director
+Regional Forensic Science Laboratory
+Shankarpur, Durgapur
+Paschim Bardhaman, 713212
+
+Through Ld. C.J.M / Magistrate, ________________________________ Court
+
+Ref:- $ref
+
+Description of Article:
+Exhibit Mark "A" ---- One sealed packet/jar/container containing said to be ________________________________.
+
+Labeled & prepared by me -
+
+(${officer.name})
+${officer.rank}
+${officer.policeStation}
+Dist- ${officer.district}
+
+
+LABEL - DUPLICATE / COPY
+
+To
+The Head of Office & Assistant Director
+Regional Forensic Science Laboratory
+Shankarpur, Durgapur
+Paschim Bardhaman, 713212
+
+Through Ld. C.J.M / Magistrate, ________________________________ Court
+
+Ref:- $ref
+
+Description of Article:
+Exhibit Mark "A" ---- One sealed packet/jar/container containing said to be ________________________________.
+
+Labeled & prepared by me -
+
+(${officer.name})
+${officer.rank}
+${officer.policeStation}
+Dist- ${officer.district}''';
+  }
 
   String _forwarding(OfficerProfile officer, CaseFile caseFile) => '''Ref:   ${officer.policeStation} case no- ${caseFile.psCaseNo} Dated: - ${caseFile.caseDate} u/s - ${caseFile.sections}.
 

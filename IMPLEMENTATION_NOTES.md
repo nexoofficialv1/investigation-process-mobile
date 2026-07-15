@@ -1,15 +1,7 @@
-# v3.0 Backup, Backend Sync, License Fees Patch
+# v3.1 Official CDR/SDR/CAF + FSL Package Patch
 
-Added:
-- Backup & Sync screen for local JSON backup/share/restore.
-- Backend screen link for adding Custom Server + PostgreSQL API URL/token and sync.
-- License & Fees screen for manual plan/fee/UPI/transaction/activation-code record.
-- Dashboard cards: Backup, Backend, License.
-- Backend PostgreSQL schema additions: licenses, backup_logs.
-- Backend API additions: license request/status endpoints.
+This patch rectifies the visible Forms templates:
+- CDR/SDR/CAF requisition now opens in the official table-style structure from the sample.
+- FSL generator now opens as a complete West Bengal Form No. 5203 package including FSL Form, Exhibit List, Nature of Examination, Persons in Custody, Magistrate forwarding/certification, Exhibit Challan, IO/contact details, and Label/Duplicate Label.
 
-Notes:
-- App remains offline-first.
-- Server/database can be added later manually from Backend Setup.
-- Backup is local JSON share/export now; server backup/upload can be connected after backend is deployed.
-- License fees are local/manual first. Server-side verification/payment gateway can be added later.
+The drafts remain editable before Preview and PDF/DOC export, and the global “Mention in Case Diary?” popup remains active.
