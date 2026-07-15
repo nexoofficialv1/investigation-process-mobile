@@ -20,6 +20,8 @@ import 'backend_settings_screen.dart';
 import 'ud_case_screen.dart';
 import 'sop_compliance_screen.dart';
 import 'investigation_screen.dart';
+import 'backup_screen.dart';
+import 'license_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -183,6 +185,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await Navigator.push(context, MaterialPageRoute(builder: (_) => BackendSettingsScreen(profile: _profile)));
   }
 
+  Future<void> _openBackup() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => BackupScreen(profile: _profile)));
+  }
+
+  Future<void> _openLicense() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const LicenseScreen()));
+  }
+
   Future<void> _openUdCase() async {
     await Navigator.push(context, MaterialPageRoute(builder: (_) => UdCaseScreen(profile: _profile)));
   }
@@ -274,6 +284,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _Menu('IF5 / CS', 'from final CD', Icons.fact_check_rounded, AppTheme.coral, () => _comingSoon('IF5 / CS')),
       _Menu('Evidence', 'evidence manager', Icons.inventory_2_rounded, const Color(0xFF795000), _openEvidence),
       _Menu('UD Case', 'inquest/final report', Icons.assignment_rounded, const Color(0xFF5D4037), _openUdCase),
+      _Menu('Backup', 'local/server sync', Icons.backup_rounded, const Color(0xFF455A64), _openBackup),
+      _Menu('Backend', 'server setup', Icons.dns_rounded, const Color(0xFF263238), _openBackendSettings),
+      _Menu('License', 'fees/activation', Icons.workspace_premium_rounded, const Color(0xFF8D6E00), _openLicense),
       _Menu('PDF Export', 'preview first', Icons.picture_as_pdf_rounded, const Color(0xFF42A5F5), () => _comingSoon('PDF Export')),
       _Menu('Final CD', 'investigation summary', Icons.verified_rounded, const Color(0xFFC2188B), _openCdWriter),
       _Menu('Sketch Map', 'builder/index', Icons.map_rounded, const Color(0xFF006B57), _openSketchMap),

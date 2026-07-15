@@ -27,6 +27,32 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
   final Map<String, TextEditingController> _c = {};
   List<UdCase> _saved = [];
   UdCase _ud = UdCase.empty();
+  String _injuryPart = 'injuryHead';
+  String _dischargePart = 'nostrils';
+
+  static const Map<String, String> _injuryOptions = {
+    'injuryHead': 'Head',
+    'injuryFace': 'Face',
+    'injuryNeck': 'Neck',
+    'injuryChest': 'Chest',
+    'injuryStomach': 'Stomach',
+    'injuryShoulder': 'Shoulder',
+    'injuryRightHand': 'Right Hand',
+    'injuryLeftHand': 'Left Hand',
+    'injuryRightLeg': 'Right Leg',
+    'injuryLeftLeg': 'Left Leg',
+    'injuryPrivateParts': 'Private parts',
+    'injuryBack': 'Back',
+    'injuryOther': 'Any other injury',
+  };
+
+  static const Map<String, String> _dischargeOptions = {
+    'nostrils': 'Nostrils',
+    'earsEyes': 'Ears / Eyes',
+    'mouth': 'Mouth',
+    'penisVagina': 'Penis/Vagina',
+    'anus': 'Anus',
+  };
 
   final List<_F> _fields = const [
     _F('district', 'District'),
@@ -68,24 +94,6 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
     _F('tattoo', 'Tattoo'),
     _F('dress', 'Dress/wearing apparel', lines: 2),
     _F('otherFeatures', 'Other features, if any', lines: 2),
-    _F('injuryHead', 'Injury: Head'),
-    _F('injuryFace', 'Injury: Face'),
-    _F('injuryNeck', 'Injury: Neck'),
-    _F('injuryChest', 'Injury: Chest'),
-    _F('injuryStomach', 'Injury: Stomach'),
-    _F('injuryShoulder', 'Injury: Shoulder'),
-    _F('injuryRightHand', 'Injury: Right Hand'),
-    _F('injuryLeftHand', 'Injury: Left Hand'),
-    _F('injuryRightLeg', 'Injury: Right Leg'),
-    _F('injuryLeftLeg', 'Injury: Left Leg'),
-    _F('injuryPrivateParts', 'Injury: Private parts'),
-    _F('injuryBack', 'Injury: Back'),
-    _F('injuryOther', 'Any other injury', lines: 2),
-    _F('nostrils', 'Discharge form: Nostrils'),
-    _F('earsEyes', 'Discharge form: Ears / Eyes'),
-    _F('mouth', 'Discharge form: Mouth'),
-    _F('penisVagina', 'Discharge form: Penis/Vagina'),
-    _F('anus', 'Discharge form: Anus'),
     _F('weaponOpinion', 'Opinion on nature of weapon/injury manner', lines: 3),
     _F('ligatureDescription', 'Ligature mark / rope / knot description', lines: 3),
     _F('foreignMaterial', 'Foreign material found on body', lines: 3),
@@ -111,6 +119,9 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
     for (final f in _fields) {
       _c[f.key] = TextEditingController(text: (map[f.key] ?? '').toString());
     }
+    for (final key in [..._injuryOptions.keys, ..._dischargeOptions.keys]) {
+      _c[key] = TextEditingController(text: (map[key] ?? '').toString());
+    }
   }
 
   Future<void> _loadSaved() async {
@@ -120,7 +131,10 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
   }
 
   UdCase _collect() {
-    final values = {for (final f in _fields) f.key: _c[f.key]!.text.trim()};
+    final values = {
+      for (final f in _fields) f.key: _c[f.key]!.text.trim(),
+      for (final key in [..._injuryOptions.keys, ..._dischargeOptions.keys]) key: _c[key]!.text.trim(),
+    };
     return _ud.copyWith(values);
   }
 
@@ -161,6 +175,9 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
       for (final f in _fields) {
         _c[f.key]!.text = (map[f.key] ?? '').toString();
       }
+      for (final key in [..._injuryOptions.keys, ..._dischargeOptions.keys]) {
+        _c[key]!.text = (map[key] ?? '').toString();
+      }
     });
   }
 
@@ -170,6 +187,9 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
       final map = _ud.toJson();
       for (final f in _fields) {
         _c[f.key]!.text = (map[f.key] ?? '').toString();
+      }
+      for (final key in [..._injuryOptions.keys, ..._dischargeOptions.keys]) {
+        _c[key]!.text = (map[key] ?? '').toString();
       }
     });
   }
@@ -204,15 +224,21 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
                   const SizedBox(height: 6),
                   const Text('আপনার দেওয়া scanned format অনুযায়ী field-wise data fill করুন। Export-এর আগে Preview দেখে নিন।', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 14),
-                  ..._fields.map((f) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: TextField(
-                          controller: _c[f.key],
-                          minLines: f.lines,
-                          maxLines: f.lines > 1 ? f.lines + 2 : 1,
-                          decoration: InputDecoration(labelText: f.label, border: const OutlineInputBorder(), filled: true, fillColor: Colors.white),
-                        ),
-                      )),
+                  ..._fields.map((f) {
+                    final field = Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: TextField(
+                        controller: _c[f.key],
+                        minLines: f.lines,
+                        maxLines: f.lines > 1 ? f.lines + 2 : 1,
+                        decoration: InputDecoration(labelText: f.label, border: const OutlineInputBorder(), filled: true, fillColor: Colors.white),
+                      ),
+                    );
+                    if (f.key == 'otherFeatures') {
+                      return Column(children: [field, _injuryDropdownCard(), _dischargeDropdownCard()]);
+                    }
+                    return field;
+                  }),
                 ],
               ),
             ),
@@ -231,6 +257,97 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
           const SizedBox(height: 80),
         ],
       ),
+    );
+  }
+
+
+  Widget _injuryDropdownCard() {
+    return Card(
+      color: Colors.orange.shade50,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('10. Description of external injuries found on Dead Body', style: TextStyle(fontWeight: FontWeight.w900)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _injuryPart,
+              decoration: const InputDecoration(labelText: 'Select body part', border: OutlineInputBorder(), filled: true, fillColor: Colors.white),
+              items: _injuryOptions.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
+              onChanged: (v) => setState(() => _injuryPart = v ?? _injuryPart),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _c[_injuryPart],
+              minLines: 2,
+              maxLines: 5,
+              decoration: InputDecoration(
+                labelText: 'Entry for ${_injuryOptions[_injuryPart]}',
+                helperText: 'Select body part from dropdown, then enter injury details. It will export in official Sl. No. 10 format.',
+                border: const OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _summaryList(_injuryOptions),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _dischargeDropdownCard() {
+    return Card(
+      color: Colors.blueGrey.shade50,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('11. Discharge form', style: TextStyle(fontWeight: FontWeight.w900)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _dischargePart,
+              decoration: const InputDecoration(labelText: 'Select discharge part', border: OutlineInputBorder(), filled: true, fillColor: Colors.white),
+              items: _dischargeOptions.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
+              onChanged: (v) => setState(() => _dischargePart = v ?? _dischargePart),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _c[_dischargePart],
+              minLines: 2,
+              maxLines: 4,
+              decoration: InputDecoration(
+                labelText: 'Entry for ${_dischargeOptions[_dischargePart]}',
+                helperText: 'Select item from dropdown, then enter discharge details. It will export in official Sl. No. 11 format.',
+                border: const OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _summaryList(_dischargeOptions),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _summaryList(Map<String, String> options) {
+    final filled = options.entries.where((e) => (_c[e.key]?.text.trim().isNotEmpty ?? false)).toList();
+    if (filled.isEmpty) {
+      return const Text('No entry added yet.', style: TextStyle(fontStyle: FontStyle.italic));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: filled.map((e) => Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Text('• ${e.value}: ${_c[e.key]!.text.trim()}', maxLines: 2, overflow: TextOverflow.ellipsis),
+      )).toList(),
     );
   }
 

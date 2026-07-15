@@ -135,3 +135,19 @@ app.post('/api/files', requireAuth, upload.single('file'), async (req, res) => {
 
 const port = Number(process.env.PORT || 8080);
 app.listen(port, () => console.log(`Investigation backend running on ${port}`));
+
+app.post('/api/license/request', requireAuth, async (req, res) => {
+  const { plan = 'trial', fee_amount = '', payment_txn_id = '', activation_code = '', raw_data = {} } = req.body || {};
+  const r = await pool.query(
+    `insert into licenses(officer_id,plan,status,fee_amount,payment_txn_id,activation_code,raw_data)
+     values($1,$2,$3,$4,$5,$6,$7)
+     returning *`,
+    [req.officerId, plan, 'pending_verification', fee_amount, payment_txn_id, activation_code, raw_data]
+  );
+  res.json({ ok: true, license: r.rows[0] });
+});
+
+app.get('/api/license/status', requireAuth, async (req, res) => {
+  const r = await pool.query('select * from licenses where officer_id=$1 order by created_at desc limit 1', [req.officerId]);
+  res.json({ license: r.rows[0] || null });
+});

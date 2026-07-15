@@ -116,3 +116,28 @@ CREATE TABLE IF NOT EXISTS sync_logs (
 CREATE INDEX IF NOT EXISTS idx_cases_officer ON cases(officer_id);
 CREATE INDEX IF NOT EXISTS idx_cd_entries_case ON cd_entries(case_id);
 CREATE INDEX IF NOT EXISTS idx_forms_case ON forms_notices(case_id);
+
+CREATE TABLE IF NOT EXISTS licenses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  officer_id UUID REFERENCES officers(id) ON DELETE CASCADE,
+  plan TEXT NOT NULL DEFAULT 'trial',
+  status TEXT NOT NULL DEFAULT 'pending',
+  fee_amount TEXT,
+  activation_code TEXT,
+  payment_txn_id TEXT,
+  valid_from TIMESTAMPTZ,
+  valid_until TIMESTAMPTZ,
+  raw_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS backup_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  officer_id UUID REFERENCES officers(id) ON DELETE SET NULL,
+  backup_type TEXT NOT NULL DEFAULT 'local_json',
+  file_name TEXT,
+  message TEXT,
+  raw_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
