@@ -1,7 +1,12 @@
-# v3.1 Official CDR/SDR/CAF + FSL Package Patch
+# v3.2 FSL/CDR Structured Entry + PDF Spanning Fix
 
-This patch rectifies the visible Forms templates:
-- CDR/SDR/CAF requisition now opens in the official table-style structure from the sample.
-- FSL generator now opens as a complete West Bengal Form No. 5203 package including FSL Form, Exhibit List, Nature of Examination, Persons in Custody, Magistrate forwarding/certification, Exhibit Challan, IO/contact details, and Label/Duplicate Label.
+Changes:
+- FSL and CDR/SDR/CAF forms now use a structured entry module in the form editor.
+- IO fills form-specific fields first; the app applies them to the form draft.
+- Preview renders official output from those structured fields.
+- Fixed PDF preview error: long FSL/CDR content is split into spanning-safe sections/pages instead of one oversized widget.
+- FSL package preview/export now generates multi-part package: Form 5203, exhibit list, nature of examination, custody/court forwarding, challan, labels.
+- CDR/SDR/CAF preview/export uses table-style official requisition rows and avoids page overflow.
 
-The drafts remain editable before Preview and PDF/DOC export, and the global “Mention in Case Diary?” popup remains active.
+Known rule:
+- Official format remains locked as far as possible; data is entered in mobile-friendly fields and then rendered in official PDF/DOC preview.

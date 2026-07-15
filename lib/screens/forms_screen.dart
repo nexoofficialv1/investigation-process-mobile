@@ -172,6 +172,10 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
   late FormNotice _form;
   late final TextEditingController title;
   late final TextEditingController body;
+  final Map<String, TextEditingController> _structured = {};
+
+  bool get _isCdrCaf => _form.templateId == 'cdr_caf';
+  bool get _isFsl => _form.templateId == 'fsl';
 
   @override
   void initState() {
@@ -179,20 +183,126 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     _form = widget.form;
     title = TextEditingController(text: _form.title);
     body = TextEditingController(text: _form.body);
+    _initStructuredControllers();
   }
 
   @override
   void dispose() {
     title.dispose();
     body.dispose();
+    for (final controller in _structured.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
-  FormNotice _currentForm({bool? finalSave}) => _form.copyWith(
-        title: title.text.trim(),
-        body: body.text.trim(),
-        isFinal: finalSave == true ? true : _form.isFinal,
-      );
+  String _readLineValue(String key, {String fallback = ''}) {
+    final pattern = RegExp('^' + RegExp.escape(key) + r'\s*:\s*(.*)$', multiLine: true, caseSensitive: false);
+    final match = pattern.firstMatch(_form.body);
+    if (match == null) return fallback;
+    final value = (match.group(1) ?? '').trim();
+    return value.isEmpty ? fallback : value;
+  }
+
+  void _initStructuredControllers() {
+    if (_isCdrCaf) {
+      final defaults = <String, String>{
+        'CASE REFERENCE': '${widget.profile.policeStation} P.S. Case No-${widget.caseFile.psCaseNo} Dated-${widget.caseFile.caseDate}, U/S-${widget.caseFile.sections}',
+        'GIST': widget.caseFile.firGist,
+        'REQUIRED MOBILE/IMEI': '',
+        'ACTUAL USER / INVOLVEMENT': 'Used by suspected',
+        'JUSTIFICATION': '',
+        'CDR DATE RANGE': 'From ____________ To ____________',
+        'SDR REQUIRED': 'Yes',
+        'CAF REQUIRED': 'Yes',
+        'IMEI SEARCH DATE RANGE': '---',
+        'IO NAME': '${widget.profile.rank} ${widget.profile.name}',
+        'IO PHONE': widget.profile.mobile,
+        'ANY OTHER POINTS': 'N/A',
+      };
+      for (final entry in defaults.entries) {
+        _structured[entry.key] = TextEditingController(text: _readLineValue(entry.key, fallback: entry.value));
+      }
+      _applyStructuredToBody(showMessage: false);
+    } else if (_isFsl) {
+      final defaults = <String, String>{
+        'NATURE OF CRIME': widget.caseFile.firGist,
+        'EXHIBIT DESCRIPTION': 'Exhibit Mark "A" ---- One sealed packet/jar/container containing said to be ________________________________ in connection with the above noted case.',
+        'HOW FOUND / SEIZED': 'Seized on ____________ at ________________________________ by ${widget.profile.rank} ${widget.profile.name} / received from ________________________________.',
+        'NATURE OF EXAMINATION': '1) Whether any poison / blood / semen / biological material / chemical / explosive / narcotic / digital trace / other relevant material could be detected in Exhibit Mark "A" or not.\n2) If detected, nature/type/source of such material and whether the same is relevant to the facts of the case.\n3) Any other points raised during examination.',
+        'PERSON IN CUSTODY': '',
+        'FSL OFFICE': 'Head of Office & Assistant Director\nRegional Forensic Science Laboratory\nShankarpur, Durgapur\nPaschim Bardhaman, 713212',
+        'COURT': 'Ld. C.J.M / Magistrate, ${widget.profile.district}',
+      };
+      for (final entry in defaults.entries) {
+        _structured[entry.key] = TextEditingController(text: _readLineValue(entry.key, fallback: entry.value));
+      }
+      _applyStructuredToBody(showMessage: false);
+    }
+  }
+
+  void _applyStructuredToBody({bool showMessage = true}) {
+    if (!_isCdrCaf && !_isFsl) return;
+    final buffer = StringBuffer();
+    buffer.writeln(_isCdrCaf ? 'CDR/SDR/CAF STRUCTURED ENTRY' : 'FSL PACKAGE STRUCTURED ENTRY');
+    buffer.writeln();
+    for (final entry in _structured.entries) {
+      buffer.writeln('${entry.key}: ${entry.value.text.trim()}');
+    }
+    buffer.writeln();
+    buffer.writeln(_isCdrCaf
+        ? 'Note: Fill the above entry fields. Preview will render the official table format.'
+        : 'Note: Fill the above entry fields. Preview will generate Form 5203 + Exhibit List + Examination Required + Custody + Magistrate forwarding/certification + Challan + Labels.');
+    body.text = buffer.toString();
+    if (showMessage && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Structured entry applied. Now preview/export.')));
+    }
+  }
+
+  Widget _structuredEntryModule() {
+    if (!_isCdrCaf && !_isFsl) return const SizedBox.shrink();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_isCdrCaf ? 'CDR / SDR / CAF Entry Module' : 'FSL Form + Challan + Label Entry Module', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            const Text('নিচের field গুলো fill/edit করুন। Preview চাপলে official form layout-এ দেখা যাবে।'),
+            const SizedBox(height: 12),
+            ..._structured.entries.map((entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: TextField(
+                    controller: entry.value,
+                    maxLines: entry.key == 'GIST' || entry.key == 'NATURE OF CRIME' || entry.key == 'NATURE OF EXAMINATION' || entry.key == 'FSL OFFICE' ? 4 : 1,
+                    decoration: InputDecoration(labelText: entry.key, border: const OutlineInputBorder()),
+                  ),
+                )),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.icon(
+                onPressed: () => _applyStructuredToBody(),
+                icon: const Icon(Icons.check),
+                label: const Text('Apply to Form Draft'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  FormNotice _currentForm({bool? finalSave}) {
+    if (_isCdrCaf || _isFsl) {
+      _applyStructuredToBody(showMessage: false);
+    }
+    return _form.copyWith(
+      title: title.text.trim(),
+      body: body.text.trim(),
+      isFinal: finalSave == true ? true : _form.isFinal,
+    );
+  }
 
   Future<FormNotice> _save({bool finalSave = false, bool askCdMention = true}) async {
     final updated = _currentForm(finalSave: finalSave);
@@ -325,6 +435,8 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
         children: [
           if (_form.isFinal)
             const Card(child: Padding(padding: EdgeInsets.all(14), child: Text('This form is final saved. Edit carefully if required.', style: TextStyle(fontWeight: FontWeight.bold)))),
+          _structuredEntryModule(),
+          const SizedBox(height: 10),
           FormHelpers.textField(controller: title, label: 'Form Title'),
           TextField(
             controller: body,

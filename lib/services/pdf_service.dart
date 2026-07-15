@@ -325,6 +325,8 @@ class PdfService {
     final is35 = form.templateId == 'bnss_35_3';
     final is94 = form.templateId == 'bnss_94' || form.templateId == 'medical_exam' || form.templateId == 'bht_injury';
     final isForwarding = form.templateId == 'forwarding';
+    final isCdrCaf = form.templateId == 'cdr_caf';
+    final isFsl = form.templateId == 'fsl';
 
     doc.addPage(
       pw.MultiPage(
@@ -338,6 +340,8 @@ class PdfService {
           if (is35) return _notice35Pdf(officer, caseFile, body);
           if (isForwarding) return _forwardingPdf(officer, caseFile, body);
           if (is94) return _notice94Pdf(officer, caseFile, body);
+          if (isCdrCaf) return _cdrCafOfficialPdf(officer, caseFile, body);
+          if (isFsl) return _fslPackageOfficialPdf(officer, caseFile, body);
           return [
             _centerBold(form.title),
             pw.SizedBox(height: 10),
@@ -351,6 +355,172 @@ class PdfService {
       ),
     );
     return doc.save();
+  }
+
+
+
+  String _extractFormField(String body, String key, {String fallback = ''}) {
+    final pattern = RegExp('^' + RegExp.escape(key) + r'\s*:\s*(.*)$', multiLine: true, caseSensitive: false);
+    final match = pattern.firstMatch(body);
+    if (match == null) return fallback;
+    final value = (match.group(1) ?? '').trim();
+    return value.isEmpty ? fallback : value;
+  }
+
+  pw.Widget _twoColRow(String left, String right, {double leftFlex = 1.0, double rightFlex = 1.25, double fontSize = 10.5}) {
+    return pw.Table(
+      border: pw.TableBorder.all(width: 0.55),
+      columnWidths: {
+        0: pw.FlexColumnWidth(leftFlex),
+        1: pw.FlexColumnWidth(rightFlex),
+      },
+      children: [
+        pw.TableRow(
+          verticalAlignment: pw.TableCellVerticalAlignment.middle,
+          children: [
+            pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(left, style: pw.TextStyle(fontSize: fontSize, fontWeight: pw.FontWeight.bold))),
+            pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(right, style: pw.TextStyle(fontSize: fontSize))),
+          ],
+        ),
+      ],
+    );
+  }
+
+  List<pw.Widget> _cdrCafOfficialPdf(OfficerProfile officer, CaseFile caseFile, String body) {
+    final ref = '${_shortPsName(officer.policeStation)} Case No-${caseFile.psCaseNo} Dated-${caseFile.caseDate}, U/S-${caseFile.sections}';
+    final gist = _extractFormField(body, 'GIST', fallback: caseFile.firGist.isEmpty ? '____________________________________________________________' : caseFile.firGist);
+    final mobile = _extractFormField(body, 'REQUIRED MOBILE/IMEI', fallback: '____________________________');
+    final user = _extractFormField(body, 'ACTUAL USER / INVOLVEMENT', fallback: '____________________________');
+    final justification = _extractFormField(body, 'JUSTIFICATION', fallback: '____________________________');
+    final dateRange = _extractFormField(body, 'CDR DATE RANGE', fallback: 'From ____________ To ____________');
+    final sdr = _extractFormField(body, 'SDR REQUIRED', fallback: 'Yes / No');
+    final caf = _extractFormField(body, 'CAF REQUIRED', fallback: 'Yes / No');
+    final imei = _extractFormField(body, 'IMEI SEARCH DATE RANGE', fallback: '---');
+    final other = _extractFormField(body, 'ANY OTHER POINTS', fallback: 'N/A');
+    final ioName = _extractFormField(body, 'IO NAME', fallback: '${officer.rank} ${officer.name}');
+    final ioPhone = _extractFormField(body, 'IO PHONE', fallback: officer.mobile);
+
+    return [
+      pw.Text('To: SP/${officer.district} =w= O/C SOG Cell, ${officer.district} =w= SDPO Kalna', style: const pw.TextStyle(fontSize: 11)),
+      pw.SizedBox(height: 14),
+      pw.Text('From: I/C ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 11)),
+      pw.SizedBox(height: 20),
+      pw.Center(child: pw.Text('REQUISITION FOR CDR/SDR/CAF', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, decoration: pw.TextDecoration.underline))),
+      pw.SizedBox(height: 8),
+      _twoColRow('NAME OF THE P.S / O.P', _shortPsName(officer.policeStation)),
+      _twoColRow('CASE REFERENCE / GDE NO.', ref),
+      _twoColRow('GIST OF THE CASE / GDE', gist, fontSize: 10.0),
+      _twoColRow('REQUIRED MOBILE NO\'S / IMEI NO\'S.', mobile),
+      _twoColRow('NAME OF THE ACTUAL USER OF THE MOBILENO/IMEI NO & HIS/HER INVOLVEMENT IN THE CASE', user),
+      _twoColRow('JUSTIFICATION OF THE REQUIRED MOBILE NO./IMEI NO. IN CASE/GDE', justification),
+      _twoColRow('REQUIRED CDR (CALL DETAILS REPORT) FROM DATE .....TO DATE', dateRange),
+      _twoColRow('REQUIRED SDR - (SUBSCRIBER DETAILS REPORT)', sdr),
+      _twoColRow('REQUIRED CAF - (CUSTOMER APPLICATION FORM)', caf),
+      _twoColRow('REQUIRED IMEI SEARCHING - FROM DATE .... TO DATE)', imei),
+      _twoColRow('NAME OF THE I.O / E.O.', ioName),
+      _twoColRow('PHONE NO. OF THE I.O / E.O.', ioPhone),
+      _twoColRow('ANY OTHER POINTS', other),
+      pw.SizedBox(height: 26),
+      pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('Submitted', style: const pw.TextStyle(fontSize: 11))),
+    ];
+  }
+
+  List<pw.Widget> _splitLongText(String text, {int chunkSize = 950, double fontSize = 10.5}) {
+    final clean = text.trim().replaceAll('\r', '');
+    if (clean.isEmpty) return [pw.Text('')];
+    final widgets = <pw.Widget>[];
+    var rest = clean;
+    while (rest.length > chunkSize) {
+      var cut = rest.lastIndexOf('\n\n', chunkSize);
+      if (cut < 300) cut = rest.lastIndexOf('\n', chunkSize);
+      if (cut < 300) cut = chunkSize;
+      final part = rest.substring(0, cut).trim();
+      widgets.add(pw.Text(part, style: pw.TextStyle(fontSize: fontSize), textAlign: pw.TextAlign.justify));
+      widgets.add(pw.SizedBox(height: 10));
+      rest = rest.substring(cut).trimLeft();
+    }
+    widgets.add(pw.Text(rest, style: pw.TextStyle(fontSize: fontSize), textAlign: pw.TextAlign.justify));
+    return widgets;
+  }
+
+  List<pw.Widget> _fslPackageOfficialPdf(OfficerProfile officer, CaseFile caseFile, String body) {
+    final ref = '${_shortPsName(officer.policeStation)} Case No ${caseFile.psCaseNo} Date ${caseFile.caseDate} u/s ${caseFile.sections}';
+    final natureCrime = _extractFormField(body, 'NATURE OF CRIME', fallback: caseFile.firGist.isEmpty ? 'The fact of the case in brief is that ________________________________________________.' : caseFile.firGist);
+    final exhibit = _extractFormField(body, 'EXHIBIT DESCRIPTION', fallback: 'Exhibit Mark "A" ---- One sealed packet/jar/container containing said to be ________________________________.');
+    final found = _extractFormField(body, 'HOW FOUND / SEIZED', fallback: 'Seized on ____________ at ________________________________ by ${officer.rank} ${officer.name}.');
+    final exam = _extractFormField(body, 'NATURE OF EXAMINATION', fallback: 'Whether relevant material/poison/blood/semen/chemical/biological trace could be detected in Exhibit Mark "A" or not.');
+    final accused = _extractFormField(body, 'PERSON IN CUSTODY', fallback: '____________________________');
+    final fslOffice = _extractFormField(body, 'FSL OFFICE', fallback: 'Head of Office & Assistant Director\nRegional Forensic Science Laboratory\nShankarpur, Durgapur\nPaschim Bardhaman, 713212');
+    final court = _extractFormField(body, 'COURT', fallback: 'Ld. C.J.M / Magistrate, ${officer.district}');
+
+    final widgets = <pw.Widget>[];
+    widgets.addAll([
+      pw.Text('West Bengal Form No- 5203', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.SizedBox(height: 8),
+      pw.Center(child: pw.Text('WEST BENGAL POLICE', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+      pw.SizedBox(height: 12),
+      pw.Text('Case No:- ${caseFile.psCaseNo}  Date ${caseFile.caseDate}', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('Police Station:- ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('Section of Law:- ${caseFile.sections}        District- ${officer.district}', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.SizedBox(height: 10),
+      pw.Center(child: pw.Text('I. NATURE OF CRIME', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+      pw.SizedBox(height: 4),
+      ..._splitLongText(natureCrime, chunkSize: 850),
+      pw.SizedBox(height: 16),
+      _submittedOfficerBlock(officer),
+      pw.NewPage(),
+      pw.Center(child: pw.Text('II. LIST OF EXHIBITS SENT FOR EXAMINATION', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+      pw.SizedBox(height: 8),
+      pw.Table(border: pw.TableBorder.all(width: .5), columnWidths: const {0: pw.FlexColumnWidth(.8), 1: pw.FlexColumnWidth(2.6), 2: pw.FlexColumnWidth(2.3), 3: pw.FlexColumnWidth(1.7), 4: pw.FlexColumnWidth(1.7)}, children: [
+        pw.TableRow(children: [_cell('Label No', bold: true), _cell('Description of the exhibit', bold: true), _cell('How and when found and by whom', bold: true), _cell('Ownership of exhibit', bold: true), _cell('Remarks', bold: true)]),
+        pw.TableRow(children: [_cell('EXHIBIT- "A"'), _cell(exhibit), _cell(found), _cell(court), _cell('May be confiscated to the State after examination / may be returned after examination')]),
+      ]),
+      pw.SizedBox(height: 14),
+      pw.Center(child: pw.Text('III. NATURE OF EXAMINATION REQUIRED', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+      pw.SizedBox(height: 4),
+      ..._splitLongText(exam, chunkSize: 800),
+      pw.NewPage(),
+      pw.Center(child: pw.Text('IV. PARTICULARS OF PERSONS IN CUSTODY', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+      pw.SizedBox(height: 8),
+      _twoColRow('Full name / particulars', accused),
+      _twoColRow('Whether on bail or in custody', '____________________________'),
+      _twoColRow('Court', court),
+      pw.SizedBox(height: 16),
+      pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('Signature and Rank of the I.O\nDated: ____________', style: const pw.TextStyle(fontSize: 10.5))),
+      pw.SizedBox(height: 18),
+      pw.Text('Memo No. ____________        Dated, the ____________ 20____', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.SizedBox(height: 8),
+      pw.Text('Forwarded to\n$fslOffice', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.SizedBox(height: 12),
+      pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('Seal', style: const pw.TextStyle(fontSize: 10.5)), pw.Text(court, style: const pw.TextStyle(fontSize: 10.5))]),
+      pw.NewPage(),
+      pw.Text('Certified that the Head of Office & Assistant Director, Regional Forensic Science Laboratory has the authority to examine the exhibits sent in connection with the case and if necessary, to take them to pieces or remove portions for the purposes of the said examination.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+      pw.SizedBox(height: 18),
+      pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('Date: ____________\nPlace: ___________', style: const pw.TextStyle(fontSize: 10.5)), pw.Text('Signature: ____________________\nCJM / MAGISTRATE', style: const pw.TextStyle(fontSize: 10.5))]),
+      pw.SizedBox(height: 22),
+      pw.Center(child: pw.Text('EXHIBIT CHALLAN', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+      pw.SizedBox(height: 8),
+      pw.Text('To\n$fslOffice\n\nThrough $court\n\nRef:- $ref', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.SizedBox(height: 8),
+      pw.Text('Sir,\nI am sending herewith the following exhibit(s) in c/w above noted case before you for examination and your opinion in the interest of investigation of the case. Kindly arrange to acknowledge receipt of the same.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+      pw.SizedBox(height: 8),
+      pw.Text('1) $exhibit', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.SizedBox(height: 16),
+      _submittedOfficerBlock(officer),
+      pw.NewPage(),
+      pw.Center(child: pw.Text('LABEL', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+      pw.SizedBox(height: 8),
+      pw.Text('To\n$fslOffice\n\nThrough $court\n\nRef:- $ref\n\nDescription of Article:\n$exhibit\n\nLabeled & prepared by me -', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.SizedBox(height: 16),
+      _submittedOfficerBlock(officer),
+      pw.SizedBox(height: 24),
+      pw.Center(child: pw.Text('LABEL - DUPLICATE / COPY', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+      pw.SizedBox(height: 8),
+      pw.Text('To\n$fslOffice\n\nThrough $court\n\nRef:- $ref\n\nDescription of Article:\n$exhibit\n\nLabeled & prepared by me -', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.SizedBox(height: 16),
+      _submittedOfficerBlock(officer),
+    ]);
+    return widgets;
   }
 
   List<pw.Widget> _notice35Pdf(OfficerProfile officer, CaseFile caseFile, String body) => [
