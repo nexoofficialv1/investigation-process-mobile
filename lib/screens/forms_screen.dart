@@ -227,12 +227,12 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     } else if (_isFsl) {
       final defaults = <String, String>{
         'NATURE OF CRIME': widget.caseFile.firGist,
-        'EXHIBIT DESCRIPTION': 'Exhibit Mark "A" ---- One sealed packet/jar/container containing said to be ________________________________ in connection with the above noted case.',
-        'HOW FOUND / SEIZED': 'Seized on ____________ at ________________________________ by ${widget.profile.rank} ${widget.profile.name} / received from ________________________________.',
-        'NATURE OF EXAMINATION': '1) Whether any poison / blood / semen / biological material / chemical / explosive / narcotic / digital trace / other relevant material could be detected in Exhibit Mark "A" or not.\n2) If detected, nature/type/source of such material and whether the same is relevant to the facts of the case.\n3) Any other points raised during examination.',
-        'PERSON IN CUSTODY': '',
+        'EXHIBITS': 'A | One sealed packet/jar/container containing said to be ________________________________ in connection with the above noted case. | Seized on ____________ at ________________________________ by ${widget.profile.rank} ${widget.profile.name} / received from ________________________________. | Ld. C.J.M / Magistrate, ${widget.profile.district} | May be confiscated to the State after examination / may be returned after examination',
+        'NATURE OF EXAMINATION': '1) Whether any poison / blood / semen / biological material / chemical / explosive / narcotic / digital trace / other relevant material could be detected in Exhibit Mark “A” or not.\n2) If detected, nature/type/source of such material and whether the same is relevant to the facts of the case.\n3) Any other points raised during examination.',
+        'PERSONS IN CUSTODY': '${widget.caseFile.accusedName.trim().isEmpty ? 'Name and address of accused' : widget.caseFile.accusedName} | Occupation | Age | Sex | Date & time of arrest | J/C / P/C / Bail / At large | Ld. Court',
         'FSL OFFICE': 'Head of Office & Assistant Director\nRegional Forensic Science Laboratory\nShankarpur, Durgapur\nPaschim Bardhaman, 713212',
         'COURT': 'Ld. C.J.M / Magistrate, ${widget.profile.district}',
+        'IO / PS CONTACT DETAILS': 'I.O. Name:- ${widget.profile.name}\nDesignation:- ${widget.profile.rank}\nMobile No. of I.O.:- ${widget.profile.mobile}\nName of the PS:- ${widget.profile.policeStation}\nDistrict:- ${widget.profile.district}\nP.S. Address:- ________________________________\nPin Code:- ________________________________\nWhatsApp No:- ${widget.profile.mobile}\nHospital/Morgue:- ________________________________\nMessenger Name & Phone:- ________________________________',
       };
       for (final entry in defaults.entries) {
         _structured[entry.key] = TextEditingController(text: _readLineValue(entry.key, fallback: entry.value));
@@ -269,13 +269,15 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
           children: [
             Text(_isCdrCaf ? 'CDR / SDR / CAF Entry Module' : 'FSL Form + Challan + Label Entry Module', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
-            const Text('নিচের field গুলো fill/edit করুন। Preview চাপলে official form layout-এ দেখা যাবে।'),
+            Text(_isFsl
+                ? 'Exhibit একাধিক হলে EXHIBITS field-এ প্রত্যেক exhibit আলাদা line-এ লিখুন: Mark | Description | How/when found | Ownership | Remarks. Accused একাধিক হলে PERSONS IN CUSTODY field-এ প্রত্যেক accused আলাদা line-এ লিখুন: Name | Occupation | Age | Sex | Arrest date/time | Bail/Custody | Court. Preview official page-wise format-এ হবে।'
+                : 'নিচের field গুলো fill/edit করুন। Preview চাপলে official form layout-এ দেখা যাবে।'),
             const SizedBox(height: 12),
             ..._structured.entries.map((entry) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: TextField(
                     controller: entry.value,
-                    maxLines: entry.key == 'GIST' || entry.key == 'NATURE OF CRIME' || entry.key == 'NATURE OF EXAMINATION' || entry.key == 'FSL OFFICE' ? 4 : 1,
+                    maxLines: entry.key == 'GIST' || entry.key == 'NATURE OF CRIME' || entry.key == 'NATURE OF EXAMINATION' || entry.key == 'FSL OFFICE' || entry.key == 'EXHIBITS' || entry.key == 'PERSONS IN CUSTODY' || entry.key == 'IO / PS CONTACT DETAILS' ? 5 : 1,
                     decoration: InputDecoration(labelText: entry.key, border: const OutlineInputBorder()),
                   ),
                 )),

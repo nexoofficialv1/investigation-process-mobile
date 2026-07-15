@@ -1,12 +1,14 @@
-# v3.2 FSL/CDR Structured Entry + PDF Spanning Fix
+# v3.3 FSL multi-exhibit / multi-accused fix
 
-Changes:
-- FSL and CDR/SDR/CAF forms now use a structured entry module in the form editor.
-- IO fills form-specific fields first; the app applies them to the form draft.
-- Preview renders official output from those structured fields.
-- Fixed PDF preview error: long FSL/CDR content is split into spanning-safe sections/pages instead of one oversized widget.
-- FSL package preview/export now generates multi-part package: Form 5203, exhibit list, nature of examination, custody/court forwarding, challan, labels.
-- CDR/SDR/CAF preview/export uses table-style official requisition rows and avoids page overflow.
-
-Known rule:
-- Official format remains locked as far as possible; data is entered in mobile-friendly fields and then rendered in official PDF/DOC preview.
+- FSL package now supports multiple exhibits.
+  - In FSL entry module, use one line per exhibit:
+    `A | Description | How/when found and by whom | Ownership of exhibit | Remarks`
+  - The remarks column remains editable.
+- FSL package now supports multiple persons in custody.
+  - Use one line per accused/person:
+    `Full name | Occupation | Age | Sex | Date & time of arrest | Whether on bail or in custody | Court`
+  - Export keeps the official `PARTICULARS OF PERSONS IN CUSTODY` table format.
+- FSL certificate, exhibit challan, IO/PS details and labels are now generated as separate pages/sections, not squeezed into one page.
+- FSL labels are generated per exhibit.
+- CDR/SDR/CAF preview now splits long gist text into continued rows to avoid PdfException overflow.
+- Existing official CD/IF5/notice format logic is not intentionally changed.

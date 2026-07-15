@@ -328,6 +328,15 @@ class PdfService {
     final isCdrCaf = form.templateId == 'cdr_caf';
     final isFsl = form.templateId == 'fsl';
 
+    if (isFsl) {
+      _addFslPackageOfficialPages(doc, officer, caseFile, body);
+      return doc.save();
+    }
+    if (isCdrCaf) {
+      _addCdrCafOfficialPages(doc, officer, caseFile, body);
+      return doc.save();
+    }
+
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -340,8 +349,6 @@ class PdfService {
           if (is35) return _notice35Pdf(officer, caseFile, body);
           if (isForwarding) return _forwardingPdf(officer, caseFile, body);
           if (is94) return _notice94Pdf(officer, caseFile, body);
-          if (isCdrCaf) return _cdrCafOfficialPdf(officer, caseFile, body);
-          if (isFsl) return _fslPackageOfficialPdf(officer, caseFile, body);
           return [
             _centerBold(form.title),
             pw.SizedBox(height: 10),
@@ -358,6 +365,234 @@ class PdfService {
   }
 
 
+
+
+  List<String> _splitChunks(String text, {int max = 820}) {
+    final clean = text.trim();
+    if (clean.isEmpty) return [''];
+    final out = <String>[];
+    var rest = clean;
+    while (rest.length > max) {
+      var cut = rest.lastIndexOf(' ', max);
+      if (cut < 250) cut = max;
+      out.add(rest.substring(0, cut).trim());
+      rest = rest.substring(cut).trimLeft();
+    }
+    if (rest.isNotEmpty) out.add(rest);
+    return out;
+  }
+
+  List<List<String>> _parsePipeRows(String raw, int count, {required List<String> fallback}) {
+    final lines = raw
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (lines.isEmpty) return [fallback];
+    return lines.map((line) {
+      final parts = line.split('|').map((e) => e.trim()).toList();
+      while (parts.length < count) {
+        parts.add('');
+      }
+      return parts.take(count).toList();
+    }).toList();
+  }
+
+  pw.TableRow _tableRow(List<String> cells, {bool header = false, double fontSize = 9.4}) {
+    return pw.TableRow(
+      verticalAlignment: pw.TableCellVerticalAlignment.middle,
+      children: cells
+          .map((text) => pw.Padding(
+                padding: const pw.EdgeInsets.all(4),
+                child: pw.Text(
+                  text,
+                  style: pw.TextStyle(fontSize: fontSize, fontWeight: header ? pw.FontWeight.bold : pw.FontWeight.normal),
+                  textAlign: header ? pw.TextAlign.center : pw.TextAlign.left,
+                ),
+              ))
+          .toList(),
+    );
+  }
+
+  void _addCdrCafOfficialPages(pw.Document doc, OfficerProfile officer, CaseFile caseFile, String body) {
+    final ref = '${_shortPsName(officer.policeStation)} Case No-${caseFile.psCaseNo} Dated-${caseFile.caseDate}, U/S-${caseFile.sections}';
+    final gist = _extractFormField(body, 'GIST', fallback: caseFile.firGist.isEmpty ? '____________________________________________________________' : caseFile.firGist);
+    final mobile = _extractFormField(body, 'REQUIRED MOBILE/IMEI', fallback: '____________________________');
+    final user = _extractFormField(body, 'ACTUAL USER / INVOLVEMENT', fallback: '____________________________');
+    final justification = _extractFormField(body, 'JUSTIFICATION', fallback: '____________________________');
+    final dateRange = _extractFormField(body, 'CDR DATE RANGE', fallback: 'From ____________ To ____________');
+    final sdr = _extractFormField(body, 'SDR REQUIRED', fallback: 'Yes / No');
+    final caf = _extractFormField(body, 'CAF REQUIRED', fallback: 'Yes / No');
+    final imei = _extractFormField(body, 'IMEI SEARCH DATE RANGE', fallback: '---');
+    final other = _extractFormField(body, 'ANY OTHER POINTS', fallback: 'N/A');
+    final ioName = _extractFormField(body, 'IO NAME', fallback: '${officer.rank} ${officer.name}');
+    final ioPhone = _extractFormField(body, 'IO PHONE', fallback: officer.mobile);
+    final rows = <pw.Widget>[
+      _twoColRow('NAME OF THE P.S / O.P', _shortPsName(officer.policeStation)),
+      _twoColRow('CASE REFERENCE / GDE NO.', ref),
+    ];
+    final gistParts = _splitChunks(gist, max: 760);
+    for (var i = 0; i < gistParts.length; i++) {
+      rows.add(_twoColRow(i == 0 ? 'GIST OF THE CASE / GDE' : 'GIST OF THE CASE / GDE (CONTINUED)', gistParts[i], fontSize: 9.3));
+    }
+    rows.addAll([
+      _twoColRow('REQUIRED MOBILE NO\'S / IMEI NO\'S.', mobile),
+      _twoColRow('NAME OF THE ACTUAL USER OF THE MOBILENO/IMEI NO & HIS/HER INVOLVEMENT IN THE CASE', user, fontSize: 9.6),
+      _twoColRow('JUSTIFICATION OF THE REQUIRED MOBILE NO./IMEI NO. IN CASE/GDE', justification, fontSize: 9.6),
+      _twoColRow('REQUIRED CDR (CALL DETAILS REPORT) FROM DATE .....TO DATE', dateRange),
+      _twoColRow('REQUIRED SDR - (SUBSCRIBER DETAILS REPORT)', sdr),
+      _twoColRow('REQUIRED CAF - (CUSTOMER APPLICATION FORM)', caf),
+      _twoColRow('REQUIRED IMEI SEARCHING - FROM DATE .... TO DATE)', imei),
+      _twoColRow('NAME OF THE I.O / E.O.', ioName),
+      _twoColRow('PHONE NO. OF THE I.O / E.O.', ioPhone),
+      _twoColRow('ANY OTHER POINTS', other),
+      pw.SizedBox(height: 26),
+      pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('Submitted', style: const pw.TextStyle(fontSize: 11))),
+    ]);
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(32, 24, 32, 24),
+      build: (_) => [
+        pw.Text('To: SP/${officer.district} =w= O/C SOG Cell, ${officer.district} =w= SDPO Kalna', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.SizedBox(height: 12),
+        pw.Text('From: I/C ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.SizedBox(height: 18),
+        pw.Center(child: pw.Text('REQUISITION FOR CDR/SDR/CAF', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, decoration: pw.TextDecoration.underline))),
+        pw.SizedBox(height: 8),
+        ...rows,
+      ],
+    ));
+  }
+
+  void _addFslPackageOfficialPages(pw.Document doc, OfficerProfile officer, CaseFile caseFile, String body) {
+    final ref = '${_shortPsName(officer.policeStation)} Case No ${caseFile.psCaseNo} Date ${caseFile.caseDate} u/s ${caseFile.sections}';
+    final natureCrime = _extractFormField(body, 'NATURE OF CRIME', fallback: caseFile.firGist.isEmpty ? 'The fact of the case in brief is that ________________________________________________.' : caseFile.firGist);
+    final exhibitsRaw = _extractFormField(body, 'EXHIBITS', fallback: _extractFormField(body, 'EXHIBIT DESCRIPTION', fallback: 'A | One sealed packet/jar/container containing said to be ________________________________. | Seized on ____________ at ________________________________ by ${officer.rank} ${officer.name}. | Ld. C.J.M / Magistrate, ${officer.district} | May be confiscated to the State after examination / may be returned after examination'));
+    final exam = _extractFormField(body, 'NATURE OF EXAMINATION', fallback: 'Whether relevant material/poison/blood/semen/chemical/biological trace could be detected in Exhibit Mark “A” or not.');
+    final accusedRaw = _extractFormField(body, 'PERSONS IN CUSTODY', fallback: _extractFormField(body, 'PERSON IN CUSTODY', fallback: '${caseFile.accusedName} | Occupation | Age | Sex | Date & time of arrest | J/C / P/C / Bail / At large | Ld. Court'));
+    final fslOffice = _extractFormField(body, 'FSL OFFICE', fallback: 'Head of Office & Assistant Director\nRegional Forensic Science Laboratory\nShankarpur, Durgapur\nPaschim Bardhaman, 713212');
+    final court = _extractFormField(body, 'COURT', fallback: 'Ld. C.J.M / Magistrate, ${officer.district}');
+    final contact = _extractFormField(body, 'IO / PS CONTACT DETAILS', fallback: 'I.O. Name:- ${officer.name}\nDesignation:- ${officer.rank}\nMobile No. of I.O.:- ${officer.mobile}\nName of the PS:- ${officer.policeStation}\nDistrict:- ${officer.district}');
+    final exhibits = _parsePipeRows(exhibitsRaw, 5, fallback: ['A', 'One sealed packet/jar/container containing said to be ________________________________.', 'Seized on ____________ at ________________________________ by ${officer.rank} ${officer.name}.', court, 'May be confiscated to the State after examination / may be returned after examination']);
+    final accusedRows = _parsePipeRows(accusedRaw, 7, fallback: [caseFile.accusedName.isEmpty ? '____________________' : caseFile.accusedName, 'Occupation', 'Age', 'Sex', 'Date & time of arrest', 'J/C / P/C / Bail / At large', court]);
+
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(42, 30, 42, 30),
+      build: (_) => [
+        pw.Text('West Bengal Form No- 5203', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.SizedBox(height: 8),
+        pw.Center(child: pw.Text('WEST BENGAL POLICE', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+        pw.SizedBox(height: 12),
+        pw.Text('Case No:- ${caseFile.psCaseNo}  Date ${caseFile.caseDate}', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('Police Station:- ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('Section of Law:- ${caseFile.sections}        District- ${officer.district}', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.SizedBox(height: 10),
+        pw.Center(child: pw.Text('I. NATURE OF CRIME', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+        pw.SizedBox(height: 4),
+        ..._splitLongText(natureCrime, chunkSize: 850),
+        pw.SizedBox(height: 14),
+        _submittedOfficerBlock(officer),
+      ],
+    ));
+
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(32, 28, 32, 28),
+      build: (_) => [
+        pw.Center(child: pw.Text('II. LIST OF EXHIBITS SENT FOR EXAMINATION', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+        pw.SizedBox(height: 8),
+        pw.Table(
+          border: pw.TableBorder.all(width: .5),
+          columnWidths: const {0: pw.FlexColumnWidth(.75), 1: pw.FlexColumnWidth(2.7), 2: pw.FlexColumnWidth(2.1), 3: pw.FlexColumnWidth(1.55), 4: pw.FlexColumnWidth(1.55)},
+          children: [
+            _tableRow(['Label No', 'Description of the exhibit', 'How and when found and by whom', 'Ownership of exhibit', 'Remarks'], header: true, fontSize: 8.7),
+            ...exhibits.map((e) => _tableRow(['EXHIBIT- “${e[0]}”', e[1], e[2], e[3], e[4]], fontSize: 8.5)),
+          ],
+        ),
+        pw.SizedBox(height: 14),
+        pw.Center(child: pw.Text('III. NATURE OF EXAMINATION REQUIRED', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+        pw.SizedBox(height: 4),
+        ..._splitLongText(exam, chunkSize: 850),
+      ],
+    ));
+
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(30, 28, 30, 28),
+      build: (_) => [
+        pw.Center(child: pw.Text('IV. PARTICULARS OF PERSONS IN CUSTODY', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+        pw.SizedBox(height: 8),
+        pw.Table(
+          border: pw.TableBorder.all(width: .5),
+          columnWidths: const {0: pw.FlexColumnWidth(.55), 1: pw.FlexColumnWidth(2.2), 2: pw.FlexColumnWidth(1.05), 3: pw.FlexColumnWidth(.65), 4: pw.FlexColumnWidth(.65), 5: pw.FlexColumnWidth(1.25), 6: pw.FlexColumnWidth(1.25), 7: pw.FlexColumnWidth(1.25)},
+          children: [
+            _tableRow(['SL No.', 'Full name', 'Occupation', 'Age', 'Sex', 'Date & time of arrest', 'Whether on bail or in custody', 'Court'], header: true, fontSize: 8.2),
+            ...accusedRows.asMap().entries.map((entry) => _tableRow(['${entry.key + 1}', ...entry.value], fontSize: 8.1)),
+          ],
+        ),
+        pw.SizedBox(height: 18),
+        pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('………………………………………\nSignature and Rank of the I.O\nDated…………………', style: const pw.TextStyle(fontSize: 10.5))),
+        pw.SizedBox(height: 18),
+        pw.Text('Memo No……………..               Dated, the………..20………', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.SizedBox(height: 8),
+        pw.Text('Forwarded to\n$fslOffice', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.SizedBox(height: 12),
+        pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('Seal', style: const pw.TextStyle(fontSize: 10.5)), pw.Text(court, style: const pw.TextStyle(fontSize: 10.5))]),
+      ],
+    ));
+
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(42, 30, 42, 30),
+      build: (_) => [
+        pw.Text('Certified that the Head of office & Assistant Director, Regional Forensic Science Laboratory, to the Govt. of West Bengal has the authority to examine the exhibits sent to him in connection with the case of State versus ${caseFile.accusedName.isEmpty ? '____________________' : caseFile.accusedName} under section ${caseFile.sections} and if necessary, to take them to pieces or remove portions for the purposes of the said examination.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+        pw.SizedBox(height: 18),
+        pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('Date………………\nPlace…………..', style: const pw.TextStyle(fontSize: 10.5)), pw.Text('Signature………………………………………….\nCJM / MAGISTRATE', style: const pw.TextStyle(fontSize: 10.5))]),
+        pw.SizedBox(height: 18),
+        pw.Text('Certified to be signed by Ld. Chief Judicial Magistrate / Magistrate and forwarded to the Head of office & Assistant Director, Regional Forensic Science Laboratory with Exhibit.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+      ],
+    ));
+
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(42, 30, 42, 30),
+      build: (_) => [
+        pw.Center(child: pw.Text('Exhibit Challan', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+        pw.SizedBox(height: 10),
+        pw.Text('To\n$fslOffice\n\nThrough $court\nRef:- $ref', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.SizedBox(height: 10),
+        pw.Text('Sir,\nI am sending herewith the following Exhibits in c/w above noted case before you for examination and your opinion for the interest of investigation of the case.\n\nKindly arrange to acknowledge and receipt the same.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+        pw.SizedBox(height: 10),
+        ...exhibits.asMap().entries.map((entry) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 5), child: pw.Text('${entry.key + 1}) Exhibit Mark “${entry.value[0]}” ---- ${entry.value[1]}', style: const pw.TextStyle(fontSize: 10.5)))),
+        pw.SizedBox(height: 16),
+        _submittedOfficerBlock(officer),
+      ],
+    ));
+
+    doc.addPage(pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(42, 30, 42, 30),
+      build: (_) => [
+        pw.Text(contact, style: const pw.TextStyle(fontSize: 10.5)),
+      ],
+    ));
+
+    for (var i = 0; i < exhibits.length; i++) {
+      final e = exhibits[i];
+      doc.addPage(pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.fromLTRB(42, 30, 42, 30),
+        build: (_) => [
+          pw.Center(child: pw.Text(i == 0 ? 'Label' : 'Label - Exhibit ${e[0]}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+          pw.SizedBox(height: 8),
+          pw.Text('To\n$fslOffice\n\nThrough $court\n\nRef:- $ref\n\nDescription of Article.\nExhibit Mark “${e[0]}” ---- ${e[1]}\n\nLabeled & prepared by me -', style: const pw.TextStyle(fontSize: 10.5)),
+          pw.SizedBox(height: 16),
+          _submittedOfficerBlock(officer),
+        ],
+      ));
+    }
+  }
 
   String _extractFormField(String body, String key, {String fallback = ''}) {
     final pattern = RegExp('^' + RegExp.escape(key) + r'\s*:\s*(.*)$', multiLine: true, caseSensitive: false);
