@@ -19,7 +19,7 @@ class InvestigationProcessApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Investigation & Process',
+      title: 'INVESTIGO',
       theme: AppTheme.light(),
       home: const StartupGate(),
     );

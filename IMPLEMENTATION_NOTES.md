@@ -41,3 +41,11 @@ The PDF/DOC output must keep the official West Bengal Form No. 5203 format. UI e
 ## v3.6 notes
 
 The Forms module now contains a wider master registry for case forms, arrest/accused forms, UD forms, accident/MACT forms, and final documents. The Memo of Evidence template is generated from available case data and contains placeholders for investigation/CD/evidence-derived tables such as accused, seizure, 180/183 BNSS statements, medical, inquest/PM/FSL, evidence chart, and IO analysis. Further automation should map Investigation/Evidence/CD stored rows directly into these template rows.
+
+
+## v3.7 Branding Patch
+- App name changed to INVESTIGO.
+- Splash/intro screen updated with animated professional investigation logo, subtitle and © Astra Technologies.
+- Removed Dev: Bappa Roy from UI.
+- Dashboard header/footer branding updated.
+- Official generated documents remain clean without Astra Technologies footer.

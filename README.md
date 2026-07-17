@@ -1,4 +1,4 @@
-# Investigation & Process Mobile MVP v3.4
+# INVESTIGO Mobile MVP v3.4
 
 Adds simpler FSL form fill-up workflow with point-wise prefilled entry cards for exhibits and persons in custody. Official FSL output format remains locked.
 
@@ -18,3 +18,11 @@ Added master form categories and templates:
 - Additional Inquest Report U/s 196 BNSS
 
 All new forms are case-tagged, pre-filled from selected case/officer data, editable before preview/export, and covered by the global “Mention in Case Diary?” popup rule. Official documents do not include © Astra Technologies.
+
+
+## v3.7 Branding Patch
+- App name changed to INVESTIGO.
+- Splash/intro screen updated with animated professional investigation logo, subtitle and © Astra Technologies.
+- Removed Dev: Bappa Roy from UI.
+- Dashboard header/footer branding updated.
+- Official generated documents remain clean without Astra Technologies footer.

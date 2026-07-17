@@ -52,7 +52,7 @@ class _BackupScreenState extends State<BackupScreen> {
       }
     }
     return {
-      'app': 'Investigation & Process',
+      'app': 'INVESTIGO',
       'backupVersion': 1,
       'createdAt': DateTime.now().toIso8601String(),
       'officer': widget.profile.toJson(),
@@ -77,7 +77,7 @@ class _BackupScreenState extends State<BackupScreen> {
         _status = 'Backup created: ${file.path}';
       });
       if (share) {
-        await Share.shareXFiles([XFile(file.path)], text: 'Investigation & Process local backup');
+        await Share.shareXFiles([XFile(file.path)], text: 'INVESTIGO local backup');
       }
     } catch (e) {
       if (!mounted) return;

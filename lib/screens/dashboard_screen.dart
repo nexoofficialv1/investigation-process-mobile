@@ -268,8 +268,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('Investigation & Process', style: TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w900)),
+          const Text('INVESTIGO', style: TextStyle(color: Colors.white, fontSize: 24, letterSpacing: 1.1, fontWeight: FontWeight.w900)),
           const SizedBox(height: 6),
+          const Text('Investigation Process Manager', style: TextStyle(color: Color(0xFFE6C773), fontWeight: FontWeight.w800)),
+          const SizedBox(height: 4),
           Text('${_profile.rank} ${_profile.name} • ${_profile.policeStation}', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w700)),
         ],
       ),
@@ -328,7 +330,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 18),
       child: Column(
         children: [
-          const Text('Welcome to Investigation Desk', textAlign: TextAlign.center, style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: AppTheme.deepGreen)),
+          const Text('Welcome to INVESTIGO', textAlign: TextAlign.center, style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900, color: AppTheme.deepGreen)),
+          const SizedBox(height: 6),
+          const Text('© Astra Technologies', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900, color: AppTheme.deepGreen)),
           const SizedBox(height: 14),
           if (_cases.isEmpty)
             const Text('Create your first case to generate CD, statement, forms and IF5.', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600))
