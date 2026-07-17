@@ -1,17 +1,20 @@
-# Investigation & Process Mobile MVP v3.2
+# Investigation & Process Mobile MVP v3.4
 
-This patch updates FSL and CDR/SDR/CAF form workflow.
+Adds simpler FSL form fill-up workflow with point-wise prefilled entry cards for exhibits and persons in custody. Official FSL output format remains locked.
 
-## Highlights
-- FSL Form + Challan + Label structured fill-up module
-- CDR/SDR/CAF structured fill-up module
-- Official preview before PDF/DOC export
-- Fixes PdfException caused by oversized widgets in preview/export
-- Global “Mention in Case Diary?” rule continues after save/final save/preview/export
+### v3.5 Miscellaneous
+This version adds a Miscellaneous module with Reports, Duty Column/Duty Roster, and Inventory management. Duty and inventory entries can be saved locally and exported as PDF/DOC after preview.
 
 
-## v3.3 Update
-- FSL multi-exhibit and multi-accused entry support.
-- Separate certificate/challan/label pages for FSL package.
-- Editable remarks column in exhibit list.
-- CDR/FSL PDF preview overflow prevention.
+## v3.6 Master Forms + Memo of Evidence
+
+Added master form categories and templates:
+- Notice U/s 179 BNSS
+- Notice U/s 195 BNSS
+- Arrest Memo
+- Nominated Person / Arrest Information Notice
+- Memo of Evidence
+- Form 54 Accident Information Report
+- Additional Inquest Report U/s 196 BNSS
+
+All new forms are case-tagged, pre-filled from selected case/officer data, editable before preview/export, and covered by the global “Mention in Case Diary?” popup rule. Official documents do not include © Astra Technologies.

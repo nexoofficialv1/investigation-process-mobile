@@ -1,14 +1,43 @@
-# v3.3 FSL multi-exhibit / multi-accused fix
+# v3.4 FSL Simple Step-by-Step Entry Module
 
-- FSL package now supports multiple exhibits.
-  - In FSL entry module, use one line per exhibit:
-    `A | Description | How/when found and by whom | Ownership of exhibit | Remarks`
-  - The remarks column remains editable.
-- FSL package now supports multiple persons in custody.
-  - Use one line per accused/person:
-    `Full name | Occupation | Age | Sex | Date & time of arrest | Whether on bail or in custody | Court`
-  - Export keeps the official `PARTICULARS OF PERSONS IN CUSTODY` table format.
-- FSL certificate, exhibit challan, IO/PS details and labels are now generated as separate pages/sections, not squeezed into one page.
-- FSL labels are generated per exhibit.
-- CDR/SDR/CAF preview now splits long gist text into continued rows to avoid PdfException overflow.
-- Existing official CD/IF5/notice format logic is not intentionally changed.
+This patch improves FSL Form Fill Up usability without changing the official Form 5203 output format.
+
+## Key Changes
+
+- FSL form now has a simple step-by-step entry module.
+- Pre-filled fields remain available from selected case and officer profile.
+- Each official FSL point has a separate input area before preview/export.
+- Exhibit entry is now row-based with one card per exhibit:
+  - Label / Exhibit Mark
+  - Description of exhibit
+  - How and when found and by whom
+  - Ownership of exhibit
+  - Remarks (editable)
+- Multiple exhibits can be added with “Add Exhibit”.
+- Persons in custody now have one card per person:
+  - Full name
+  - Occupation
+  - Age
+  - Sex
+  - Date & time of arrest
+  - Bail/Custody status
+  - Court
+- Multiple persons in custody can be added with “Add Person”.
+- The structured entry is converted into the existing official FSL package body before Preview/PDF/DOC export.
+
+## Official Format Rule
+
+The PDF/DOC output must keep the official West Bengal Form No. 5203 format. UI entry is simplified, but the final form layout should not be redesigned.
+
+## v3.5 Miscellaneous Module
+- Added a dashboard Miscellaneous card.
+- Miscellaneous contains three tabs: Reports, Duty Column, and Inventory.
+- Reports opens existing case-linked/general report generator.
+- Duty Column stores date-wise duty type, staff/officer name, rank, duty point/place, time, mobile, and remarks; it supports Save, Preview, PDF export, and DOC export.
+- Inventory stores item, category, quantity/balance stock, issued to, issue/return date, condition, and remarks; it supports Save, Preview, PDF export, and DOC export.
+- Miscellaneous reports are kept separate from official case documents unless the report generator is linked to a case.
+
+
+## v3.6 notes
+
+The Forms module now contains a wider master registry for case forms, arrest/accused forms, UD forms, accident/MACT forms, and final documents. The Memo of Evidence template is generated from available case data and contains placeholders for investigation/CD/evidence-derived tables such as accused, seizure, 180/183 BNSS statements, medical, inquest/PM/FSL, evidence chart, and IO analysis. Further automation should map Investigation/Evidence/CD stored rows directly into these template rows.
