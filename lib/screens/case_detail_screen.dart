@@ -4,6 +4,8 @@ import '../models/case_file.dart';
 import '../models/cd_entry.dart';
 import '../models/officer_profile.dart';
 import '../services/local_store_service.dart';
+import '../services/pdf_service.dart';
+import '../services/doc_export_service.dart';
 import 'case_form_screen.dart';
 import 'cd_builder_screen.dart';
 import 'cd_editor_screen.dart';
@@ -13,6 +15,7 @@ import 'compliance_screen.dart';
 import 'sketch_map_screen.dart';
 import 'evidence_screen.dart';
 import 'investigation_screen.dart';
+import 'pdf_preview_screen.dart';
 
 class CaseDetailScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -123,6 +126,60 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
     );
   }
 
+
+  bool get _firstFiveCdsReady {
+    final numbers = _cds.map((e) => e.cdNumber).toSet();
+    for (var i = 1; i <= 5; i++) {
+      if (!numbers.contains(i)) return false;
+    }
+    return true;
+  }
+
+  List<CdEntry> get _firstFiveCds {
+    final byNumber = {for (final cd in _cds) cd.cdNumber: cd};
+    return [for (var i = 1; i <= 5; i++) byNumber[i]!];
+  }
+
+  Future<void> _previewCdOneToFive() async {
+    if (!_firstFiveCdsReady) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('CD 1 থেকে CD 5 পর্যন্ত তৈরি হলে একসাথে share/export করা যাবে।')));
+      return;
+    }
+    final cds = _firstFiveCds;
+    final baseName = 'CD_1_to_5_${_caseFile.psCaseNo.replaceAll('/', '_')}';
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfPreviewScreen(
+          title: 'Preview CD 1 to 5',
+          filename: '$baseName.pdf',
+          docFilename: '$baseName.doc',
+          buildPdf: () => PdfService().buildCaseDiaryBundlePdf(officer: widget.profile, caseFile: _caseFile, cds: cds),
+          buildDoc: () => DocExportService().buildCaseDiaryBundleDoc(officer: widget.profile, caseFile: _caseFile, cds: cds),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteCd(CdEntry cd) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Delete CD-${cd.cdNumber}?'),
+        content: const Text('এই CD delete করলে local saved CD list থেকে মুছে যাবে। আগে backup নেওয়া থাকলে ভালো।'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          FilledButton.icon(onPressed: () => Navigator.pop(context, true), icon: const Icon(Icons.delete), label: const Text('Delete')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await _store.deleteCd(cd.id);
+    await _load();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('CD-${cd.cdNumber} deleted')));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,7 +231,22 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               ],
             ),
             const SizedBox(height: 18),
-            Text('Case Diaries', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                Expanded(child: Text('Case Diaries', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
+                if (_firstFiveCdsReady)
+                  OutlinedButton.icon(
+                    onPressed: _previewCdOneToFive,
+                    icon: const Icon(Icons.ios_share),
+                    label: const Text('Share CD 1-5'),
+                  ),
+              ],
+            ),
+            if (!_firstFiveCdsReady)
+              const Padding(
+                padding: EdgeInsets.only(top: 4, bottom: 4),
+                child: Text('CD 1-5 ready হলে এখানে একসাথে Preview/Share PDF-DOC option দেখাবে।', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              ),
             const SizedBox(height: 8),
             if (_cds.isEmpty)
               const Card(child: Padding(padding: EdgeInsets.all(18), child: Text('No CD created yet. Tap Add CD.')))
@@ -183,7 +255,16 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                     child: ListTile(
                       title: Text('CD-${cd.cdNumber}', style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text('${cd.cdDate} • ${cd.isFinal ? 'Final Saved' : 'Draft'}'),
-                      trailing: const Icon(Icons.chevron_right),
+                      trailing: PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == 'open') _openCd(cd);
+                          if (value == 'delete') _deleteCd(cd);
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'open', child: Text('Open/Edit')),
+                          PopupMenuItem(value: 'delete', child: Text('Delete CD')),
+                        ],
+                      ),
                       onTap: () => _openCd(cd),
                     ),
                   )),

@@ -67,6 +67,50 @@ class UdCase {
   final String witness1NameAddress;
   final String witness2NameAddress;
   final String briefFacts;
+
+  // v4.0 UD package: Surathal Report / Dead Body Challan / UD Final Report.
+  final String inquestFromTime;
+  final String inquestToTime;
+  final String morgueOrPlace;
+  final String escortConstable;
+  final String bodyOrientation;
+  final String weight;
+  final String eyeState;
+  final String mouthState;
+  final String noseCondition;
+  final String earCondition;
+  final String hairDescription;
+  final String beardDescription;
+  final String moustacheDescription;
+  final String handsFingers;
+  final String legsDescription;
+  final String nailsDescription;
+  final String domGender;
+  final String nearRelativeVersion;
+  final String pmMorgueName;
+  final String handoverTo;
+  final String preparedDate;
+
+  final String challanRef;
+  final String deceasedCaste;
+  final String challanResidence;
+  final String bodyFoundPlaceChallan;
+  final String dispatchDateHourDistance;
+  final String dispatchMeans;
+  final String identifyingPoliceOfficer;
+  final String marksOnBody;
+  final String causeOfDeathKnown;
+  final String challanRemarksArticles;
+
+  final String firstInformationDetails;
+  final String spotVisitDateHour;
+  final String finalReportDispatchDateHour;
+  final String finalReportNarrative;
+  final String pmReportDetails;
+  final String pmDoctorOpinion;
+  final String finalFinding;
+  final String finalPrayer;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -139,6 +183,45 @@ class UdCase {
     required this.witness1NameAddress,
     required this.witness2NameAddress,
     required this.briefFacts,
+    required this.inquestFromTime,
+    required this.inquestToTime,
+    required this.morgueOrPlace,
+    required this.escortConstable,
+    required this.bodyOrientation,
+    required this.weight,
+    required this.eyeState,
+    required this.mouthState,
+    required this.noseCondition,
+    required this.earCondition,
+    required this.hairDescription,
+    required this.beardDescription,
+    required this.moustacheDescription,
+    required this.handsFingers,
+    required this.legsDescription,
+    required this.nailsDescription,
+    required this.domGender,
+    required this.nearRelativeVersion,
+    required this.pmMorgueName,
+    required this.handoverTo,
+    required this.preparedDate,
+    required this.challanRef,
+    required this.deceasedCaste,
+    required this.challanResidence,
+    required this.bodyFoundPlaceChallan,
+    required this.dispatchDateHourDistance,
+    required this.dispatchMeans,
+    required this.identifyingPoliceOfficer,
+    required this.marksOnBody,
+    required this.causeOfDeathKnown,
+    required this.challanRemarksArticles,
+    required this.firstInformationDetails,
+    required this.spotVisitDateHour,
+    required this.finalReportDispatchDateHour,
+    required this.finalReportNarrative,
+    required this.pmReportDetails,
+    required this.pmDoctorOpinion,
+    required this.finalFinding,
+    required this.finalPrayer,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -214,6 +297,45 @@ class UdCase {
       witness1NameAddress: '',
       witness2NameAddress: '',
       briefFacts: '',
+      inquestFromTime: '',
+      inquestToTime: '',
+      morgueOrPlace: '',
+      escortConstable: '',
+      bodyOrientation: '',
+      weight: '',
+      eyeState: '',
+      mouthState: '',
+      noseCondition: '',
+      earCondition: '',
+      hairDescription: '',
+      beardDescription: '',
+      moustacheDescription: '',
+      handsFingers: '',
+      legsDescription: '',
+      nailsDescription: '',
+      domGender: '',
+      nearRelativeVersion: '',
+      pmMorgueName: '',
+      handoverTo: '',
+      preparedDate: '',
+      challanRef: '',
+      deceasedCaste: '',
+      challanResidence: '',
+      bodyFoundPlaceChallan: '',
+      dispatchDateHourDistance: '',
+      dispatchMeans: '',
+      identifyingPoliceOfficer: '',
+      marksOnBody: '',
+      causeOfDeathKnown: '',
+      challanRemarksArticles: '',
+      firstInformationDetails: '',
+      spotVisitDateHour: '',
+      finalReportDispatchDateHour: '',
+      finalReportNarrative: '',
+      pmReportDetails: '',
+      pmDoctorOpinion: '',
+      finalFinding: '',
+      finalPrayer: '',
       createdAt: now,
       updatedAt: now,
     );
@@ -290,6 +412,45 @@ class UdCase {
         witness1NameAddress: v['witness1NameAddress'] ?? witness1NameAddress,
         witness2NameAddress: v['witness2NameAddress'] ?? witness2NameAddress,
         briefFacts: v['briefFacts'] ?? briefFacts,
+        inquestFromTime: v['inquestFromTime'] ?? inquestFromTime,
+        inquestToTime: v['inquestToTime'] ?? inquestToTime,
+        morgueOrPlace: v['morgueOrPlace'] ?? morgueOrPlace,
+        escortConstable: v['escortConstable'] ?? escortConstable,
+        bodyOrientation: v['bodyOrientation'] ?? bodyOrientation,
+        weight: v['weight'] ?? weight,
+        eyeState: v['eyeState'] ?? eyeState,
+        mouthState: v['mouthState'] ?? mouthState,
+        noseCondition: v['noseCondition'] ?? noseCondition,
+        earCondition: v['earCondition'] ?? earCondition,
+        hairDescription: v['hairDescription'] ?? hairDescription,
+        beardDescription: v['beardDescription'] ?? beardDescription,
+        moustacheDescription: v['moustacheDescription'] ?? moustacheDescription,
+        handsFingers: v['handsFingers'] ?? handsFingers,
+        legsDescription: v['legsDescription'] ?? legsDescription,
+        nailsDescription: v['nailsDescription'] ?? nailsDescription,
+        domGender: v['domGender'] ?? domGender,
+        nearRelativeVersion: v['nearRelativeVersion'] ?? nearRelativeVersion,
+        pmMorgueName: v['pmMorgueName'] ?? pmMorgueName,
+        handoverTo: v['handoverTo'] ?? handoverTo,
+        preparedDate: v['preparedDate'] ?? preparedDate,
+        challanRef: v['challanRef'] ?? challanRef,
+        deceasedCaste: v['deceasedCaste'] ?? deceasedCaste,
+        challanResidence: v['challanResidence'] ?? challanResidence,
+        bodyFoundPlaceChallan: v['bodyFoundPlaceChallan'] ?? bodyFoundPlaceChallan,
+        dispatchDateHourDistance: v['dispatchDateHourDistance'] ?? dispatchDateHourDistance,
+        dispatchMeans: v['dispatchMeans'] ?? dispatchMeans,
+        identifyingPoliceOfficer: v['identifyingPoliceOfficer'] ?? identifyingPoliceOfficer,
+        marksOnBody: v['marksOnBody'] ?? marksOnBody,
+        causeOfDeathKnown: v['causeOfDeathKnown'] ?? causeOfDeathKnown,
+        challanRemarksArticles: v['challanRemarksArticles'] ?? challanRemarksArticles,
+        firstInformationDetails: v['firstInformationDetails'] ?? firstInformationDetails,
+        spotVisitDateHour: v['spotVisitDateHour'] ?? spotVisitDateHour,
+        finalReportDispatchDateHour: v['finalReportDispatchDateHour'] ?? finalReportDispatchDateHour,
+        finalReportNarrative: v['finalReportNarrative'] ?? finalReportNarrative,
+        pmReportDetails: v['pmReportDetails'] ?? pmReportDetails,
+        pmDoctorOpinion: v['pmDoctorOpinion'] ?? pmDoctorOpinion,
+        finalFinding: v['finalFinding'] ?? finalFinding,
+        finalPrayer: v['finalPrayer'] ?? finalPrayer,
         createdAt: createdAt,
         updatedAt: DateTime.now(),
       );
@@ -363,6 +524,45 @@ class UdCase {
         'witness1NameAddress': witness1NameAddress,
         'witness2NameAddress': witness2NameAddress,
         'briefFacts': briefFacts,
+        'inquestFromTime': inquestFromTime,
+        'inquestToTime': inquestToTime,
+        'morgueOrPlace': morgueOrPlace,
+        'escortConstable': escortConstable,
+        'bodyOrientation': bodyOrientation,
+        'weight': weight,
+        'eyeState': eyeState,
+        'mouthState': mouthState,
+        'noseCondition': noseCondition,
+        'earCondition': earCondition,
+        'hairDescription': hairDescription,
+        'beardDescription': beardDescription,
+        'moustacheDescription': moustacheDescription,
+        'handsFingers': handsFingers,
+        'legsDescription': legsDescription,
+        'nailsDescription': nailsDescription,
+        'domGender': domGender,
+        'nearRelativeVersion': nearRelativeVersion,
+        'pmMorgueName': pmMorgueName,
+        'handoverTo': handoverTo,
+        'preparedDate': preparedDate,
+        'challanRef': challanRef,
+        'deceasedCaste': deceasedCaste,
+        'challanResidence': challanResidence,
+        'bodyFoundPlaceChallan': bodyFoundPlaceChallan,
+        'dispatchDateHourDistance': dispatchDateHourDistance,
+        'dispatchMeans': dispatchMeans,
+        'identifyingPoliceOfficer': identifyingPoliceOfficer,
+        'marksOnBody': marksOnBody,
+        'causeOfDeathKnown': causeOfDeathKnown,
+        'challanRemarksArticles': challanRemarksArticles,
+        'firstInformationDetails': firstInformationDetails,
+        'spotVisitDateHour': spotVisitDateHour,
+        'finalReportDispatchDateHour': finalReportDispatchDateHour,
+        'finalReportNarrative': finalReportNarrative,
+        'pmReportDetails': pmReportDetails,
+        'pmDoctorOpinion': pmDoctorOpinion,
+        'finalFinding': finalFinding,
+        'finalPrayer': finalPrayer,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
       };
@@ -436,6 +636,45 @@ class UdCase {
         witness1NameAddress: json['witness1NameAddress'] ?? '',
         witness2NameAddress: json['witness2NameAddress'] ?? '',
         briefFacts: json['briefFacts'] ?? '',
+        inquestFromTime: json['inquestFromTime'] ?? '',
+        inquestToTime: json['inquestToTime'] ?? '',
+        morgueOrPlace: json['morgueOrPlace'] ?? '',
+        escortConstable: json['escortConstable'] ?? '',
+        bodyOrientation: json['bodyOrientation'] ?? '',
+        weight: json['weight'] ?? '',
+        eyeState: json['eyeState'] ?? '',
+        mouthState: json['mouthState'] ?? '',
+        noseCondition: json['noseCondition'] ?? '',
+        earCondition: json['earCondition'] ?? '',
+        hairDescription: json['hairDescription'] ?? '',
+        beardDescription: json['beardDescription'] ?? '',
+        moustacheDescription: json['moustacheDescription'] ?? '',
+        handsFingers: json['handsFingers'] ?? '',
+        legsDescription: json['legsDescription'] ?? '',
+        nailsDescription: json['nailsDescription'] ?? '',
+        domGender: json['domGender'] ?? '',
+        nearRelativeVersion: json['nearRelativeVersion'] ?? '',
+        pmMorgueName: json['pmMorgueName'] ?? '',
+        handoverTo: json['handoverTo'] ?? '',
+        preparedDate: json['preparedDate'] ?? '',
+        challanRef: json['challanRef'] ?? '',
+        deceasedCaste: json['deceasedCaste'] ?? '',
+        challanResidence: json['challanResidence'] ?? '',
+        bodyFoundPlaceChallan: json['bodyFoundPlaceChallan'] ?? '',
+        dispatchDateHourDistance: json['dispatchDateHourDistance'] ?? '',
+        dispatchMeans: json['dispatchMeans'] ?? '',
+        identifyingPoliceOfficer: json['identifyingPoliceOfficer'] ?? '',
+        marksOnBody: json['marksOnBody'] ?? '',
+        causeOfDeathKnown: json['causeOfDeathKnown'] ?? '',
+        challanRemarksArticles: json['challanRemarksArticles'] ?? '',
+        firstInformationDetails: json['firstInformationDetails'] ?? '',
+        spotVisitDateHour: json['spotVisitDateHour'] ?? '',
+        finalReportDispatchDateHour: json['finalReportDispatchDateHour'] ?? '',
+        finalReportNarrative: json['finalReportNarrative'] ?? '',
+        pmReportDetails: json['pmReportDetails'] ?? '',
+        pmDoctorOpinion: json['pmDoctorOpinion'] ?? '',
+        finalFinding: json['finalFinding'] ?? '',
+        finalPrayer: json['finalPrayer'] ?? '',
         createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
         updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
       );

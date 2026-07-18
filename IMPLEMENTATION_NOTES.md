@@ -49,3 +49,23 @@ The Forms module now contains a wider master registry for case forms, arrest/acc
 - Removed Dev: Bappa Roy from UI.
 - Dashboard header/footer branding updated.
 - Official generated documents remain clean without Astra Technologies footer.
+
+## v3.9 CD Delete / CD Bundle / Manual Backup / PS Wording
+- Added delete option for individual CDs from case detail screen with confirmation dialog.
+- Added one-click CD 1 to 5 preview/share/export option when CD-1 to CD-5 are available.
+- CD 1 to 5 bundle supports both PDF and DOC export through the existing Preview screen.
+- Manual Backup screen wording updated to clearly show Manual Backup and Share Backup actions.
+- App/UI/template strings updated to prefer “PS” instead of “Police Station”; official output keeps form structure unchanged.
+
+## v4.0 — UD Official Package Patch
+
+Added the uploaded UD templates into the UD Case module:
+
+- West Bengal Form No. 5370 UD Final Report / PRB Form No. 53 vide Rule 276.
+- Bengali Surathal Report narrative generator.
+- West Bengal Form No. 5371 Dead Body Challan / PRB Form No. 54 vide Rule 252.
+- Existing Inquest Form remains available.
+- All outputs support Preview, PDF export/share and DOC export/share.
+- New UD fields are saved inside the existing offline SharedPreferences UD draft store.
+- Non-fixed UI wording uses PS instead of Police Station.
+

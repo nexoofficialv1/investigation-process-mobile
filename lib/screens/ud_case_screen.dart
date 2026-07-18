@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,6 +12,7 @@ import '../models/ud_case.dart';
 import '../services/doc_export_service.dart';
 import '../services/local_store_service.dart';
 import '../services/pdf_service.dart';
+import '../services/ud_official_documents_service.dart';
 
 class UdCaseScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -24,6 +26,7 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
   final _store = LocalStoreService();
   final _pdf = PdfService();
   final _doc = DocExportService();
+  final _udDocs = UdOfficialDocumentsService();
   final Map<String, TextEditingController> _c = {};
   List<UdCase> _saved = [];
   UdCase _ud = UdCase.empty();
@@ -106,6 +109,56 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
     _F('briefFacts', 'Brief facts', lines: 5),
   ];
 
+  final List<_F> _surathalFields = const [
+    _F('inquestFromTime', 'Inquest Time From'),
+    _F('inquestToTime', 'Inquest Time To'),
+    _F('morgueOrPlace', 'Morgue / place where Surathal prepared', lines: 2),
+    _F('escortConstable', 'Escort / accompanying constable'),
+    _F('bodyOrientation', 'Body orientation / position in morgue', lines: 2),
+    _F('weight', 'Approx. weight'),
+    _F('eyeState', 'Eyes condition'),
+    _F('mouthState', 'Mouth condition'),
+    _F('noseCondition', 'Nose condition'),
+    _F('earCondition', 'Ear condition'),
+    _F('hairDescription', 'Hair description'),
+    _F('beardDescription', 'Beard description'),
+    _F('moustacheDescription', 'Moustache description'),
+    _F('handsFingers', 'Hands / fingers'),
+    _F('legsDescription', 'Legs'),
+    _F('nailsDescription', 'Nails'),
+    _F('domGender', 'Dom: মহিলা/পুরুষ'),
+    _F('nearRelativeVersion', 'Near-relative / witness version for Surathal', lines: 5),
+    _F('pmMorgueName', 'PM Morgue / hospital name', lines: 2),
+    _F('handoverTo', 'After PM body handover to'),
+    _F('preparedDate', 'Prepared Date'),
+  ];
+
+  final List<_F> _challanFields = const [
+    _F('challanRef', 'Challan Ref, if different'),
+    _F('deceasedCaste', 'Caste / religion text for challan'),
+    _F('challanResidence', 'Residence for challan', lines: 2),
+    _F('bodyFoundPlaceChallan', 'Where dead body was found', lines: 2),
+    _F('dispatchDateHourDistance', 'Date/hour of dispatch and distance from PM place', lines: 2),
+    _F('dispatchMeans', 'Means of Dispatch', lines: 3),
+    _F('identifyingPoliceOfficer', 'Name of identifying police officer'),
+    _F('marksOnBody', 'Marks on the body'),
+    _F('causeOfDeathKnown', 'Cause of death as far as known'),
+    _F('challanRemarksArticles', 'Remarks / clothes / articles / viscera preservation', lines: 4),
+  ];
+
+  final List<_F> _finalReportFields = const [
+    _F('firstInformationDetails', '1. Station, number and date of first information', lines: 2),
+    _F('spotVisitDateHour', '3. Date and hour of going to the spot'),
+    _F('finalReportDispatchDateHour', '4. Date and hour of dispatch of final report'),
+    _F('finalReportNarrative', 'UD Final Report facts / enquiry narrative', lines: 8),
+    _F('pmReportDetails', 'PM report details / PM No. / date', lines: 2),
+    _F('pmDoctorOpinion', 'Doctor opinion / cause of death', lines: 3),
+    _F('finalFinding', 'Final finding / no foul play paragraph', lines: 3),
+    _F('finalPrayer', 'Final prayer', lines: 3),
+  ];
+
+  List<_F> get _allFields => [..._fields, ..._surathalFields, ..._challanFields, ..._finalReportFields];
+
   @override
   void initState() {
     super.initState();
@@ -116,7 +169,7 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
 
   void _initControllers() {
     final map = _ud.toJson();
-    for (final f in _fields) {
+    for (final f in _allFields) {
       _c[f.key] = TextEditingController(text: (map[f.key] ?? '').toString());
     }
     for (final key in [..._injuryOptions.keys, ..._dischargeOptions.keys]) {
@@ -132,7 +185,7 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
 
   UdCase _collect() {
     final values = {
-      for (final f in _fields) f.key: _c[f.key]!.text.trim(),
+      for (final f in _allFields) f.key: _c[f.key]!.text.trim(),
       for (final key in [..._injuryOptions.keys, ..._dischargeOptions.keys]) key: _c[key]!.text.trim(),
     };
     return _ud.copyWith(values);
@@ -143,36 +196,57 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
     await _store.saveUdCase(_ud);
     await _loadSaved();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('UD Inquest draft saved')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('UD draft saved')));
   }
 
-  Future<void> _previewPdf() async {
+  Future<void> _previewPdf(Future<Uint8List> Function() builder) async {
     _ud = _collect();
-    final bytes = await _pdf.buildUdInquestPdf(officer: widget.profile, ud: _ud);
+    final bytes = await builder();
     await Printing.layoutPdf(onLayout: (_) async => bytes);
   }
 
-  Future<void> _exportPdf() async {
+  Future<void> _sharePdf(String prefix, Future<Uint8List> Function() builder) async {
     _ud = _collect();
-    final bytes = await _pdf.buildUdInquestPdf(officer: widget.profile, ud: _ud);
-    await Printing.sharePdf(bytes: bytes, filename: 'UD_Inquest_${_ud.udNo.replaceAll('/', '_')}.pdf');
+    final bytes = await builder();
+    await Printing.sharePdf(bytes: bytes, filename: '${prefix}_${_fileSafe(_ud.udNo)}.pdf');
   }
 
-  Future<void> _exportDoc() async {
+  Future<void> _shareDoc(String prefix, Future<Uint8List> Function() builder) async {
     _ud = _collect();
-    final bytes = await _doc.buildUdInquestDoc(officer: widget.profile, ud: _ud);
+    final bytes = await builder();
     final dir = await getTemporaryDirectory();
-    final path = '${dir.path}/UD_Inquest_${_ud.udNo.replaceAll('/', '_')}.doc';
+    final path = '${dir.path}/${prefix}_${_fileSafe(_ud.udNo)}.doc';
     final file = File(path);
     await file.writeAsBytes(bytes, flush: true);
-    await Share.shareXFiles([XFile(path)], text: 'UD Inquest DOC');
+    await Share.shareXFiles([XFile(path)], text: prefix.replaceAll('_', ' '));
   }
+
+  String _fileSafe(String value) {
+    final cleaned = value.replaceAll(RegExp(r'[^A-Za-z0-9_\-]+'), '_');
+    return cleaned.isEmpty ? 'UD_Draft' : cleaned;
+  }
+
+  Future<void> _previewInquest() => _previewPdf(() => _pdf.buildUdInquestPdf(officer: widget.profile, ud: _ud));
+  Future<void> _exportInquestPdf() => _sharePdf('UD_Inquest', () => _pdf.buildUdInquestPdf(officer: widget.profile, ud: _ud));
+  Future<void> _exportInquestDoc() => _shareDoc('UD_Inquest', () => _doc.buildUdInquestDoc(officer: widget.profile, ud: _ud));
+
+  Future<void> _previewSurathal() => _previewPdf(() => _udDocs.buildSurathalReportPdf(officer: widget.profile, ud: _ud));
+  Future<void> _exportSurathalPdf() => _sharePdf('Surathal_Report', () => _udDocs.buildSurathalReportPdf(officer: widget.profile, ud: _ud));
+  Future<void> _exportSurathalDoc() => _shareDoc('Surathal_Report', () => _udDocs.buildSurathalReportDoc(officer: widget.profile, ud: _ud));
+
+  Future<void> _previewChallan() => _previewPdf(() => _udDocs.buildDeadBodyChallanPdf(officer: widget.profile, ud: _ud));
+  Future<void> _exportChallanPdf() => _sharePdf('Dead_Body_Challan', () => _udDocs.buildDeadBodyChallanPdf(officer: widget.profile, ud: _ud));
+  Future<void> _exportChallanDoc() => _shareDoc('Dead_Body_Challan', () => _udDocs.buildDeadBodyChallanDoc(officer: widget.profile, ud: _ud));
+
+  Future<void> _previewFinalReport() => _previewPdf(() => _udDocs.buildUdFinalReportPdf(officer: widget.profile, ud: _ud));
+  Future<void> _exportFinalReportPdf() => _sharePdf('UD_Final_Report', () => _udDocs.buildUdFinalReportPdf(officer: widget.profile, ud: _ud));
+  Future<void> _exportFinalReportDoc() => _shareDoc('UD_Final_Report', () => _udDocs.buildUdFinalReportDoc(officer: widget.profile, ud: _ud));
 
   void _loadUd(UdCase ud) {
     setState(() {
       _ud = ud;
       final map = ud.toJson();
-      for (final f in _fields) {
+      for (final f in _allFields) {
         _c[f.key]!.text = (map[f.key] ?? '').toString();
       }
       for (final key in [..._injuryOptions.keys, ..._dischargeOptions.keys]) {
@@ -185,7 +259,7 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
     setState(() {
       _ud = UdCase.empty(ps: widget.profile.policeStation, district: widget.profile.district);
       final map = _ud.toJson();
-      for (final f in _fields) {
+      for (final f in _allFields) {
         _c[f.key]!.text = (map[f.key] ?? '').toString();
       }
       for (final key in [..._injuryOptions.keys, ..._dischargeOptions.keys]) {
@@ -207,59 +281,90 @@ class _UdCaseScreenState extends State<UdCaseScreen> {
     return Scaffold(
       backgroundColor: AppTheme.cream,
       appBar: AppBar(
-        title: const Text('UD Case / Inquest'),
+        title: const Text('UD Case'),
         actions: [IconButton(onPressed: _newUd, icon: const Icon(Icons.add))],
       ),
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
           if (_saved.isNotEmpty) _savedList(),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Inquest Form — Section 194 / 196 OF BNSS', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-                  const SizedBox(height: 6),
-                  const Text('আপনার দেওয়া scanned format অনুযায়ী field-wise data fill করুন। Export-এর আগে Preview দেখে নিন।', style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 14),
-                  ..._fields.map((f) {
-                    final field = Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: TextField(
-                        controller: _c[f.key],
-                        minLines: f.lines,
-                        maxLines: f.lines > 1 ? f.lines + 2 : 1,
-                        decoration: InputDecoration(labelText: f.label, border: const OutlineInputBorder(), filled: true, fillColor: Colors.white),
-                      ),
-                    );
-                    if (f.key == 'otherFeatures') {
-                      return Column(children: [field, _injuryDropdownCard(), _dischargeDropdownCard()]);
-                    }
-                    return field;
-                  }),
-                ],
-              ),
-            ),
-          ),
+          _introCard(),
+          _section('UD Case Entry / Inquest Form', 'Section 194 / 196 OF BNSS', _fields),
+          _injuryDropdownCard(),
+          _dischargeDropdownCard(),
+          _actionsCard('Inquest Form', _previewInquest, _exportInquestPdf, _exportInquestDoc),
+          _section('Surathal Report / সুরতহাল রিপোর্ট', 'Bengali narrative report from uploaded format', _surathalFields),
+          _actionsCard('Surathal Report', _previewSurathal, _exportSurathalPdf, _exportSurathalDoc),
+          _section('Dead Body Challan', 'West Bengal Form No-5371 / PRB Form No-54 vide Rule-252', _challanFields),
+          _actionsCard('Dead Body Challan', _previewChallan, _exportChallanPdf, _exportChallanDoc),
+          _section('UD Final Report', 'West Bengal Form No. 5370 / PRB Form No.-53 vide Rule 276', _finalReportFields),
+          _actionsCard('UD Final Report', _previewFinalReport, _exportFinalReportPdf, _exportFinalReportDoc),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              ElevatedButton.icon(onPressed: _save, icon: const Icon(Icons.save), label: const Text('Save Draft')),
-              OutlinedButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.visibility), label: const Text('Preview')),
-              ElevatedButton.icon(onPressed: _exportPdf, icon: const Icon(Icons.picture_as_pdf), label: const Text('Export PDF')),
-              ElevatedButton.icon(onPressed: _exportDoc, icon: const Icon(Icons.description), label: const Text('Export DOC')),
-            ],
-          ),
+          ElevatedButton.icon(onPressed: _save, icon: const Icon(Icons.save), label: const Text('Save UD Draft')),
           const SizedBox(height: 80),
         ],
       ),
     );
   }
 
+  Widget _introCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+          Text('UD Case Package', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900)),
+          SizedBox(height: 6),
+          Text('একই UD data থেকে Inquest, Surathal Report, Dead Body Challan এবং UD Final Report তৈরি হবে। আগে Save/Preview করে তারপর PDF/DOC export করুন।', style: TextStyle(fontWeight: FontWeight.w600)),
+        ]),
+      ),
+    );
+  }
+
+  Widget _section(String title, String subtitle, List<_F> fields) {
+    return Card(
+      child: ExpansionTile(
+        initiallyExpanded: title.startsWith('UD Case Entry'),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+        subtitle: Text(subtitle),
+        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        children: fields.map(_field).toList(),
+      ),
+    );
+  }
+
+  Widget _field(_F f) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: _c[f.key],
+        minLines: f.lines,
+        maxLines: f.lines > 1 ? f.lines + 3 : 1,
+        decoration: InputDecoration(labelText: f.label, border: const OutlineInputBorder(), filled: true, fillColor: Colors.white),
+      ),
+    );
+  }
+
+  Widget _actionsCard(String title, Future<void> Function() preview, Future<void> Function() exportPdf, Future<void> Function() exportDoc) {
+    return Card(
+      color: Colors.green.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              OutlinedButton.icon(onPressed: preview, icon: const Icon(Icons.visibility), label: const Text('Preview')),
+              ElevatedButton.icon(onPressed: exportPdf, icon: const Icon(Icons.picture_as_pdf), label: const Text('PDF')),
+              ElevatedButton.icon(onPressed: exportDoc, icon: const Icon(Icons.description), label: const Text('DOC')),
+            ],
+          ),
+        ]),
+      ),
+    );
+  }
 
   Widget _injuryDropdownCard() {
     return Card(

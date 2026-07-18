@@ -59,7 +59,7 @@ class DocExportService {
 <div class="center bold">CASE DIARY UNDER SECTION 192 BNSS</div>
 <div class="center bold">(P.R.B FROM NO. 43 – Vide <i>Rule 229</i>)</div>
 <table class="no-border small">
-<tr><td class="bold">Police Station: -${_e(ps)}</td><td class="bold right">District: -${_e(officer.district)}</td></tr>
+<tr><td class="bold">PS: -${_e(ps)}</td><td class="bold right">District: -${_e(officer.district)}</td></tr>
 <tr><td class="bold">First information No: -${_e(caseFile.psCaseNo)}</td><td class="bold">Dated: -${_e(caseFile.caseDate)} &nbsp;&nbsp;&nbsp; Section: -${_e(caseFile.sections)}</td></tr>
 <tr><td colspan="2" class="bold">Name of Complainant: - ${_e(caseFile.complainantName)}</td></tr>
 <tr><td class="bold">Case Diary No: -${cd.cdNumber}</td><td class="bold">Dated: -${_e(cd.cdDate)}</td></tr>
@@ -73,6 +73,49 @@ class DocExportService {
 <div class="right" style="margin-top:18px;margin-right:70px">Submitted<br/><br/><br/>(${_e(officer.name)})<br/>${_e(officer.rank)}<br/>${_e(ps)}</div>
 ''';
     return _docBytes(_page('CD-${cd.cdNumber}', html));
+  }
+
+
+  Future<Uint8List> buildCaseDiaryBundleDoc({
+    required OfficerProfile officer,
+    required CaseFile caseFile,
+    required List<CdEntry> cds,
+  }) async {
+    final sortedCds = [...cds]..sort((a, b) => a.cdNumber.compareTo(b.cdNumber));
+    final sections = <String>[];
+    for (final cd in sortedCds) {
+      final lines = cd.tableLines.isNotEmpty
+          ? cd.tableLines
+          : [CdTableLine(noAndHour: 'I\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation', proceedings: cd.body)];
+      final noHour = lines.map((e) => _e(e.noAndHour)).join('<br/><br/><br/>');
+      final places = lines.map((e) => _e(e.placeOfEntry)).join('<br/><br/><br/>');
+      final synopsis = lines.map((e) => _e(e.synopsis)).join('<br/><br/><br/>');
+      final proceedings = lines.map((e) => '<p>${_e(e.proceedings)}</p>').join('');
+      final year = DateTime.now().year;
+      final ps = officer.policeStation.replaceAll('Police Station', 'PS').trim();
+      final pageBreak = sections.isEmpty ? '' : 'page-break';
+      sections.add('''
+<div class="$pageBreak">
+<div class="bold"><span>West Bengal form No. 5363</span><span style="float:right">OF $year</span></div>
+<div class="center bold">CASE DIARY UNDER SECTION 192 BNSS</div>
+<div class="center bold">(P.R.B FROM NO. 43 - Vide <i>Rule 229</i>)</div>
+<table class="no-border small">
+<tr><td class="bold">PS: -${_e(ps)}</td><td class="bold right">District: -${_e(officer.district)}</td></tr>
+<tr><td class="bold">First information No: -${_e(caseFile.psCaseNo)}</td><td class="bold">Dated: -${_e(caseFile.caseDate)} &nbsp;&nbsp;&nbsp; Section: -${_e(caseFile.sections)}</td></tr>
+<tr><td colspan="2" class="bold">Name of Complainant: - ${_e(caseFile.complainantName)}</td></tr>
+<tr><td class="bold">Case Diary No: -${cd.cdNumber}</td><td class="bold">Dated: -${_e(cd.cdDate)}</td></tr>
+</table>
+<table class="cd">
+<tr><td class="center">Arrested and sent up</td><td class="center">Arrested and released on bail.</td><td class="center" colspan="2">At large.</td></tr>
+<tr><td colspan="3" class="bold">Particulars of Enquiry.</td><td></td></tr>
+<tr><td class="center" style="width:10%">No. and<br/>hour of<br/>entry.</td><td class="center" style="width:10%">Place of<br/>entry.</td><td class="center" style="width:13%">Synopsis of<br/>entry.</td><td style="width:67%"></td></tr>
+<tr><td class="center">$noHour</td><td class="center">$places</td><td class="center">$synopsis</td><td class="justify">$proceedings</td></tr>
+</table>
+<div class="right" style="margin-top:18px;margin-right:70px">Submitted<br/><br/><br/>(${_e(officer.name)})<br/>${_e(officer.rank)}<br/>${_e(ps)}</div>
+</div>
+''');
+    }
+    return _docBytes(_page('CD 1 to 5 Bundle', sections.join('\n')));
   }
 
   Future<Uint8List> buildStatementDoc({

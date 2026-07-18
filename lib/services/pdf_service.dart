@@ -34,30 +34,93 @@ class PdfService {
     final doc = pw.Document(theme: await _pdfTheme());
 
     // STRICT OFFICIAL CD FORMAT - West Bengal Form No. 5363 / P.R.B Form No. 43.
-    // Important: no horizontal lines between individual diary entries. Entry no/time,
-    // place, synopsis and proceedings are placed inside one continuous enquiry block.
-    doc.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
-        header: (context) => context.pageNumber == 1
-            ? pw.SizedBox()
-            : pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-                children: [
-                  _wbOfficialCdHeader(officer: officer, caseFile: caseFile, cd: cd, continued: true),
-                  _wbOfficialCdStatusRow(),
-                ],
-              ),
-        build: (context) => [
-          _wbOfficialCdHeader(officer: officer, caseFile: caseFile, cd: cd),
-          _wbOfficialCdStatusRow(),
-          _wbOfficialCdContinuousTable(cd, officer),
-        ],
-      ),
-    );
+    // The PDF package can fail when one very tall table row is given to MultiPage.
+    // So CD pages are created manually after splitting the diary proceedings into
+    // safe page-sized chunks. This prevents PdfTooBigPageException in CD-1 preview.
+    final sourceLines = cd.tableLines.isNotEmpty
+        ? cd.tableLines
+        : [
+            CdTableLine(
+              noAndHour: 'I\n${cd.startTime}',
+              placeOfEntry: cd.placeOfEntry,
+              synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation',
+              proceedings: cd.body,
+            ),
+          ];
+    final pageLines = _paginateCdLines(sourceLines, cd.cdNumber);
+
+    for (var i = 0; i < pageLines.length; i++) {
+      final isLast = i == pageLines.length - 1;
+      doc.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
+          build: (context) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+            children: [
+              _wbOfficialCdHeader(officer: officer, caseFile: caseFile, cd: cd, continued: i > 0),
+              _wbOfficialCdStatusRow(),
+              pw.Expanded(child: _wbOfficialCdContinuousTableFromLines(pageLines[i], officer, showSignature: isLast)),
+            ],
+          ),
+        ),
+      );
+    }
 
     return doc.save();
+  }
+
+  List<List<CdTableLine>> _paginateCdLines(List<CdTableLine> lines, int cdNumber) {
+    final maxChars = cdNumber == 1 ? 1700 : 2100;
+    final maxEntries = cdNumber == 1 ? 4 : 6;
+    final expanded = <CdTableLine>[];
+
+    for (final line in lines) {
+      final parts = _splitCdProceedings(line.proceedings, maxChars);
+      for (var i = 0; i < parts.length; i++) {
+        expanded.add(CdTableLine(
+          noAndHour: i == 0 ? line.noAndHour : '',
+          placeOfEntry: i == 0 ? line.placeOfEntry : '',
+          synopsis: i == 0 ? line.synopsis : 'Contd.',
+          proceedings: parts[i],
+        ));
+      }
+    }
+
+    final pages = <List<CdTableLine>>[];
+    var current = <CdTableLine>[];
+    var count = 0;
+    for (final line in expanded) {
+      final nextCount = count + line.proceedings.length + line.noAndHour.length + line.placeOfEntry.length + line.synopsis.length;
+      if (current.isNotEmpty && (nextCount > maxChars || current.length >= maxEntries)) {
+        pages.add(current);
+        current = <CdTableLine>[];
+        count = 0;
+      }
+      current.add(line);
+      count += line.proceedings.length + line.noAndHour.length + line.placeOfEntry.length + line.synopsis.length;
+    }
+    if (current.isNotEmpty) pages.add(current);
+    return pages.isEmpty ? [lines] : pages;
+  }
+
+  List<String> _splitCdProceedings(String text, int maxChars) {
+    final clean = text.trim();
+    if (clean.isEmpty) return [''];
+    if (clean.length <= maxChars) return [clean];
+
+    final parts = <String>[];
+    var remaining = clean;
+    while (remaining.length > maxChars) {
+      var cut = remaining.lastIndexOf('\n\n', maxChars);
+      if (cut < maxChars ~/ 2) cut = remaining.lastIndexOf('. ', maxChars);
+      if (cut < maxChars ~/ 2) cut = remaining.lastIndexOf(' ', maxChars);
+      if (cut < maxChars ~/ 2) cut = maxChars;
+      parts.add(remaining.substring(0, cut).trim());
+      remaining = remaining.substring(cut).trim();
+    }
+    if (remaining.isNotEmpty) parts.add(remaining);
+    return parts;
   }
 
   String _shortPsName(String ps) => ps.replaceAll('Police Station', 'PS').trim();
@@ -89,7 +152,7 @@ class PdfService {
         pw.SizedBox(height: 4),
         pw.Row(
           children: [
-            pw.Expanded(flex: 3, child: pw.Text('Police Station: -${_shortPsName(officer.policeStation)}', style: _cdTopStyle())),
+            pw.Expanded(flex: 3, child: pw.Text('PS: -${_shortPsName(officer.policeStation)}', style: _cdTopStyle())),
             pw.Expanded(flex: 2, child: pw.Text('District: -${officer.district}', style: _cdTopStyle())),
           ],
         ),
@@ -133,10 +196,13 @@ class PdfService {
     final lines = cd.tableLines.isNotEmpty
         ? cd.tableLines
         : [CdTableLine(noAndHour: 'I\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation', proceedings: cd.body)];
+    return _wbOfficialCdContinuousTableFromLines(lines, officer, showSignature: true);
+  }
 
-    final leftEntryColumn = lines.map((line) => line.noAndHour).join('\n\n\n');
-    final placeColumn = lines.map((line) => line.placeOfEntry).join('\n\n\n');
-    final synopsisColumn = lines.map((line) => line.synopsis).join('\n\n\n');
+  pw.Widget _wbOfficialCdContinuousTableFromLines(List<CdTableLine> lines, OfficerProfile officer, {required bool showSignature}) {
+    final leftEntryColumn = lines.map((line) => line.noAndHour).join('\n\n');
+    final placeColumn = lines.map((line) => line.placeOfEntry).join('\n\n');
+    final synopsisColumn = lines.map((line) => line.synopsis).join('\n\n');
     final proceedingsColumn = lines.map((line) => line.proceedings).where((e) => e.trim().isNotEmpty).join('\n\n');
 
     // Official PRB Form No. 43 layout:
@@ -155,7 +221,7 @@ class PdfService {
             padding: const pw.EdgeInsets.fromLTRB(8, 3, 8, 3),
             child: pw.Text('Particulars of Enquiry.', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold)),
           ),
-          pw.SizedBox(height: 22),
+          pw.SizedBox(height: 20),
         ]),
         pw.TableRow(
           verticalAlignment: pw.TableCellVerticalAlignment.top,
@@ -172,42 +238,44 @@ class PdfService {
               },
               children: [
                 pw.TableRow(children: [
-                  _officialCell('No. and\nhour of\nentry.', center: true, fontSize: 9.4),
-                  _officialCell('Place of\nentry.', center: true, fontSize: 9.4),
-                  _officialCell('Synopsis of\nentry.', center: true, fontSize: 9.4),
+                  _officialCell('No. and\nhour of\nentry.', center: true, fontSize: 9.0),
+                  _officialCell('Place of\nentry.', center: true, fontSize: 9.0),
+                  _officialCell('Synopsis of\nentry.', center: true, fontSize: 9.0),
                 ]),
                 pw.TableRow(
                   verticalAlignment: pw.TableCellVerticalAlignment.top,
                   children: [
-                    _officialCell(leftEntryColumn, center: true, fontSize: 9.4, minHeight: 520),
-                    _officialCell(placeColumn, center: true, fontSize: 9.4, minHeight: 520),
-                    _officialCell(synopsisColumn, center: true, fontSize: 9.4, minHeight: 520),
+                    _officialCell(leftEntryColumn, center: true, fontSize: 8.8, minHeight: 455),
+                    _officialCell(placeColumn, center: true, fontSize: 8.8, minHeight: 455),
+                    _officialCell(synopsisColumn, center: true, fontSize: 8.8, minHeight: 455),
                   ],
                 ),
               ],
             ),
             pw.Container(
-              constraints: const pw.BoxConstraints(minHeight: 575),
+              constraints: const pw.BoxConstraints(minHeight: 505),
               child: pw.Padding(
                 padding: const pw.EdgeInsets.fromLTRB(6, 4, 6, 4),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.stretch,
                   children: [
-                    pw.Text(proceedingsColumn, style: const pw.TextStyle(fontSize: 10.2), textAlign: pw.TextAlign.justify),
-                    pw.SizedBox(height: 18),
-                    pw.Align(
-                      alignment: pw.Alignment.centerRight,
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        children: [
-                          pw.Text('Submitted', style: const pw.TextStyle(fontSize: 10.5)),
-                          pw.SizedBox(height: 28),
-                          pw.Text('(${officer.name})', style: const pw.TextStyle(fontSize: 10.5)),
-                          pw.Text(officer.rank, style: const pw.TextStyle(fontSize: 10.5)),
-                          pw.Text(_shortPsName(officer.policeStation), style: const pw.TextStyle(fontSize: 10.5)),
-                        ],
+                    pw.Text(proceedingsColumn, style: const pw.TextStyle(fontSize: 9.4), textAlign: pw.TextAlign.justify),
+                    if (showSignature) ...[
+                      pw.SizedBox(height: 14),
+                      pw.Align(
+                        alignment: pw.Alignment.centerRight,
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.center,
+                          children: [
+                            pw.Text('Submitted', style: const pw.TextStyle(fontSize: 10.0)),
+                            pw.SizedBox(height: 22),
+                            pw.Text('(${officer.name})', style: const pw.TextStyle(fontSize: 10.0)),
+                            pw.Text(officer.rank, style: const pw.TextStyle(fontSize: 10.0)),
+                            pw.Text(_shortPsName(officer.policeStation), style: const pw.TextStyle(fontSize: 10.0)),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -217,29 +285,6 @@ class PdfService {
       ],
     );
   }
-
-
-
-  pw.Widget _wbOfficialCdSignature({required OfficerProfile officer}) {
-    return pw.Align(
-      alignment: pw.Alignment.centerRight,
-      child: pw.Padding(
-        padding: const pw.EdgeInsets.only(top: 8, right: 80),
-        child: pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.center,
-          children: [
-            pw.Text('Submitted', style: const pw.TextStyle(fontSize: 10.5)),
-            pw.SizedBox(height: 28),
-            pw.Text('(${officer.name})', style: const pw.TextStyle(fontSize: 10.5)),
-            pw.Text(officer.rank, style: const pw.TextStyle(fontSize: 10.5)),
-            pw.Text(_shortPsName(officer.policeStation), style: const pw.TextStyle(fontSize: 10.5)),
-          ],
-        ),
-      ),
-    );
-  }
-
-
 
   pw.Widget _officialCell(String text, {bool bold = false, bool center = false, double fontSize = 10.5, double? minHeight}) {
     final content = pw.Padding(
@@ -252,6 +297,48 @@ class PdfService {
     );
     if (minHeight == null) return content;
     return pw.Container(constraints: pw.BoxConstraints(minHeight: minHeight), child: content);
+  }
+
+
+  Future<Uint8List> buildCaseDiaryBundlePdf({
+    required OfficerProfile officer,
+    required CaseFile caseFile,
+    required List<CdEntry> cds,
+  }) async {
+    final doc = pw.Document(theme: await _pdfTheme());
+    final sortedCds = [...cds]..sort((a, b) => a.cdNumber.compareTo(b.cdNumber));
+
+    for (final cd in sortedCds) {
+      final sourceLines = cd.tableLines.isNotEmpty
+          ? cd.tableLines
+          : [
+              CdTableLine(
+                noAndHour: 'I\n${cd.startTime}',
+                placeOfEntry: cd.placeOfEntry,
+                synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation',
+                proceedings: cd.body,
+              ),
+            ];
+      final pageLines = _paginateCdLines(sourceLines, cd.cdNumber);
+      for (var i = 0; i < pageLines.length; i++) {
+        final isLast = i == pageLines.length - 1;
+        doc.addPage(
+          pw.Page(
+            pageFormat: PdfPageFormat.a4,
+            margin: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
+            build: (context) => pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+              children: [
+                _wbOfficialCdHeader(officer: officer, caseFile: caseFile, cd: cd, continued: i > 0),
+                _wbOfficialCdStatusRow(),
+                pw.Expanded(child: _wbOfficialCdContinuousTableFromLines(pageLines[i], officer, showSignature: isLast)),
+              ],
+            ),
+          ),
+        );
+      }
+    }
+    return doc.save();
   }
 
   Future<Uint8List> buildStatementPdf({
@@ -485,7 +572,7 @@ class PdfService {
         pw.Center(child: pw.Text('WEST BENGAL POLICE', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 12),
         pw.Text('Case No:- ${caseFile.psCaseNo}  Date ${caseFile.caseDate}', style: const pw.TextStyle(fontSize: 10.5)),
-        pw.Text('Police Station:- ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('PS:- ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
         pw.Text('Section of Law:- ${caseFile.sections}        District- ${officer.district}', style: const pw.TextStyle(fontSize: 10.5)),
         pw.SizedBox(height: 10),
         pw.Center(child: pw.Text('I. NATURE OF CRIME', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
@@ -695,7 +782,7 @@ class PdfService {
       pw.Center(child: pw.Text('WEST BENGAL POLICE', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
       pw.SizedBox(height: 12),
       pw.Text('Case No:- ${caseFile.psCaseNo}  Date ${caseFile.caseDate}', style: const pw.TextStyle(fontSize: 10.5)),
-      pw.Text('Police Station:- ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('PS:- ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
       pw.Text('Section of Law:- ${caseFile.sections}        District- ${officer.district}', style: const pw.TextStyle(fontSize: 10.5)),
       pw.SizedBox(height: 10),
       pw.Center(child: pw.Text('I. NATURE OF CRIME', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
@@ -767,7 +854,7 @@ class PdfService {
           pw.Text('Annexure-A', style: const pw.TextStyle(fontSize: 11)),
         ]),
         pw.SizedBox(height: 12),
-        pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text(_shortPsName(officer.policeStation).replaceAll('PS', 'Police Station'), style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+        pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text(_shortPsName(officer.policeStation), style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 10),
         pw.Text(body, style: const pw.TextStyle(fontSize: 11.2), textAlign: pw.TextAlign.justify),
         pw.SizedBox(height: 28),

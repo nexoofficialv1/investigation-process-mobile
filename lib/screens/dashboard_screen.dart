@@ -293,7 +293,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _Menu('IF5 / CS', 'from final CD', Icons.fact_check_rounded, AppTheme.coral, () => _comingSoon('IF5 / CS')),
       _Menu('Evidence', 'evidence manager', Icons.inventory_2_rounded, const Color(0xFF795000), _openEvidence),
       _Menu('UD Case', 'inquest/final report', Icons.assignment_rounded, const Color(0xFF5D4037), _openUdCase),
-      _Menu('Backup', 'local/server sync', Icons.backup_rounded, const Color(0xFF455A64), _openBackup),
+      _Menu('Backup', 'manual backup/sync', Icons.backup_rounded, const Color(0xFF455A64), _openBackup),
       _Menu('Backend', 'server setup', Icons.dns_rounded, const Color(0xFF263238), _openBackendSettings),
       _Menu('License', 'fees/activation', Icons.workspace_premium_rounded, const Color(0xFF8D6E00), _openLicense),
       _Menu('Miscellaneous', 'report/duty/inventory', Icons.apps_rounded, const Color(0xFF37474F), _openMiscellaneous),

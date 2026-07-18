@@ -140,7 +140,7 @@ class _BackupScreenState extends State<BackupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.cream,
-      appBar: AppBar(title: const Text('Backup & Sync')),
+      appBar: AppBar(title: const Text('Manual Backup & Sync')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -148,14 +148,14 @@ class _BackupScreenState extends State<BackupScreen> {
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Local Backup', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text('Manual Local Backup', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
                 const SizedBox(height: 8),
-                const Text('এই backup app-এর local case, CD, forms, evidence, sketch map, UD case, backend settings ইত্যাদি JSON file হিসেবে save/share করবে।'),
+                const Text('Manual Backup চাপলে app-এর local case, CD, forms, evidence, sketch map, UD case, backend settings ইত্যাদি JSON file হিসেবে তৈরি হবে। Share Manual Backup চাপলে ফাইলটা অন্য mobile/drive/WhatsApp-এ পাঠানো যাবে।'),
                 const SizedBox(height: 12),
                 Row(children: [
-                  Expanded(child: ElevatedButton.icon(onPressed: _busy ? null : () => _createBackup(), icon: const Icon(Icons.save_alt), label: const Text('Create'))),
+                  Expanded(child: ElevatedButton.icon(onPressed: _busy ? null : () => _createBackup(), icon: const Icon(Icons.save_alt), label: const Text('Manual Backup'))),
                   const SizedBox(width: 10),
-                  Expanded(child: OutlinedButton.icon(onPressed: _busy ? null : () => _createBackup(share: true), icon: const Icon(Icons.share), label: const Text('Share'))),
+                  Expanded(child: OutlinedButton.icon(onPressed: _busy ? null : () => _createBackup(share: true), icon: const Icon(Icons.share), label: const Text('Share Backup'))),
                 ]),
                 if (_lastBackupPath != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_lastBackupPath!, style: const TextStyle(fontSize: 12))),
               ]),

@@ -71,7 +71,7 @@ To,
 Sir,
         This is to inform you that the above-mentioned case was registered on the complaint of ${_valueOrBlank(caseFile.complainantName, '____________________________')} S/o/W/o ______________________________ R/o ______________________________. The investigation of the case is being carried by the undersigned.
 
-        Whereas it appears that you are acquainted with the facts/circumstances of the above cited case and investigation thereof. Hence, you are hereby informed to appear before the undersigned on ____________ (date) at ____________ (time) Police Station ${officer.policeStation}, ${officer.district}, in connection with above cited case.
+        Whereas it appears that you are acquainted with the facts/circumstances of the above cited case and investigation thereof. Hence, you are hereby informed to appear before the undersigned on ____________ (date) at ____________ (time) PS ${officer.policeStation}, ${officer.district}, in connection with above cited case.
 
 Name of I.O.: ${officer.rank} ${officer.name}
 PS: ${officer.policeStation}
@@ -92,7 +92,7 @@ To,
 Sir,
         This is to inform you that the inquest proceedings in respect of deceased ${_valueOrBlank(caseFile.victimName, 'Late ____________________________')} S/o/W/o ______________________________ R/o ______________________________ have been initiated to ascertain the cause of death. The enquiry into the matter is being carried by the undersigned.
 
-        Whereas it appears that you are acquainted with the facts/circumstances of the above cited matter. For the purpose of finalization of the enquiry, you are hereby informed to appear before the undersigned on date ____________ at ____________ Police Station ${officer.policeStation}, ${officer.district}.
+        Whereas it appears that you are acquainted with the facts/circumstances of the above cited matter. For the purpose of finalization of the enquiry, you are hereby informed to appear before the undersigned on date ____________ at ____________ PS ${officer.policeStation}, ${officer.district}.
 
 Name of I.O.: ${officer.rank} ${officer.name}
 PS: ${officer.policeStation}
@@ -209,7 +209,7 @@ Arrestee Name: ${_valueOrBlank(caseFile.accusedName, '__________________________
 Case Reference: ${_caseRef(officer, caseFile)}
 Place of Arrest: ______________________________
 Date & Time of Arrest: ______________________________
-Police Station: ${officer.policeStation}
+PS: ${officer.policeStation}
 I.O.: ${officer.rank} ${officer.name}
 Mobile: ${officer.mobile}
 

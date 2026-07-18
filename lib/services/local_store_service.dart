@@ -162,6 +162,19 @@ class LocalStoreService {
     );
   }
 
+
+
+  Future<void> deleteCd(String cdId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_cdsKey);
+    if (raw == null || raw.isEmpty) return;
+    final all = (jsonDecode(raw) as List<dynamic>)
+        .map((e) => CdEntry.fromJson(Map<String, dynamic>.from(e)))
+        .where((e) => e.id != cdId)
+        .toList();
+    await prefs.setString(_cdsKey, jsonEncode(all.map((e) => e.toJson()).toList()));
+  }
+
   Future<int> nextCdNumber(String caseId) async {
     final cds = await loadCds(caseId);
     if (cds.isEmpty) return 1;

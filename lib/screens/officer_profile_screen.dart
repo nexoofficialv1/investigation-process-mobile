@@ -79,7 +79,7 @@ class _OfficerProfileScreenState extends State<OfficerProfileScreen> {
           FormHelpers.textField(controller: name, label: 'Officer Name'),
           FormHelpers.textField(controller: rank, label: 'Rank'),
           FormHelpers.textField(controller: beltNo, label: 'Belt / ID No.'),
-          FormHelpers.textField(controller: ps, label: 'Police Station'),
+          FormHelpers.textField(controller: ps, label: 'PS'),
           FormHelpers.textField(controller: district, label: 'District'),
           FormHelpers.textField(controller: court, label: 'Default Court'),
           FormHelpers.textField(controller: mobile, label: 'Mobile No.'),
