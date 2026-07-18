@@ -5,6 +5,7 @@ import '../models/backend_config.dart';
 import '../models/officer_profile.dart';
 import '../services/backend_api_service.dart';
 import '../services/local_store_service.dart';
+import 'server_auth_license_screen.dart';
 
 class BackendSettingsScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -108,6 +109,8 @@ class _BackendSettingsScreenState extends State<BackendSettingsScreen> {
           const SizedBox(height: 12),
           _serverCard(),
           const SizedBox(height: 12),
+          _officerLicenseCard(),
+          const SizedBox(height: 12),
           _migrationCard(),
         ],
       ),
@@ -181,6 +184,32 @@ class _BackendSettingsScreenState extends State<BackendSettingsScreen> {
               const SizedBox(width: 10),
               Expanded(child: OutlinedButton.icon(onPressed: _testing ? null : _test, icon: const Icon(Icons.wifi_tethering), label: Text(_testing ? 'Testing...' : 'Test'))),
             ]),
+          ]),
+        ),
+      );
+
+
+  Widget _officerLicenseCard() => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Officer Login & License', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
+            const SizedBox(height: 8),
+            Text(_config.apiToken.isEmpty
+                ? 'Server login হয়নি। Officer login করলে token auto-save হবে।'
+                : 'Logged in: ${_config.serverOfficerName.isEmpty ? _config.serverOfficerMobile : _config.serverOfficerName}'),
+            Text('License: ${_config.licensePlanName} / ${_config.licenseStatus}'),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.workspace_premium_rounded),
+              label: const Text('Open Officer Login / License'),
+              onPressed: () async {
+                await _save(status: _config.lastStatus, testedAt: _config.lastTestedAt);
+                if (!mounted) return;
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => ServerAuthLicenseScreen(profile: widget.profile)));
+                await _load();
+              },
+            ),
           ]),
         ),
       );

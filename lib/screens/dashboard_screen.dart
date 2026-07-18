@@ -22,6 +22,7 @@ import 'sop_compliance_screen.dart';
 import 'investigation_screen.dart';
 import 'backup_screen.dart';
 import 'license_screen.dart';
+import 'server_auth_license_screen.dart';
 import 'miscellaneous_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -191,7 +192,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _openLicense() async {
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => const LicenseScreen()));
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => ServerAuthLicenseScreen(profile: _profile)));
   }
 
   Future<void> _openMiscellaneous() async {
