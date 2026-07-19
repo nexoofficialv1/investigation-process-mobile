@@ -148,7 +148,7 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
             child: Column(
               children: [
                 FormHelpers.textField(controller: psCaseNo, label: 'PS Case No. / Year'),
-                FormHelpers.textField(controller: caseDate, label: 'Case Date'),
+                FormHelpers.dateField(context: context, controller: caseDate, label: 'Case Date'),
                 FormHelpers.textField(controller: sections, label: 'Sections of Law'),
                 FormHelpers.textField(controller: crimeHead, label: 'Crime Head / Case Type'),
               ],
@@ -160,8 +160,8 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
             child: Column(
               children: [
                 FormHelpers.textField(controller: po, label: 'Place of Occurrence', maxLines: 2),
-                FormHelpers.textField(controller: dto, label: 'Date & Time of Occurrence'),
-                FormHelpers.textField(controller: dtr, label: 'Date & Time of Reporting'),
+                FormHelpers.dateTimeField(context: context, controller: dto, label: 'Date & Time of Occurrence'),
+                FormHelpers.dateTimeField(context: context, controller: dtr, label: 'Date & Time of Reporting'),
                 FormHelpers.textField(controller: gist, label: 'Brief Gist of FIR', maxLines: 5),
               ],
             ),
@@ -186,7 +186,7 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
               children: [
                 Text('IO Name: ${widget.profile.rank} ${widget.profile.name}', style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-                FormHelpers.textField(controller: tookUpDate, label: 'Took up investigation date'),
+                FormHelpers.dateField(context: context, controller: tookUpDate, label: 'Took up investigation date'),
                 FormHelpers.yesNoTile(title: 'Visited PO?', value: visitedPo, onChanged: (v) => setState(() => visitedPo = v)),
                 if (visitedPo) FormHelpers.textField(controller: poDetails, label: 'Details of PO visit', maxLines: 4),
                 FormHelpers.yesNoTile(title: 'Rough sketch map prepared?', value: sketchPrepared, onChanged: (v) => setState(() => sketchPrepared = v)),

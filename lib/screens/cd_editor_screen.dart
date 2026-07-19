@@ -187,12 +187,12 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
                 children: [
                   const Text('CD Header Details', style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
-                  FormHelpers.textField(controller: cdDate, label: 'CD Date'),
+                  FormHelpers.dateField(context: context, controller: cdDate, label: 'CD Date'),
                   Row(
                     children: [
-                      Expanded(child: FormHelpers.textField(controller: startTime, label: 'Start Time')),
+                      Expanded(child: FormHelpers.timeField(context: context, controller: startTime, label: 'Start Time')),
                       const SizedBox(width: 8),
-                      Expanded(child: FormHelpers.textField(controller: endTime, label: 'End Time')),
+                      Expanded(child: FormHelpers.timeField(context: context, controller: endTime, label: 'End Time')),
                     ],
                   ),
                   FormHelpers.textField(controller: place, label: 'Default Place of Entry'),

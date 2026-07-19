@@ -29,6 +29,8 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
   final _place = TextEditingController();
   final _accompaniedBy = TextEditingController();
   final _details = TextEditingController();
+  final _personName = TextEditingController();
+  final _repeatReason = TextEditingController();
   final _sopResponse = TextEditingController();
 
   String _actionType = 'PO Visit / Local Enquiry';
@@ -41,6 +43,7 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
 
   final List<String> _actions = const [
     'PO Visit / Local Enquiry',
+    'Rough Sketch Map Preparation',
     'Raid',
     'Accused Search',
     'Arrest / Apprehension',
@@ -69,7 +72,7 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
 
   @override
   void dispose() {
-    for (final c in [_date, _departureTime, _arrivalTime, _returnTime, _place, _accompaniedBy, _details, _sopResponse]) {
+    for (final c in [_date, _departureTime, _arrivalTime, _returnTime, _place, _accompaniedBy, _details, _personName, _repeatReason, _sopResponse]) {
       c.dispose();
     }
     super.dispose();
@@ -80,10 +83,131 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
     return _outsidePs || t.contains('po') || t.contains('raid') || t.contains('search') || t.contains('hospital') || t.contains('court') || t.contains('notice');
   }
 
+  String get _currentStepKey {
+    final t = _actionType.toLowerCase();
+    if (t.contains('po')) return 'po_visit';
+    if (t.contains('sketch')) return 'rough_sketch_map';
+    if (t.contains('complainant')) return 'complainant_statement';
+    if (t.contains('witness')) return 'witness_statement';
+    if (t.contains('victim')) return 'victim_statement';
+    if (t.contains('medical') || t.contains('hospital')) return 'medical_requisition';
+    if (t.contains('seizure')) return 'seizure';
+    if (t.contains('raid') || t.contains('search')) return 'accused_search';
+    if (t.contains('arrest')) return 'arrest';
+    if (t.contains('court')) return 'court_forwarding';
+    return t.replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+  }
+
+  bool get _normallyOnceStep {
+    return const {
+      'po_visit',
+      'rough_sketch_map',
+      'complainant_statement',
+      'victim_statement',
+      'medical_requisition',
+      'fsl_forwarding',
+      'cdr_requisition',
+      'ud_inquest_surathal',
+      'dead_body_challan',
+      'ud_final_report',
+      'final_cd',
+    }.contains(_currentStepKey);
+  }
+
+  String _normalizeName(String value) => value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+
+  InvestigationActionEntry? _findSameStep() {
+    final key = _currentStepKey;
+    for (final e in _history) {
+      final t = e.actionType.toLowerCase();
+      final existingKey = t.contains('po')
+          ? 'po_visit'
+          : t.contains('complainant')
+              ? 'complainant_statement'
+              : t.contains('witness')
+                  ? 'witness_statement'
+                  : t.contains('victim')
+                      ? 'victim_statement'
+                      : t.contains('medical') || t.contains('hospital')
+                          ? 'medical_requisition'
+                          : t.contains('raid') || t.contains('search')
+                              ? 'accused_search'
+                              : t.contains('arrest')
+                                  ? 'arrest'
+                                  : t.contains('court')
+                                      ? 'court_forwarding'
+                                      : t.replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+      if (existingKey == key) return e;
+    }
+    return null;
+  }
+
+  InvestigationActionEntry? _findSameStatementName() {
+    final name = _normalizeName(_personName.text);
+    if (name.isEmpty) return null;
+    for (final e in _history) {
+      final details = _normalizeName('${e.details} ${e.sopResponse} ${e.place}');
+      final type = e.actionType.toLowerCase();
+      if ((type.contains('witness') || type.contains('complainant') || type.contains('victim')) && details.contains(name)) return e;
+    }
+    return null;
+  }
+
+  Future<bool> _confirmRepeatIfNeeded() async {
+    final sameStatement = _findSameStatementName();
+    if (sameStatement != null) {
+      _repeatReason.clear();
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Duplicate Statement Warning'),
+          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Statement of ${_personName.text.trim()} was already recorded on ${sameStatement.actionDate}. Are you recording further/re-statement?'),
+            const SizedBox(height: 10),
+            TextField(controller: _repeatReason, decoration: const InputDecoration(labelText: 'Reason / Further statement note', border: OutlineInputBorder()), maxLines: 2),
+          ]),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('View Previous')),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Record Further Statement')),
+          ],
+        ),
+      );
+      return ok == true;
+    }
+
+    if (_normallyOnceStep) {
+      final same = _findSameStep();
+      if (same != null) {
+        _repeatReason.clear();
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Step Already Completed'),
+            content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('This step was already completed on ${same.actionDate}. Did you do it again?'),
+              const SizedBox(height: 10),
+              TextField(controller: _repeatReason, decoration: const InputDecoration(labelText: 'Reason for repeat/re-visit', border: OutlineInputBorder()), maxLines: 2),
+            ]),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+              FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Record Repeat')),
+            ],
+          ),
+        );
+        return ok == true;
+      }
+    }
+    return true;
+  }
+
+
   List<String> _buildCdParagraphs() {
     final place = _place.text.trim().isEmpty ? 'the place concerned' : _place.text.trim();
     final force = _accompaniedBy.text.trim().isEmpty ? 'force' : _accompaniedBy.text.trim();
-    final details = _details.text.trim();
+    final personPrefix = _personName.text.trim().isEmpty ? '' : 'Person/Witness: ${_personName.text.trim()} ';
+    final repeatPrefix = _repeatReason.text.trim().isEmpty ? '' : 'Repeat/Further reason: ${_repeatReason.text.trim()} ';
+    final details = '$personPrefix$repeatPrefix${_details.text.trim()}'.trim();
     final paragraphs = <String>[];
 
     if (_isFieldAction) {
@@ -122,6 +246,12 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
       return;
     }
 
+    final confirmed = await _confirmRepeatIfNeeded();
+    if (!confirmed) return;
+
+    final personPrefix = _personName.text.trim().isEmpty ? '' : 'Person/Witness: ${_personName.text.trim()}\n';
+    final repeatPrefix = _repeatReason.text.trim().isEmpty ? '' : 'Repeat/Further reason: ${_repeatReason.text.trim()}\n';
+
     final entry = InvestigationActionEntry.create(
       caseId: widget.caseFile.id,
       actionDate: _date.text.trim(),
@@ -133,7 +263,7 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
       place: _place.text.trim(),
       accompaniedBy: _accompaniedBy.text.trim(),
       sopResponse: _sopResponse.text.trim(),
-      details: _details.text.trim(),
+      details: '$personPrefix$repeatPrefix${_details.text.trim()}'.trim(),
       arrestInvolved: _arrestInvolved,
       seizureInvolved: _seizureInvolved,
       courtForwardingSuggested: _courtForwardingSuggested,
@@ -181,6 +311,8 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
     _arrivalTime.clear();
     _returnTime.clear();
     _details.clear();
+    _personName.clear();
+    _repeatReason.clear();
     _sopResponse.clear();
     setState(() {
       _arrestInvolved = false;
@@ -188,6 +320,15 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
       _courtForwardingSuggested = false;
       _pcPrayerSuggested = false;
     });
+  }
+
+
+  Widget _chipForStep(String label, String containsText) {
+    final found = _history.any((e) => e.actionType.toLowerCase().contains(containsText));
+    return Chip(
+      avatar: Icon(found ? Icons.check_circle : Icons.radio_button_unchecked, size: 18, color: found ? Colors.green : Colors.orange),
+      label: Text('${found ? 'Done' : 'Pending'}: $label'),
+    );
   }
 
   @override
@@ -220,10 +361,27 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
               ]),
             ),
           ),
+
+          AppSectionCard(
+            title: 'Smart Investigation Checklist',
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Completed steps are not repeated blindly. PO visit, rough sketch map and same-name statement will warn before repeat entry.'),
+              const SizedBox(height: 10),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                _chipForStep('PO Visit', 'po'),
+                _chipForStep('Sketch Map', 'sketch'),
+                _chipForStep('Complainant Statement', 'complainant'),
+                _chipForStep('Witness Statement', 'witness'),
+                _chipForStep('Medical', 'medical'),
+                _chipForStep('Seizure', 'seizure'),
+                _chipForStep('Arrest/Search', 'arrest'),
+              ]),
+            ]),
+          ),
           AppSectionCard(
             title: 'Daily Investigation Entry',
             child: Column(children: [
-              FormHelpers.textField(controller: _date, label: 'Date', maxLines: 1),
+              FormHelpers.dateField(context: context, controller: _date, label: 'Date'),
               const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 value: _actionType,
@@ -236,11 +394,13 @@ class _InvestigationScreenState extends State<InvestigationScreen> {
                   _arrestInvolved = lower.contains('arrest') || lower.contains('raid');
                 }),
               ),
+              if (_actionType.toLowerCase().contains('witness') || _actionType.toLowerCase().contains('complainant') || _actionType.toLowerCase().contains('victim'))
+                FormHelpers.textField(controller: _personName, label: 'Person / Witness / Complainant Name'),
               FormHelpers.yesNoTile(title: 'Outside PS work? Departure/Arrival mandatory', value: _outsidePs, onChanged: (v) => setState(() => _outsidePs = v)),
               if (_isFieldAction) ...[
-                FormHelpers.textField(controller: _departureTime, label: 'Departure time from PS', maxLines: 1),
-                FormHelpers.textField(controller: _arrivalTime, label: 'Arrival/action time at place', maxLines: 1),
-                FormHelpers.textField(controller: _returnTime, label: 'Return time to PS, if returned', maxLines: 1),
+                FormHelpers.timeField(context: context, controller: _departureTime, label: 'Departure time from PS'),
+                FormHelpers.timeField(context: context, controller: _arrivalTime, label: 'Arrival/action time at place'),
+                FormHelpers.timeField(context: context, controller: _returnTime, label: 'Return time to PS, if returned'),
                 FormHelpers.textField(controller: _place, label: 'Place visited / raid / PO / hospital / court', maxLines: 2),
                 FormHelpers.textField(controller: _accompaniedBy, label: 'Accompanied by / force details', maxLines: 2),
               ],

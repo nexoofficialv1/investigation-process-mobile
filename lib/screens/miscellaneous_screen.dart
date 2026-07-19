@@ -11,6 +11,7 @@ import '../services/local_store_service.dart';
 import '../services/pdf_service.dart';
 import 'report_screen.dart';
 import '../models/case_file.dart';
+import '../widgets/form_helpers.dart';
 
 class MiscellaneousScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -219,12 +220,12 @@ class _DutyColumnTabState extends State<_DutyColumnTab> {
       children: [
         const Text('Duty Column / Duty Roster', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
         const SizedBox(height: 10),
-        TextField(controller: _date, decoration: const InputDecoration(labelText: 'Date')),
+        FormHelpers.dateField(context: context, controller: _date, label: 'Date'),
         TextField(controller: _dutyType, decoration: const InputDecoration(labelText: 'Duty Type')),
         TextField(controller: _staffName, decoration: const InputDecoration(labelText: 'Officer/Staff Name')),
         TextField(controller: _rank, decoration: const InputDecoration(labelText: 'Rank')),
         TextField(controller: _place, decoration: const InputDecoration(labelText: 'Duty Point / Place')),
-        TextField(controller: _time, decoration: const InputDecoration(labelText: 'Duty Timing')),
+        FormHelpers.timeField(context: context, controller: _time, label: 'Duty Timing'),
         TextField(controller: _mobile, decoration: const InputDecoration(labelText: 'Mobile No.')),
         TextField(controller: _remarks, decoration: const InputDecoration(labelText: 'Remarks'), minLines: 2, maxLines: 4),
         const SizedBox(height: 12),
@@ -366,8 +367,8 @@ class _InventoryTabState extends State<_InventoryTab> {
         TextField(controller: _category, decoration: const InputDecoration(labelText: 'Category')),
         TextField(controller: _quantity, decoration: const InputDecoration(labelText: 'Quantity / Balance Stock')),
         TextField(controller: _issuedTo, decoration: const InputDecoration(labelText: 'Issued To')),
-        TextField(controller: _issueDate, decoration: const InputDecoration(labelText: 'Issue Date')),
-        TextField(controller: _returnDate, decoration: const InputDecoration(labelText: 'Return Date')),
+        FormHelpers.dateField(context: context, controller: _issueDate, label: 'Issue Date'),
+        FormHelpers.dateField(context: context, controller: _returnDate, label: 'Return Date'),
         TextField(controller: _condition, decoration: const InputDecoration(labelText: 'Condition')),
         TextField(controller: _remarks, decoration: const InputDecoration(labelText: 'Remarks'), minLines: 2, maxLines: 4),
         const SizedBox(height: 12),

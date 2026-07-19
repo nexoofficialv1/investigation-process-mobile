@@ -440,7 +440,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
                 onChanged: (v) => row['Sex']?.text = v ?? '',
               )),
               const SizedBox(width: 8),
-              Expanded(child: TextField(controller: row['Date & time of arrest'], decoration: const InputDecoration(labelText: 'Date & time of arrest', border: OutlineInputBorder()))),
+              Expanded(child: FormHelpers.dateTimeField(context: context, controller: row['Date & time of arrest']!, label: 'Date & time of arrest')),
             ]),
             const SizedBox(height: 8),
             TextField(controller: row['Bail/Custody status'], decoration: const InputDecoration(labelText: 'Whether on bail or in custody', border: OutlineInputBorder())),
