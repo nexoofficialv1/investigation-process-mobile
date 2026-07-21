@@ -35,6 +35,70 @@ class FormHelpers {
     return !excluded.any(lower.contains);
   }
 
+
+  static Widget dateField({
+    required BuildContext context,
+    required TextEditingController controller,
+    required String label,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: controller,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: label,
+          suffixIcon: const Icon(Icons.calendar_month_outlined),
+        ),
+        onTap: () async {
+          final now = DateTime.now();
+          final picked = await showDatePicker(
+            context: context,
+            initialDate: now,
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2100),
+          );
+
+          if (picked != null) {
+            final day = picked.day.toString().padLeft(2, '0');
+            final month = picked.month.toString().padLeft(2, '0');
+            controller.text = '$day-$month-${picked.year}';
+          }
+        },
+      ),
+    );
+  }
+
+  static Widget timeField({
+    required BuildContext context,
+    required TextEditingController controller,
+    required String label,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: controller,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: label,
+          suffixIcon: const Icon(Icons.access_time_outlined),
+        ),
+        onTap: () async {
+          final picked = await showTimePicker(
+            context: context,
+            initialTime: TimeOfDay.now(),
+          );
+
+          if (picked != null) {
+            final hour = picked.hour.toString().padLeft(2, '0');
+            final minute = picked.minute.toString().padLeft(2, '0');
+            controller.text = '$hour:$minute';
+          }
+        },
+      ),
+    );
+  }
+
   static Widget yesNoTile({
     required String title,
     required bool value,
