@@ -76,23 +76,23 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   String _fullReportBody() {
-    final memo = _memoController.text.trim().isEmpty ? '' : 'রেফারেন্স: ${_referenceController.text.trim()}\n\n';
-    final reference = _referenceController.text.trim().isEmpty ? '' : 'প্রতি
+    final memo = _memoController.text.trim().isEmpty
+        ? ''
+        : 'মেমো নং: ${_memoController.text.trim()}\n';
+
+    final reference = _referenceController.text.trim().isEmpty
+        ? ''
+        : 'সূত্র: ${_referenceController.text.trim()}\n';
+
+    return '''প্রতি
 ${_recipientController.text.trim()}
 
 বিষয়: ${_subjectController.text.trim()}
 
-$memo$reference${_bodyController.text.trim()}
+$memo$reference
+${_bodyController.text.trim()}
 
-সদয় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য প্রতিবেদনটি পেশ করা হলো।';
-    return '''To
-${_recipientController.text.trim()}
-
-Subject: ${_subjectController.text.trim()}
-
-$memo$reference${_bodyController.text.trim()}
-
-Submitted for favour of kind information and necessary action.''';
+সদয় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য প্রতিবেদনটি পেশ করা হলো।''';
   }
 
   FormNotice _buildReport({bool finalSave = false}) {
