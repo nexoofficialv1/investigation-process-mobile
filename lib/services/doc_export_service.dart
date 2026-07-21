@@ -124,7 +124,7 @@ class DocExportService {
   }
 
   
-  Future buildCaseDiaryBundleDoc({
+  Future<Uint8List> buildCaseDiaryBundleDoc({
     required OfficerProfile officer,
     required CaseFile caseFile,
     required List<CdEntry> cds,
