@@ -468,38 +468,35 @@ class PdfService {
     required List<CdEntry> cds,
   }) async {
     final doc = pw.Document(theme: await _pdfTheme());
-    final sortedCds = [...cds]..sort((a, b) => a.cdNumber.compareTo(b.cdNumber));
+
+    final sortedCds = [...cds]
+      ..sort((a, b) => a.cdNumber.compareTo(b.cdNumber));
 
     for (final cd in sortedCds) {
-      final sourceLines = cd.tableLines.isNotEmpty
-          ? cd.tableLines
-          : [
-              CdTableLine(
-                noAndHour: '১\n${cd.startTime}',
-                placeOfEntry: cd.placeOfEntry,
-                synopsis: cd.cdNumber == 1 ? 'এফআইআর অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত',
-                proceedings: cd.body,
+      final isEnglish = cd.languageCode == 'en';
+
+      doc.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
+          build: (context) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+            children: [
+              _wbOfficialCdHeader(
+                officer: officer,
+                caseFile: caseFile,
+                cd: cd,
               ),
-            ];
-      final pageLines = _paginateCdLines(sourceLines, cd.cdNumber);
-      for (var i = 0; i < pageLines.length; i++) {
-        final isLast = i == pageLines.length - 1;
-        doc.addPage(
-          pw.Page(
-            pageFormat: PdfPageFormat.a4,
-            margin: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
-            build: (context) => pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-              children: [
-                _wbOfficialCdHeader(officer: officer, caseFile: caseFile, cd: cd, continued: i > 0),
-                _wbOfficialCdStatusRow(),
-                pw.Expanded(child: _wbOfficialCdContinuousTableFromLines(pageLines[i], officer, showSignature: isLast)),
-              ],
-            ),
+              _wbOfficialCdStatusRow(isEnglish),
+              pw.Expanded(
+                child: _wbOfficialCdContinuousTable(cd, officer),
+              ),
+            ],
           ),
-        );
-      }
+        ),
+      );
     }
+
     return doc.save();
   }
 
