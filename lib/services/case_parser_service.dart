@@ -81,7 +81,7 @@ class ParsedCaseData {
         evidenceRequired: base.investigationStart.evidenceRequired,
         evidenceDetails: _joinNonEmpty([
           base.investigationStart.evidenceDetails,
-          arrest.trim().isEmpty ? '' : 'Arrest: ${arrest.trim()}',
+          arrest.trim().isEmpty ? '' : 'গ্রেপ্তার: ${arrest.trim()}',
         ]),
       ),
     );
@@ -148,9 +148,9 @@ class CaseParserService {
 
   _ReferenceParts _parseReference(String ref) {
     if (ref.trim().isEmpty) return const _ReferenceParts('', '', '');
-    final caseMatch = RegExp(r'Case\s*No\s*[-: ]+\s*([^\s]+)', caseSensitive: false).firstMatch(ref);
-    final dateMatch = RegExp(r'Dated\s+([^\s]+)', caseSensitive: false).firstMatch(ref);
-    final sectionMatch = RegExp(r'U/S\s*[-: ]*\s*([\s\S]+)', caseSensitive: false).firstMatch(ref);
+    final caseMatch = RegExp(r'(?:Case\s*No|মামলা\s*(?:নং|নম্বর))\s*[-: ]+\s*([^\s,]+)', caseSensitive: false).firstMatch(ref);
+    final dateMatch = RegExp(r'(?:Dated|তারিখ)\s*[-: ]*\s*([^\s,]+)', caseSensitive: false).firstMatch(ref);
+    final sectionMatch = RegExp(r'(?:U/S|ধারা)\s*[-: ]*\s*([\s\S]+)', caseSensitive: false).firstMatch(ref);
     return _ReferenceParts(
       _clean(caseMatch?.group(1) ?? ''),
       _clean(dateMatch?.group(1) ?? ''),
@@ -159,8 +159,8 @@ class CaseParserService {
   }
 
   _NameMobile _parseNameMobile(String value) {
-    final mobile = RegExp(r'(?:Mob|Mobile)?\s*[-:]?\s*(\b\d{10}\b)', caseSensitive: false).firstMatch(value)?.group(1) ?? '';
-    var name = value.replaceAll(RegExp(r'\(?\s*(?:Mob|Mobile)?\s*[-:]?\s*\d{10}\s*\)?', caseSensitive: false), '').trim();
+    final mobile = RegExp(r'(?:Mob|Mobile|মোবাইল)?\s*[-:]?\s*(\b\d{10}\b)', caseSensitive: false).firstMatch(value)?.group(1) ?? '';
+    var name = value.replaceAll(RegExp(r'\(?\s*(?:Mob|Mobile|মোবাইল)?\s*[-:]?\s*\d{10}\s*\)?', caseSensitive: false), '').trim();
     return _NameMobile(_clean(name), mobile);
   }
 

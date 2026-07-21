@@ -87,7 +87,7 @@ class _FormsScreenState extends State<FormsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Forms & Notices')),
+      appBar: AppBar(title: const Text('ফর্ম ও নোটিশ')),
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
@@ -99,15 +99,15 @@ class _FormsScreenState extends State<FormsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Auto-fill Forms', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text('স্বয়ংক্রিয়ভাবে পূরণযোগ্য ফর্ম', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
-                    Text('${_selectedCase.displayTitle}\nSections: ${_selectedCase.sections}\nIO: ${widget.profile.rank} ${widget.profile.name}'),
+                    Text('${_selectedCase.displayTitle}\nধারা: ${_selectedCase.sections}\nতদন্তকারী অফিসার: ${widget.profile.rank} ${widget.profile.name}'),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: _selectedCase.id,
                       decoration: const InputDecoration(
-                        labelText: 'Tag / Select Case for this Form',
-                        helperText: 'এই case অনুযায়ী 35 notice-এ accused name এবং 94 notice-এ complainant name auto-fill হবে।',
+                        labelText: 'এই ফর্মের জন্য মামলা নির্বাচন করুন',
+                        helperText: 'নির্বাচিত মামলা অনুযায়ী ৩৫ ধারার নোটিশে অভিযুক্তের নাম এবং ৯৪ ধারার নোটিশে অভিযোগকারীর নাম স্বয়ংক্রিয়ভাবে বসবে।',
                       ),
                       items: _cases.isEmpty
                           ? [DropdownMenuItem(value: _selectedCase.id, child: Text(_selectedCase.displayTitle))]
@@ -122,7 +122,7 @@ class _FormsScreenState extends State<FormsScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            Text('Generate New', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text('নতুন ফর্ম তৈরি করুন', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ...FormsGeneratorService.templates.map((template) => Card(
                   child: ListTile(
@@ -134,16 +134,16 @@ class _FormsScreenState extends State<FormsScreen> {
                   ),
                 )),
             const SizedBox(height: 18),
-            Text('Saved Forms', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text('সংরক্ষিত ফর্মসমূহ', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             if (forms.isEmpty)
-              const Card(child: Padding(padding: EdgeInsets.all(18), child: Text('No saved forms yet. Select a template above.')))
+              const Card(child: Padding(padding: EdgeInsets.all(18), child: Text('এখনও কোনো ফর্ম সংরক্ষিত নেই। উপরের একটি টেমপ্লেট নির্বাচন করুন।')))
             else
               ...forms.map((form) => Card(
                     child: ListTile(
                       leading: Icon(form.isFinal ? Icons.lock : Icons.description),
                       title: Text(form.title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                      subtitle: Text(form.isFinal ? 'Final saved' : 'Draft'),
+                      subtitle: Text(form.isFinal ? 'চূড়ান্তভাবে সংরক্ষিত' : 'খসড়া'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _open(form),
                     ),
@@ -242,7 +242,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
   void _addFslExhibit({List<String>? values}) {
     setState(() {
       _fslExhibits.add(_controllerRow(
-        ['Mark', 'Description', 'How/when found and by whom', 'Ownership', 'Remarks'],
+        ['চিহ্ন', 'বিবরণ', 'কীভাবে/কখন/কার দ্বারা পাওয়া', 'আলামতের মালিকানা', 'মন্তব্য'],
         values ?? ['', '', '', '', ''],
       ));
     });
@@ -251,37 +251,37 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
   void _addFslCustodyPerson({List<String>? values}) {
     setState(() {
       _fslCustodyPersons.add(_controllerRow(
-        ['Full name', 'Occupation', 'Age', 'Sex', 'Date & time of arrest', 'Bail/Custody status', 'Court'],
+        ['পূর্ণ নাম', 'পেশা', 'বয়স', 'লিঙ্গ', 'গ্রেপ্তারের তারিখ ও সময়', 'জামিন/হেফাজতের অবস্থা', 'আদালত'],
         values ?? ['', '', '', '', '', '', ''],
       ));
     });
   }
 
   void _initFslRepeatingRows() {
-    final exhibitsRaw = _structured['EXHIBITS']?.text ?? '';
-    final custodyRaw = _structured['PERSONS IN CUSTODY']?.text ?? '';
+    final exhibitsRaw = _structured['আলামতসমূহ']?.text ?? '';
+    final custodyRaw = _structured['হেফাজতে থাকা ব্যক্তিবর্গ']?.text ?? '';
     final exhibitRows = _parsePipeLines(exhibitsRaw, 5);
     final custodyRows = _parsePipeLines(custodyRaw, 7);
     _fslExhibits.clear();
     _fslCustodyPersons.clear();
     if (exhibitRows.isEmpty) {
       _fslExhibits.add(_controllerRow(
-        ['Mark', 'Description', 'How/when found and by whom', 'Ownership', 'Remarks'],
-        ['A', 'One sealed packet/jar/container containing said to be ________________________________.', 'Seized on ____________ at ________________________________ by ${widget.profile.rank} ${widget.profile.name}.', 'Ld. C.J.M / Magistrate, ${widget.profile.district}', 'May be confiscated to the State after examination / may be returned after examination'],
+        ['চিহ্ন', 'বিবরণ', 'কীভাবে/কখন/কার দ্বারা পাওয়া', 'আলামতের মালিকানা', 'মন্তব্য'],
+        ['ক', 'একটি সিলমোহরযুক্ত প্যাকেট/জার/পাত্র, যার মধ্যে ________________________________ আছে বলে উল্লেখ।', '__________ তারিখে ________________________________ স্থান থেকে ${widget.profile.rank} ${widget.profile.name} কর্তৃক জব্দ।', 'বিজ্ঞ সিজেএম/ম্যাজিস্ট্রেট, ${widget.profile.district}', 'পরীক্ষার পরে রাষ্ট্রের অনুকূলে বাজেয়াপ্ত/ফেরতযোগ্য'],
       ));
     } else {
       for (final row in exhibitRows) {
-        _fslExhibits.add(_controllerRow(['Mark', 'Description', 'How/when found and by whom', 'Ownership', 'Remarks'], row));
+        _fslExhibits.add(_controllerRow(['চিহ্ন', 'বিবরণ', 'কীভাবে/কখন/কার দ্বারা পাওয়া', 'আলামতের মালিকানা', 'মন্তব্য'], row));
       }
     }
     if (custodyRows.isEmpty) {
       _fslCustodyPersons.add(_controllerRow(
-        ['Full name', 'Occupation', 'Age', 'Sex', 'Date & time of arrest', 'Bail/Custody status', 'Court'],
-        [widget.caseFile.accusedName.trim().isEmpty ? 'Name and address of accused' : widget.caseFile.accusedName, '', '', '', '', 'J/C / P/C / Bail / At large', 'Ld. Court'],
+        ['পূর্ণ নাম', 'পেশা', 'বয়স', 'লিঙ্গ', 'গ্রেপ্তারের তারিখ ও সময়', 'জামিন/হেফাজতের অবস্থা', 'আদালত'],
+        [widget.caseFile.accusedName.trim().isEmpty ? 'অভিযুক্তের নাম ও ঠিকানা' : widget.caseFile.accusedName, '', '', '', '', 'বিচারবিভাগীয় হেফাজত / পুলিশ হেফাজত / জামিন / পলাতক', 'বিজ্ঞ আদালত'],
       ));
     } else {
       for (final row in custodyRows) {
-        _fslCustodyPersons.add(_controllerRow(['Full name', 'Occupation', 'Age', 'Sex', 'Date & time of arrest', 'Bail/Custody status', 'Court'], row));
+        _fslCustodyPersons.add(_controllerRow(['পূর্ণ নাম', 'পেশা', 'বয়স', 'লিঙ্গ', 'গ্রেপ্তারের তারিখ ও সময়', 'জামিন/হেফাজতের অবস্থা', 'আদালত'], row));
       }
     }
   }
@@ -292,25 +292,25 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
 
   void _syncFslRepeatingRowsToStructured() {
     if (!_isFsl) return;
-    _structured['EXHIBITS']?.text = _joinRows(_fslExhibits, ['Mark', 'Description', 'How/when found and by whom', 'Ownership', 'Remarks']);
-    _structured['PERSONS IN CUSTODY']?.text = _joinRows(_fslCustodyPersons, ['Full name', 'Occupation', 'Age', 'Sex', 'Date & time of arrest', 'Bail/Custody status', 'Court']);
+    _structured['আলামতসমূহ']?.text = _joinRows(_fslExhibits, ['চিহ্ন', 'বিবরণ', 'কীভাবে/কখন/কার দ্বারা পাওয়া', 'আলামতের মালিকানা', 'মন্তব্য']);
+    _structured['হেফাজতে থাকা ব্যক্তিবর্গ']?.text = _joinRows(_fslCustodyPersons, ['পূর্ণ নাম', 'পেশা', 'বয়স', 'লিঙ্গ', 'গ্রেপ্তারের তারিখ ও সময়', 'জামিন/হেফাজতের অবস্থা', 'আদালত']);
   }
 
   void _initStructuredControllers() {
     if (_isCdrCaf) {
       final defaults = <String, String>{
-        'CASE REFERENCE': '${widget.profile.policeStation} P.S. Case No-${widget.caseFile.psCaseNo} Dated-${widget.caseFile.caseDate}, U/S-${widget.caseFile.sections}',
-        'GIST': widget.caseFile.firGist,
-        'REQUIRED MOBILE/IMEI': '',
-        'ACTUAL USER / INVOLVEMENT': 'Used by suspected',
-        'JUSTIFICATION': '',
-        'CDR DATE RANGE': 'From ____________ To ____________',
-        'SDR REQUIRED': 'Yes',
-        'CAF REQUIRED': 'Yes',
-        'IMEI SEARCH DATE RANGE': '---',
-        'IO NAME': '${widget.profile.rank} ${widget.profile.name}',
-        'IO PHONE': widget.profile.mobile,
-        'ANY OTHER POINTS': 'N/A',
+        'মামলার রেফারেন্স': '${widget.profile.policeStation} মামলা নং-${widget.caseFile.psCaseNo}, তারিখ-${widget.caseFile.caseDate}, ধারা-${widget.caseFile.sections}',
+        'সংক্ষিপ্ত ঘটনা': widget.caseFile.firGist,
+        'প্রয়োজনীয় মোবাইল/আইএমইআই': '',
+        'প্রকৃত ব্যবহারকারী/সংশ্লিষ্টতা': 'সন্দেহভাজন কর্তৃক ব্যবহৃত',
+        'প্রয়োজনীয়তার যুক্তি': '',
+        'সিডিআর-এর সময়সীমা': '____________ থেকে ____________ পর্যন্ত',
+        'এসডিআর প্রয়োজন': 'হ্যাঁ',
+        'সিএএফ প্রয়োজন': 'হ্যাঁ',
+        'আইএমইআই অনুসন্ধানের সময়সীমা': '---',
+        'তদন্তকারী অফিসারের নাম': '${widget.profile.rank} ${widget.profile.name}',
+        'তদন্তকারী অফিসারের ফোন': widget.profile.mobile,
+        'অন্যান্য বিষয়': 'প্রযোজ্য নয়',
       };
       for (final entry in defaults.entries) {
         _structured[entry.key] = TextEditingController(text: _readLineValue(entry.key, fallback: entry.value));
@@ -318,13 +318,13 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
       _applyStructuredToBody(showMessage: false);
     } else if (_isFsl) {
       final defaults = <String, String>{
-        'NATURE OF CRIME': widget.caseFile.firGist,
-        'EXHIBITS': 'A | One sealed packet/jar/container containing said to be ________________________________ in connection with the above noted case. | Seized on ____________ at ________________________________ by ${widget.profile.rank} ${widget.profile.name} / received from ________________________________. | Ld. C.J.M / Magistrate, ${widget.profile.district} | May be confiscated to the State after examination / may be returned after examination',
-        'NATURE OF EXAMINATION': '1) Whether any poison / blood / semen / biological material / chemical / explosive / narcotic / digital trace / other relevant material could be detected in Exhibit Mark “A” or not.\n2) If detected, nature/type/source of such material and whether the same is relevant to the facts of the case.\n3) Any other points raised during examination.',
-        'PERSONS IN CUSTODY': '${widget.caseFile.accusedName.trim().isEmpty ? 'Name and address of accused' : widget.caseFile.accusedName} | Occupation | Age | Sex | Date & time of arrest | J/C / P/C / Bail / At large | Ld. Court',
-        'FSL OFFICE': 'Head of Office & Assistant Director\nRegional Forensic Science Laboratory\nShankarpur, Durgapur\nPaschim Bardhaman, 713212',
-        'COURT': 'Ld. C.J.M / Magistrate, ${widget.profile.district}',
-        'IO / PS CONTACT DETAILS': 'I.O. Name:- ${widget.profile.name}\nDesignation:- ${widget.profile.rank}\nMobile No. of I.O.:- ${widget.profile.mobile}\nName of the PS:- ${widget.profile.policeStation}\nDistrict:- ${widget.profile.district}\nP.S. Address:- ________________________________\nPin Code:- ________________________________\nWhatsApp No:- ${widget.profile.mobile}\nHospital/Morgue:- ________________________________\nMessenger Name & Phone:- ________________________________',
+        'অপরাধের প্রকৃতি': widget.caseFile.firGist,
+        'আলামতসমূহ': 'ক | উপরোক্ত মামলার সূত্রে একটি সিলমোহরযুক্ত প্যাকেট/জার/পাত্র, যার মধ্যে ________________________________ আছে বলে উল্লেখ | __________ তারিখে ________________________________ স্থান থেকে ${widget.profile.rank} ${widget.profile.name} কর্তৃক জব্দ/________________ থেকে প্রাপ্ত | মাননীয় সিজেএম/ম্যাজিস্ট্রেট, ${widget.profile.district} | পরীক্ষার পরে রাষ্ট্রের অনুকূলে বাজেয়াপ্ত/ফেরতযোগ্য',
+        'প্রয়োজনীয় পরীক্ষার প্রকৃতি': '১) আলামত চিহ্ন “ক”-তে বিষ/রক্ত/বীর্য/জৈব পদার্থ/রাসায়নিক/বিস্ফোরক/মাদক/ডিজিটাল চিহ্ন বা অন্য কোনো প্রাসঙ্গিক উপাদান শনাক্ত করা যায় কি না।\n২) শনাক্ত হলে উক্ত উপাদানের প্রকৃতি/ধরন/উৎস এবং মামলার ঘটনার সঙ্গে তার প্রাসঙ্গিকতা কী।\n৩) পরীক্ষাকালে উদ্ভূত অন্য কোনো প্রাসঙ্গিক বিষয়।',
+        'হেফাজতে থাকা ব্যক্তিবর্গ': '${widget.caseFile.accusedName.trim().isEmpty ? 'অভিযুক্তের নাম ও ঠিকানা' : widget.caseFile.accusedName} | পেশা | বয়স | লিঙ্গ | গ্রেপ্তারের তারিখ ও সময় | বিচারবিভাগীয় হেফাজত/পুলিশ হেফাজত/জামিন/পলাতক | মাননীয় আদালত',
+        'এফএসএল কার্যালয়': 'দপ্তর প্রধান ও সহকারী পরিচালক\nআঞ্চলিক ফরেনসিক বিজ্ঞানাগার\nশংকরপুর, দুর্গাপুর\nপশ্চিম বর্ধমান, ৭১৩২১২',
+        'আদালত': 'বিজ্ঞ সিজেএম/ম্যাজিস্ট্রেট, ${widget.profile.district}',
+        'তদন্তকারী অফিসার/থানার যোগাযোগের বিবরণ': 'তদন্তকারী অফিসারের নাম:- ${widget.profile.name}\nপদমর্যাদা:- ${widget.profile.rank}\nতদন্তকারী অফিসারের মোবাইল নং:- ${widget.profile.mobile}\nথানার নাম:- ${widget.profile.policeStation}\nজেলা:- ${widget.profile.district}\nথানার ঠিকানা:- ________________________________\nপিন কোড:- ________________________________\nহোয়াটসঅ্যাপ নং:- ${widget.profile.mobile}\nহাসপাতাল/মর্গ:- ________________________________\nবার্তাবাহকের নাম ও ফোন:- ________________________________',
       };
       for (final entry in defaults.entries) {
         _structured[entry.key] = TextEditingController(text: _readLineValue(entry.key, fallback: entry.value));
@@ -338,7 +338,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     if (!_isCdrCaf && !_isFsl) return;
     if (_isFsl) _syncFslRepeatingRowsToStructured();
     final buffer = StringBuffer();
-    buffer.writeln(_isCdrCaf ? 'CDR/SDR/CAF STRUCTURED ENTRY' : 'FSL PACKAGE STRUCTURED ENTRY');
+    buffer.writeln(_isCdrCaf ? 'সিডিআর/এসডিআর/সিএএফ-এর কাঠামোবদ্ধ এন্ট্রি' : 'এফএসএল প্যাকেজের কাঠামোবদ্ধ এন্ট্রি');
     buffer.writeln();
     for (final entry in _structured.entries) {
       buffer.writeln('${entry.key}: ${entry.value.text.trim()}');
@@ -388,15 +388,15 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
                   ),
               ],
             ),
-            TextField(controller: row['Mark'], decoration: const InputDecoration(labelText: 'Label / Exhibit Mark, e.g. A', border: OutlineInputBorder())),
+            TextField(controller: row['চিহ্ন'], decoration: const InputDecoration(labelText: 'Label / Exhibit Mark, e.g. A', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['Description'], maxLines: 3, decoration: const InputDecoration(labelText: 'Description of the exhibit', border: OutlineInputBorder())),
+            TextField(controller: row['বিবরণ'], maxLines: 3, decoration: const InputDecoration(labelText: 'Description of the exhibit', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['How/when found and by whom'], maxLines: 3, decoration: const InputDecoration(labelText: 'How and when found and by whom', border: OutlineInputBorder())),
+            TextField(controller: row['কীভাবে/কখন/কার দ্বারা পাওয়া'], maxLines: 3, decoration: const InputDecoration(labelText: 'How and when found and by whom', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['Ownership'], maxLines: 2, decoration: const InputDecoration(labelText: 'Ownership of exhibit', border: OutlineInputBorder())),
+            TextField(controller: row['আলামতের মালিকানা'], maxLines: 2, decoration: const InputDecoration(labelText: 'Ownership of exhibit', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['Remarks'], maxLines: 2, decoration: const InputDecoration(labelText: 'Remarks — editable', border: OutlineInputBorder())),
+            TextField(controller: row['মন্তব্য'], maxLines: 2, decoration: const InputDecoration(labelText: 'Remarks — editable', border: OutlineInputBorder())),
           ],
         ),
       ),
@@ -424,28 +424,28 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
                   ),
               ],
             ),
-            TextField(controller: row['Full name'], maxLines: 2, decoration: const InputDecoration(labelText: 'Full name', border: OutlineInputBorder())),
+            TextField(controller: row['পূর্ণ নাম'], maxLines: 2, decoration: const InputDecoration(labelText: 'পূর্ণ নাম', border: OutlineInputBorder())),
             const SizedBox(height: 8),
             Row(children: [
-              Expanded(child: TextField(controller: row['Occupation'], decoration: const InputDecoration(labelText: 'Occupation', border: OutlineInputBorder()))),
+              Expanded(child: TextField(controller: row['পেশা'], decoration: const InputDecoration(labelText: 'পেশা', border: OutlineInputBorder()))),
               const SizedBox(width: 8),
-              Expanded(child: TextField(controller: row['Age'], decoration: const InputDecoration(labelText: 'Age', border: OutlineInputBorder()))),
+              Expanded(child: TextField(controller: row['বয়স'], decoration: const InputDecoration(labelText: 'বয়স', border: OutlineInputBorder()))),
             ]),
             const SizedBox(height: 8),
             Row(children: [
               Expanded(child: DropdownButtonFormField<String>(
-                value: (row['Sex']?.text.trim().isEmpty ?? true) ? null : row['Sex']!.text.trim(),
-                decoration: const InputDecoration(labelText: 'Sex', border: OutlineInputBorder()),
+                value: (row['লিঙ্গ']?.text.trim().isEmpty ?? true) ? null : row['লিঙ্গ']!.text.trim(),
+                decoration: const InputDecoration(labelText: 'লিঙ্গ', border: OutlineInputBorder()),
                 items: const ['Male', 'Female', 'Other'].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
-                onChanged: (v) => row['Sex']?.text = v ?? '',
+                onChanged: (v) => row['লিঙ্গ']?.text = v ?? '',
               )),
               const SizedBox(width: 8),
-              Expanded(child: FormHelpers.dateTimeField(context: context, controller: row['Date & time of arrest']!, label: 'Date & time of arrest')),
+              Expanded(child: FormHelpers.dateTimeField(context: context, controller: row['গ্রেপ্তারের তারিখ ও সময়']!, label: 'গ্রেপ্তারের তারিখ ও সময়')),
             ]),
             const SizedBox(height: 8),
-            TextField(controller: row['Bail/Custody status'], decoration: const InputDecoration(labelText: 'Whether on bail or in custody', border: OutlineInputBorder())),
+            TextField(controller: row['জামিন/হেফাজতের অবস্থা'], decoration: const InputDecoration(labelText: 'Whether on bail or in custody', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['Court'], decoration: const InputDecoration(labelText: 'Court', border: OutlineInputBorder())),
+            TextField(controller: row['আদালত'], decoration: const InputDecoration(labelText: 'আদালত', border: OutlineInputBorder())),
           ],
         ),
       ),
@@ -463,10 +463,10 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
             const SizedBox(height: 6),
             const Text('Pre-fill data already বসানো আছে। প্রতিটা point ধরে entry করুন। Preview করলে official Form 5203, Exhibit List, Nature of Examination, Particulars of Person in Custody, Certificate, Challan ও Label আলাদা page/section-এ তৈরি হবে।'),
             const SizedBox(height: 12),
-            _entryText('NATURE OF CRIME', maxLines: 6),
-            _entryText('NATURE OF EXAMINATION', maxLines: 5),
-            _entryText('FSL OFFICE', maxLines: 4),
-            _entryText('COURT', maxLines: 1),
+            _entryText('অপরাধের প্রকৃতি', maxLines: 6),
+            _entryText('প্রয়োজনীয় পরীক্ষার প্রকৃতি', maxLines: 5),
+            _entryText('এফএসএল কার্যালয়', maxLines: 4),
+            _entryText('আদালত', maxLines: 1),
             const Divider(height: 24),
             Row(children: [
               const Expanded(child: Text('II. List of Exhibits Sent for Examination', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -482,7 +482,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
             const SizedBox(height: 8),
             ..._fslCustodyPersons.asMap().entries.map((entry) => _fslCustodyEntryCard(entry.key, entry.value)),
             const Divider(height: 24),
-            _entryText('IO / PS CONTACT DETAILS', maxLines: 6),
+            _entryText('তদন্তকারী অফিসার/থানার যোগাযোগের বিবরণ', maxLines: 6),
             Align(
               alignment: Alignment.centerRight,
               child: FilledButton.icon(
@@ -516,7 +516,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: TextField(
                     controller: entry.value,
-                    maxLines: entry.key == 'GIST' || entry.key == 'NATURE OF CRIME' || entry.key == 'NATURE OF EXAMINATION' || entry.key == 'FSL OFFICE' || entry.key == 'EXHIBITS' || entry.key == 'PERSONS IN CUSTODY' || entry.key == 'IO / PS CONTACT DETAILS' ? 5 : 1,
+                    maxLines: entry.key == 'সংক্ষিপ্ত ঘটনা' || entry.key == 'অপরাধের প্রকৃতি' || entry.key == 'প্রয়োজনীয় পরীক্ষার প্রকৃতি' || entry.key == 'এফএসএল কার্যালয়' || entry.key == 'আলামতসমূহ' || entry.key == 'হেফাজতে থাকা ব্যক্তিবর্গ' || entry.key == 'তদন্তকারী অফিসার/থানার যোগাযোগের বিবরণ' ? 5 : 1,
                     decoration: InputDecoration(labelText: entry.key, border: const OutlineInputBorder()),
                   ),
                 )),
@@ -560,33 +560,33 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
   String _cdParagraphForForm(FormNotice form) {
     final lower = form.title.toLowerCase();
     if (lower.contains('183')) {
-      return 'Submitted prayer before the Ld. Court for recording statement u/s 183 BNSS in connection with this case.';
+      return 'এই মামলার সূত্রে বিএনএসএস-এর ১৮৩ ধারায় বিবৃতি লিপিবদ্ধ করার জন্য বিজ্ঞ আদালতের নিকট প্রার্থনা পেশ করলাম।';
     }
     if (lower.contains('35')) {
-      return 'Prepared/served notice u/s 35(3) BNSS upon the concerned person in connection with this case.';
+      return 'এই মামলার সূত্রে সংশ্লিষ্ট ব্যক্তির প্রতি বিএনএসএস-এর ৩৫(৩) ধারার নোটিশ প্রস্তুত/তামিল করলাম।';
     }
     if (lower.contains('94')) {
-      return 'Sent requisition u/s 94 BNSS for collection/production of relevant document/material in connection with this case.';
+      return 'এই মামলার সূত্রে প্রাসঙ্গিক নথি/বস্তু সংগ্রহ/উপস্থাপনের জন্য বিএনএসএস-এর ৯৪ ধারার রিকুইজিশন প্রেরণ করলাম।';
     }
     if (lower.contains('medical')) {
-      return 'Sent medical requisition for examination/collection of medical papers in connection with this case.';
+      return 'এই মামলার সূত্রে চিকিৎসা পরীক্ষা/চিকিৎসা সংক্রান্ত নথি সংগ্রহের জন্য রিকুইজিশন প্রেরণ করলাম।';
     }
     if (lower.contains('bht') || lower.contains('injury')) {
-      return 'Sent requisition for collection of BHT/injury report in connection with this case.';
+      return 'এই মামলার সূত্রে বিএইচটি/আঘাতের প্রতিবেদন সংগ্রহের জন্য রিকুইজিশন প্রেরণ করলাম।';
     }
     if (lower.contains('cdr') || lower.contains('caf')) {
-      return 'Sent requisition for collection of CDR/CAF in connection with this case.';
+      return 'এই মামলার সূত্রে সিডিআর/সিএএফ সংগ্রহের জন্য রিকুইজিশন প্রেরণ করলাম।';
     }
     if (lower.contains('bank')) {
-      return 'Sent requisition to the concerned bank/authority for collection of account/transaction details in connection with this case.';
+      return 'এই মামলার সূত্রে হিসাব/লেনদেনের তথ্য সংগ্রহের জন্য সংশ্লিষ্ট ব্যাংক/কর্তৃপক্ষের নিকট রিকুইজিশন প্রেরণ করলাম।';
     }
     if (lower.contains('fsl')) {
-      return 'Sent requisition for FSL/scientific examination in connection with this case.';
+      return 'এই মামলার সূত্রে এফএসএল/বৈজ্ঞানিক পরীক্ষার জন্য রিকুইজিশন প্রেরণ করলাম।';
     }
     if (lower.contains('forwarding')) {
-      return 'Prepared forwarding report/prayer in connection with this case.';
+      return 'এই মামলার সূত্রে ফরওয়ার্ডিং প্রতিবেদন/প্রার্থনা প্রস্তুত করলাম।';
     }
-    return 'Prepared ${form.title} in connection with this case.';
+    return 'এই মামলার সূত্রে ${form.title} প্রস্তুত করলাম।';
   }
 
   Future<void> _askMentionInCaseDiary(FormNotice form) async {
@@ -594,11 +594,11 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     final mention = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Mention in Case Diary?'),
-        content: Text('“${form.title}” CD-তে mention করা হবে? Yes করলে date-wise pending CD entry হিসেবে save হবে।'),
+        title: const Text('কেস ডায়েরিতে উল্লেখ করবেন?'),
+        content: Text('“${form.title}” কেস ডায়েরিতে উল্লেখ করা হবে? হ্যাঁ করলে তারিখভিত্তিক অপেক্ষমাণ সিডি এন্ট্রি হিসেবে সংরক্ষিত হবে।'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('না')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('হ্যাঁ')),
         ],
       ),
     );
@@ -614,7 +614,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     );
     await _store.savePendingCdAction(action);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('CD pending entry saved. Daily CD builder-এ দেখা যাবে.')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('কেস ডায়েরির অপেক্ষমাণ এন্ট্রি সংরক্ষিত হয়েছে। দৈনিক সিডি নির্মাতায় দেখা যাবে।')));
   }
 
   Future<void> _previewPdf() async {
@@ -624,7 +624,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => PdfPreviewScreen(
-          title: 'Preview ${previewForm.title}',
+          title: '${previewForm.title} প্রিভিউ',
           filename: '${previewForm.title.replaceAll(' ', '_')}_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.pdf',
           docFilename: '${previewForm.title.replaceAll(' ', '_')}_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.doc',
           buildPdf: () => PdfService().buildFormNoticePdf(officer: widget.profile, caseFile: widget.caseFile, form: previewForm),
@@ -645,7 +645,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
         title: const Text('Final Save Form?'),
         content: const Text('Final save করলে form locked হিসেবে mark হবে। পরে edit করা যাবে, কিন্তু warning দেখাবে।'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('বাতিল')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Final Save')),
         ],
       ),
@@ -662,11 +662,11 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Expanded(child: OutlinedButton.icon(onPressed: () => _save(), icon: const Icon(Icons.save), label: const Text('Draft'))),
+              Expanded(child: OutlinedButton.icon(onPressed: () => _save(), icon: const Icon(Icons.save), label: const Text('খসড়া'))),
               const SizedBox(width: 8),
               Expanded(child: FilledButton.icon(onPressed: _finalSave, icon: const Icon(Icons.lock), label: const Text('Final'))),
               const SizedBox(width: 8),
-              Expanded(child: FilledButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.preview), label: const Text('Preview'))),
+              Expanded(child: FilledButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.preview), label: const Text('প্রিভিউ'))),
             ],
           ),
         ),

@@ -280,7 +280,7 @@ body{font-family:Noto Serif Bengali, Nirmala UI, SolaimanLipi, serif;font-size:1
 
   Future<Uint8List> buildSurathalReportDoc({required OfficerProfile officer, required UdCase ud}) async {
     final ps = _ps(_v(ud.policeStation, officer.policeStation));
-    final html = _htmlPage('Surathal Report', '''
+    final html = _htmlPage('সুরতহাল প্রতিবেদন', '''
 <div class="center bold">Preparing the Surathal Report of the deceased ${_e(_deceasedFull(ud))} in c/w ${_e(ps)} U/D case No: - ${_e(ud.udNo)}, Date :- ${_e(ud.dateTime)}</div>
 <p>Inquest Time: From ${_e(_v(ud.inquestFromTime, '................'))} To ${_e(_v(ud.inquestToTime, '................'))}</p>
 <p class="justify">${_e(_surathalBody(officer, ud))}</p>
@@ -307,7 +307,7 @@ body{font-family:Noto Serif Bengali, Nirmala UI, SolaimanLipi, serif;font-size:1
     ];
     final h = headers.map((e) => '<th>${_e(e)}</th>').join();
     final v = values.map((e) => '<td>${_e(e)}</td>').join();
-    final html = _htmlPage('Dead Body Challan', '''
+    final html = _htmlPage('মৃতদেহ চালান', '''
 <div class="bold">West Bengal Form No- 5371 <span style="float:right">Ref: ${_e(ps)} U/D case No: - ${_e(ud.udNo)}, Date :- ${_e(ud.dateTime)}</span></div>
 <div class="center bold">Challan for use when a Dead Body is sent for examination</div>
 <div class="center">(P.R.B Form No-54 vide Rule-252)</div><br/>
@@ -322,7 +322,7 @@ body{font-family:Noto Serif Bengali, Nirmala UI, SolaimanLipi, serif;font-size:1
     final body = _v(ud.finalReportNarrative, '''The fact of the case in brief is that ${_v(ud.firstInformationDetails, 'information was received regarding the unnatural death of ${_deceasedFull(ud)}.')} On the basis of such information started $ps U/D Case No. ${ud.udNo} and investigation was taken up. Inquest report was prepared over the dead body duly identified by the near relatives/witnesses. The dead body was forwarded to police morgue for holding post mortem examination to ascertain the actual cause of death. ${_v(ud.pmReportDetails)} ${_v(ud.pmDoctorOpinion)}''');
     final finding = _v(ud.finalFinding, 'From the preliminary enquiry as well as the PM report, no foul play could be detected behind the death of the deceased.');
     final prayer = _v(ud.finalPrayer, 'Therefore, I am praying that this U/D Case may kindly be filed with a view to re-open the case if any complaint or clue comes out from any corner in near future.');
-    final html = _htmlPage('UD Final Report', '''
+    final html = _htmlPage('ইউডি চূড়ান্ত প্রতিবেদন', '''
 <div class="bold">West Bengal form No. 5370</div>
 <div class="center bold">FINAL REPORT OF A REPORTED CASE OF UNNATURAL DEATH SENT TO THE MAGISTRATE</div>
 <div class="center bold">UNDER SECTION 174, CR.P.CODE</div>

@@ -125,8 +125,8 @@ class _BackendSettingsScreenState extends State<BackendSettingsScreen> {
             const SizedBox(height: 8),
             Text('Mode: ${_config.mode}'),
             Text('Sync: ${_config.syncEnabled ? 'Enabled' : 'Disabled'}'),
-            Text('Last status: ${_config.lastStatus}'),
-            if (_config.lastTestedAt != null) Text('Last test/sync: ${_config.lastTestedAt}'),
+            Text('সর্বশেষ অবস্থা: ${_config.lastStatus}'),
+            if (_config.lastTestedAt != null) Text('সর্বশেষ পরীক্ষা/সিঙ্ক: ${_config.lastTestedAt}'),
           ]),
         ),
       );
@@ -135,32 +135,32 @@ class _BackendSettingsScreenState extends State<BackendSettingsScreen> {
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Backend Mode', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
+            const Text('ব্যাকএন্ড মোড', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
             RadioListTile<String>(
               value: 'offline',
               groupValue: _config.mode,
-              title: const Text('Offline Only'),
-              subtitle: const Text('সব data mobile-এর local storage-এ থাকবে।'),
-              onChanged: (v) => setState(() => _config = _config.copyWith(mode: v, syncEnabled: false, lastStatus: 'Offline only')),
+              title: const Text('শুধু অফলাইন'),
+              subtitle: const Text('সব তথ্য মোবাইলের লোকাল স্টোরেজে থাকবে।'),
+              onChanged: (v) => setState(() => _config = _config.copyWith(mode: v, syncEnabled: false, lastStatus: 'শুধুমাত্র অফলাইন')),
             ),
             RadioListTile<String>(
               value: 'custom_server',
               groupValue: _config.mode,
-              title: const Text('Custom Server + PostgreSQL'),
-              subtitle: const Text('নিজস্ব API server দিয়ে data PostgreSQL-এ save/sync হবে।'),
-              onChanged: (v) => setState(() => _config = _config.copyWith(mode: v, lastStatus: 'Custom server mode selected')),
+              title: const Text('নিজস্ব সার্ভার + পোস্টগ্রেসকিউএল'),
+              subtitle: const Text('নিজস্ব এপিআই সার্ভারের মাধ্যমে তথ্য পোস্টগ্রেসকিউএল-এ সংরক্ষণ/সিঙ্ক হবে।'),
+              onChanged: (v) => setState(() => _config = _config.copyWith(mode: v, lastStatus: 'নিজস্ব সার্ভার মোড নির্বাচিত')),
             ),
             RadioListTile<String>(
               value: 'supabase',
               groupValue: _config.mode,
-              title: const Text('Supabase / PostgreSQL later'),
-              subtitle: const Text('পরবর্তী সময়ে Supabase URL/Key বসিয়ে enable করা যাবে।'),
-              onChanged: (v) => setState(() => _config = _config.copyWith(mode: v, syncEnabled: false, lastStatus: 'Supabase setup pending')),
+              title: const Text('পরবর্তীতে সুপাবেস/পোস্টগ্রেসকিউএল'),
+              subtitle: const Text('পরবর্তী সময়ে সুপাবেস ইউআরএল/কী দিয়ে সক্রিয় করা যাবে।'),
+              onChanged: (v) => setState(() => _config = _config.copyWith(mode: v, syncEnabled: false, lastStatus: 'সুপাবেস সেটআপ অপেক্ষমাণ')),
             ),
             SwitchListTile(
               value: _config.syncEnabled,
-              title: const Text('Enable Sync'),
-              subtitle: const Text('Server connection test successful হলে enable করুন।'),
+              title: const Text('সিঙ্ক চালু করুন'),
+              subtitle: const Text('সার্ভার সংযোগ পরীক্ষা সফল হলে চালু করুন।'),
               onChanged: _config.mode == 'custom_server' ? (v) => setState(() => _config = _config.copyWith(syncEnabled: v)) : null,
             ),
           ]),
@@ -171,18 +171,18 @@ class _BackendSettingsScreenState extends State<BackendSettingsScreen> {
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Custom Server Details', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
+            const Text('নিজস্ব সার্ভারের বিবরণ', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
             const SizedBox(height: 8),
-            TextField(controller: _apiBaseController, decoration: const InputDecoration(labelText: 'API Base URL', hintText: 'https://api.yourdomain.com')),
+            TextField(controller: _apiBaseController, decoration: const InputDecoration(labelText: 'এপিআই মূল ইউআরএল', hintText: 'https://api.yourdomain.com')),
             const SizedBox(height: 8),
-            TextField(controller: _tokenController, decoration: const InputDecoration(labelText: 'API Token / Bearer Token')),
+            TextField(controller: _tokenController, decoration: const InputDecoration(labelText: 'এপিআই টোকেন / বেয়ারার টোকেন')),
             const SizedBox(height: 8),
-            TextField(controller: _uploadController, decoration: const InputDecoration(labelText: 'File Upload URL (optional)')),
+            TextField(controller: _uploadController, decoration: const InputDecoration(labelText: 'ফাইল আপলোড ইউআরএল (ঐচ্ছিক)')),
             const SizedBox(height: 14),
             Row(children: [
-              Expanded(child: ElevatedButton.icon(onPressed: _save, icon: const Icon(Icons.save), label: const Text('Save'))),
+              Expanded(child: ElevatedButton.icon(onPressed: _save, icon: const Icon(Icons.save), label: const Text('সংরক্ষণ'))),
               const SizedBox(width: 10),
-              Expanded(child: OutlinedButton.icon(onPressed: _testing ? null : _test, icon: const Icon(Icons.wifi_tethering), label: Text(_testing ? 'Testing...' : 'Test'))),
+              Expanded(child: OutlinedButton.icon(onPressed: _testing ? null : _test, icon: const Icon(Icons.wifi_tethering), label: Text(_testing ? 'পরীক্ষা চলছে...' : 'পরীক্ষা করুন'))),
             ]),
           ]),
         ),
@@ -193,7 +193,7 @@ class _BackendSettingsScreenState extends State<BackendSettingsScreen> {
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Officer Login & License', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
+            const Text('অফিসার লগইন ও লাইসেন্স', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
             const SizedBox(height: 8),
             Text(_config.apiToken.isEmpty
                 ? 'Server login হয়নি। Officer login করলে token auto-save হবে।'
@@ -218,14 +218,14 @@ class _BackendSettingsScreenState extends State<BackendSettingsScreen> {
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Local Data Upload / Migration', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
+            const Text('লোকাল তথ্য আপলোড/স্থানান্তর', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
             const SizedBox(height: 8),
-            const Text('Backend চালু করার পরে existing local cases server-এ upload করা যাবে। প্রথম version-এ cases sync হবে; পরে CD, statement, forms, evidence, files sync add হবে।'),
+            const Text('ব্যাকএন্ড চালু করার পরে বর্তমান লোকাল মামলাগুলি সার্ভারে আপলোড করা যাবে। প্রথম সংস্করণে মামলা সিঙ্ক হবে; পরে সিডি, বিবৃতি, ফর্ম, প্রমাণ ও ফাইল সিঙ্ক যুক্ত হবে।'),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: _syncing || !_config.isOnlineEnabled ? null : _syncNow,
               icon: const Icon(Icons.cloud_upload),
-              label: Text(_syncing ? 'Syncing...' : 'Upload Local Cases Now'),
+              label: Text(_syncing ? 'সিঙ্ক চলছে...' : 'স্থানীয় মামলাগুলি এখন আপলোড করুন'),
             ),
           ]),
         ),

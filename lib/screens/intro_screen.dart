@@ -52,7 +52,7 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
                   ),
                   const SizedBox(height: 24),
                   const Text(
-                    'INVESTIGO',
+                    'ইনভেস্টিগো — তদন্ত সহায়ক',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 38,

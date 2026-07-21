@@ -39,7 +39,7 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
     place = TextEditingController(text: _cd.placeOfEntry);
     final initialLines = _cd.tableLines.isNotEmpty
         ? _cd.tableLines
-        : [CdTableLine(noAndHour: 'I\n${_cd.startTime}', placeOfEntry: _cd.placeOfEntry, synopsis: _cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation', proceedings: _cd.body)];
+        : [CdTableLine(noAndHour: '১\n${_cd.startTime}', placeOfEntry: _cd.placeOfEntry, synopsis: _cd.cdNumber == 1 ? 'এফআইআরের অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত', proceedings: _cd.body)];
     _lineControllers = initialLines.map(_CdLineControllers.fromLine).toList();
   }
 
@@ -81,18 +81,18 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
     await _store.saveCd(updated);
     if (!mounted) return;
     setState(() => _cd = updated);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(finalSave ? 'CD final saved' : 'CD draft saved')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(finalSave ? 'সিডি চূড়ান্তভাবে সংরক্ষিত হয়েছে।' : 'সিডির খসড়া সংরক্ষিত হয়েছে।')));
   }
 
   Future<void> _finalSave() async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Final Save CD?'),
-        content: const Text('Final save করলে CD locked হিসেবে mark হবে। পরে edit করা যাবে, কিন্তু warning দেখাবে।'),
+        title: const Text('সিডি চূড়ান্তভাবে সংরক্ষণ করবেন?'),
+        content: const Text('চূড়ান্তভাবে সংরক্ষণ করলে সিডি লক হিসেবে চিহ্নিত হবে। পরে সম্পাদনা করা যাবে, তবে সতর্কবার্তা দেখাবে।'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Final Save')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('বাতিল')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('চূড়ান্ত সংরক্ষণ')),
         ],
       ),
     );
@@ -120,7 +120,7 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => PdfPreviewScreen(
-          title: 'Preview CD-${_cd.cdNumber}',
+          title: 'সিডি-${_cd.cdNumber} প্রিভিউ',
           filename: '$baseName.pdf',
           docFilename: '$baseName.doc',
           buildPdf: () => PdfService().buildCaseDiaryPdf(officer: widget.profile, caseFile: widget.caseFile, cd: cdForPreview),
@@ -137,7 +137,7 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
       _lineControllers.add(_CdLineControllers(
         noAndHour: TextEditingController(text: '$next\n${startTime.text.trim()}'),
         place: TextEditingController(text: place.text.trim()),
-        synopsis: TextEditingController(text: 'New entry'),
+        synopsis: TextEditingController(text: 'নতুন এন্ট্রি'),
         proceedings: TextEditingController(),
       ));
     });
@@ -154,17 +154,17 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('CD-${_cd.cdNumber} Editor')),
+      appBar: AppBar(title: Text('সিডি-${_cd.cdNumber} সম্পাদনা')),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Expanded(child: OutlinedButton.icon(onPressed: () => _save(), icon: const Icon(Icons.save), label: const Text('Draft'))),
+              Expanded(child: OutlinedButton.icon(onPressed: () => _save(), icon: const Icon(Icons.save), label: const Text('খসড়া'))),
               const SizedBox(width: 8),
-              Expanded(child: FilledButton.icon(onPressed: _finalSave, icon: const Icon(Icons.lock), label: const Text('Final'))),
+              Expanded(child: FilledButton.icon(onPressed: _finalSave, icon: const Icon(Icons.lock), label: const Text('চূড়ান্ত'))),
               const SizedBox(width: 8),
-              Expanded(child: FilledButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.preview), label: const Text('Preview'))),
+              Expanded(child: FilledButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.preview), label: const Text('প্রিভিউ'))),
             ],
           ),
         ),
@@ -176,7 +176,7 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(14),
-                child: Text('This CD is final saved. Edit carefully if required.', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text('এই সিডি চূড়ান্তভাবে সংরক্ষিত। প্রয়োজন হলে সতর্কতার সঙ্গে সম্পাদনা করুন।', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           Card(
@@ -185,28 +185,28 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('CD Header Details', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('সিডির শিরোনাম অংশের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
-                  FormHelpers.dateField(context: context, controller: cdDate, label: 'CD Date'),
+                  FormHelpers.dateField(context: context, controller: cdDate, label: 'সিডির তারিখ'),
                   Row(
                     children: [
-                      Expanded(child: FormHelpers.timeField(context: context, controller: startTime, label: 'Start Time')),
+                      Expanded(child: FormHelpers.timeField(context: context, controller: startTime, label: 'শুরুর সময়')),
                       const SizedBox(width: 8),
-                      Expanded(child: FormHelpers.timeField(context: context, controller: endTime, label: 'End Time')),
+                      Expanded(child: FormHelpers.timeField(context: context, controller: endTime, label: 'শেষের সময়')),
                     ],
                   ),
-                  FormHelpers.textField(controller: place, label: 'Default Place of Entry'),
+                  FormHelpers.textField(controller: place, label: 'ডিফল্ট এন্ট্রির স্থান'),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 8),
-          Text('Entry-wise Official CD Columns', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text('এন্ট্রিভিত্তিক সরকারি সিডি কলাম', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          const Text('মোবাইলে স্ক্রল করে প্রতিটি entry edit করুন। Entry No/Time, Place of Entry, Synopsis of Entry এবং Proceedings আলাদা field হিসেবে থাকবে। PDF/DOC export-এ এগুলো official column-এ বসবে।'),
+          const Text('স্ক্রল করে প্রতিটি এন্ট্রি সম্পাদনা করুন। এন্ট্রি নং/সময়, এন্ট্রির স্থান, এন্ট্রির সারাংশ ও মূল কার্যবিবরণী পৃথক ঘরে থাকবে। পিডিএফ/ডক এক্সপোর্টে এগুলি সরকারি কলামে বসবে।'),
           const SizedBox(height: 10),
           ...List.generate(_lineControllers.length, (index) => _entryCard(index, _lineControllers[index])),
-          OutlinedButton.icon(onPressed: _addEntry, icon: const Icon(Icons.add), label: const Text('Add Entry Line')),
+          OutlinedButton.icon(onPressed: _addEntry, icon: const Icon(Icons.add), label: const Text('নতুন এন্ট্রি লাইন যোগ করুন')),
           const SizedBox(height: 90),
         ],
       ),
@@ -223,14 +223,14 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
           children: [
             Row(
               children: [
-                Expanded(child: Text('Entry ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(child: Text('এন্ট্রি ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold))),
                 IconButton(onPressed: () => _deleteEntry(index), icon: const Icon(Icons.delete_outline)),
               ],
             ),
-            FormHelpers.textField(controller: c.noAndHour, label: 'Entry No. and Hour / Time', maxLines: 2),
-            FormHelpers.textField(controller: c.place, label: 'Place of Entry', maxLines: 2),
-            FormHelpers.textField(controller: c.synopsis, label: 'Synopsis of Entry', maxLines: 3),
-            FormHelpers.textField(controller: c.proceedings, label: 'Proceedings / Main Body', maxLines: 8),
+            FormHelpers.textField(controller: c.noAndHour, label: 'এন্ট্রি নং ও সময়', maxLines: 2),
+            FormHelpers.textField(controller: c.place, label: 'এন্ট্রির স্থান', maxLines: 2),
+            FormHelpers.textField(controller: c.synopsis, label: 'এন্ট্রির সারাংশ', maxLines: 3),
+            FormHelpers.textField(controller: c.proceedings, label: 'কার্যবিবরণী/মূল লেখা', maxLines: 8),
           ],
         ),
       ),

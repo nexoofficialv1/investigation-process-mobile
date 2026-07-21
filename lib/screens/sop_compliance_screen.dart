@@ -23,7 +23,7 @@ class _SopComplianceScreenState extends State<SopComplianceScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('SOP Compliance')),
+      appBar: AppBar(title: const Text('এসওপি অনুবর্তিতা')),
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
@@ -35,12 +35,12 @@ class _SopComplianceScreenState extends State<SopComplianceScreen> {
                 children: [
                   Text(widget.caseFile.displayTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 4),
-                  Text('Sections: ${widget.caseFile.sections}'),
+                  Text('ধারা: ${widget.caseFile.sections}'),
                   const SizedBox(height: 8),
-                  Text('SOP checked: ${_done.length} / ${rules.length}', style: const TextStyle(fontWeight: FontWeight.w900)),
+                  Text('এসওপি যাচাই সম্পন্ন: ${_done.length} / ${rules.length}', style: const TextStyle(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 8),
                   const Text(
-                    'Uploaded SOP অনুযায়ী mandatory investigation prompts. প্রতিটি item verify করে tick করুন; relevant document/CD entry later link করা যাবে.',
+                    'আপলোড করা এসওপি অনুযায়ী বাধ্যতামূলক তদন্ত নির্দেশনা। প্রতিটি বিষয় যাচাই করে টিক দিন; পরে প্রাসঙ্গিক নথি/সিডি এন্ট্রি সংযুক্ত করা যাবে।',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],

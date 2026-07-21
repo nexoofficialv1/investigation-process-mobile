@@ -41,7 +41,7 @@ class _MiscellaneousScreenState extends State<MiscellaneousScreen> with SingleTi
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Miscellaneous'),
+        title: const Text('বিবিধ'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -232,9 +232,9 @@ class _DutyColumnTabState extends State<_DutyColumnTab> {
         FilledButton.icon(onPressed: _addRow, icon: const Icon(Icons.add), label: const Text('Add Duty Entry')),
         const SizedBox(height: 8),
         Row(children: [
-          Expanded(child: OutlinedButton.icon(onPressed: _saveDraft, icon: const Icon(Icons.save), label: const Text('Save'))),
+          Expanded(child: OutlinedButton.icon(onPressed: _saveDraft, icon: const Icon(Icons.save), label: const Text('সংরক্ষণ'))),
           const SizedBox(width: 10),
-          Expanded(child: FilledButton.icon(onPressed: _rows.isEmpty ? null : _preview, icon: const Icon(Icons.preview), label: const Text('Preview'))),
+          Expanded(child: FilledButton.icon(onPressed: _rows.isEmpty ? null : _preview, icon: const Icon(Icons.preview), label: const Text('প্রিভিউ'))),
         ]),
         const SizedBox(height: 14),
         ..._rows.map((r) => Card(child: ListTile(
@@ -375,9 +375,9 @@ class _InventoryTabState extends State<_InventoryTab> {
         FilledButton.icon(onPressed: _addRow, icon: const Icon(Icons.add), label: const Text('Add Inventory Entry')),
         const SizedBox(height: 8),
         Row(children: [
-          Expanded(child: OutlinedButton.icon(onPressed: _saveDraft, icon: const Icon(Icons.save), label: const Text('Save'))),
+          Expanded(child: OutlinedButton.icon(onPressed: _saveDraft, icon: const Icon(Icons.save), label: const Text('সংরক্ষণ'))),
           const SizedBox(width: 10),
-          Expanded(child: FilledButton.icon(onPressed: _rows.isEmpty ? null : _preview, icon: const Icon(Icons.preview), label: const Text('Preview'))),
+          Expanded(child: FilledButton.icon(onPressed: _rows.isEmpty ? null : _preview, icon: const Icon(Icons.preview), label: const Text('প্রিভিউ'))),
         ]),
         const SizedBox(height: 14),
         ..._rows.map((r) => Card(child: ListTile(

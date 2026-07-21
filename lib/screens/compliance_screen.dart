@@ -12,7 +12,7 @@ class ComplianceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final tasks = ComplianceService().buildTasks(caseFile);
     return Scaffold(
-      appBar: AppBar(title: const Text('Compliance Checklist')),
+      appBar: AppBar(title: const Text('আইনগত অনুবর্তিতা যাচাইতালিকা')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -24,9 +24,9 @@ class ComplianceScreen extends StatelessWidget {
                 children: [
                   Text(caseFile.displayTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text('Sections: ${caseFile.sections}'),
+                  Text('ধারা: ${caseFile.sections}'),
                   const SizedBox(height: 8),
-                  const Text('This MVP checklist gives section-based prompts. It does not replace IO judgment or legal scrutiny.', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text('এই যাচাইতালিকা ধারাভিত্তিক নির্দেশনা দেয়। এটি তদন্তকারী অফিসারের বিচারবোধ বা আইনগত যাচাইয়ের বিকল্প নয়।', style: TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -36,7 +36,7 @@ class ComplianceScreen extends StatelessWidget {
                 child: ListTile(
                   leading: Icon(task.mandatory ? Icons.priority_high : Icons.check_circle_outline),
                   title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text('${task.priority} priority • ${task.detail}'),
+                  subtitle: Text('অগ্রাধিকার: ${task.priority} • ${task.detail}'),
                   isThreeLine: true,
                 ),
               )),

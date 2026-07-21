@@ -24,8 +24,8 @@ class OfficerProfile {
         rank: '',
         beltNo: '',
         policeStation: 'Kalna PS',
-        district: 'Purba Bardhaman',
-        courtName: 'Ld. ACJM Court, Kalna',
+        district: 'পূর্ব বর্ধমান',
+        courtName: 'বিজ্ঞ এসিজেএম আদালত, কালনা',
         mobile: '',
         email: '',
       );
@@ -71,8 +71,8 @@ class OfficerProfile {
       rank: json['rank'] ?? '',
       beltNo: json['beltNo'] ?? '',
       policeStation: json['policeStation'] ?? 'Kalna PS',
-      district: json['district'] ?? 'Purba Bardhaman',
-      courtName: json['courtName'] ?? 'Ld. ACJM Court, Kalna',
+      district: json['district'] ?? 'পূর্ব বর্ধমান',
+      courtName: json['courtName'] ?? 'বিজ্ঞ এসিজেএম আদালত, কালনা',
       mobile: json['mobile'] ?? '',
       email: json['email'] ?? '',
     );

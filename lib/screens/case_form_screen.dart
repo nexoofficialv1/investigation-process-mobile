@@ -88,7 +88,7 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
 
   Future<void> _save() async {
     if (psCaseNo.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PS Case No. required')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('থানা মামলা নং আবশ্যক')));
       return;
     }
 
@@ -125,80 +125,80 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
     );
     await _store.saveCase(updated);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Case saved')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('মামলা সংরক্ষিত হয়েছে')));
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.existing == null ? 'Create Case' : 'Edit Case')),
+      appBar: AppBar(title: Text(widget.existing == null ? 'নতুন মামলা তৈরি' : 'মামলা সম্পাদনা')),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: FilledButton.icon(onPressed: _save, icon: const Icon(Icons.save), label: const Text('Save Case')),
+          child: FilledButton.icon(onPressed: _save, icon: const Icon(Icons.save), label: const Text('মামলা সংরক্ষণ করুন')),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           AppSectionCard(
-            title: 'Step 1: Basic Details',
+            title: 'ধাপ ১: প্রাথমিক বিবরণ',
             icon: Icons.assignment,
             child: Column(
               children: [
-                FormHelpers.textField(controller: psCaseNo, label: 'PS Case No. / Year'),
-                FormHelpers.dateField(context: context, controller: caseDate, label: 'Case Date'),
-                FormHelpers.textField(controller: sections, label: 'Sections of Law'),
-                FormHelpers.textField(controller: crimeHead, label: 'Crime Head / Case Type'),
+                FormHelpers.textField(controller: psCaseNo, label: 'থানা মামলা নং/সাল'),
+                FormHelpers.dateField(context: context, controller: caseDate, label: 'মামলার তারিখ'),
+                FormHelpers.textField(controller: sections, label: 'আইনের ধারা'),
+                FormHelpers.textField(controller: crimeHead, label: 'অপরাধের শ্রেণি/মামলার ধরন'),
               ],
             ),
           ),
           AppSectionCard(
-            title: 'Step 2: Incident Details',
+            title: 'ধাপ ২: ঘটনার বিবরণ',
             icon: Icons.place,
             child: Column(
               children: [
-                FormHelpers.textField(controller: po, label: 'Place of Occurrence', maxLines: 2),
-                FormHelpers.dateTimeField(context: context, controller: dto, label: 'Date & Time of Occurrence'),
-                FormHelpers.dateTimeField(context: context, controller: dtr, label: 'Date & Time of Reporting'),
-                FormHelpers.textField(controller: gist, label: 'Brief Gist of FIR', maxLines: 5),
+                FormHelpers.textField(controller: po, label: 'ঘটনাস্থল', maxLines: 2),
+                FormHelpers.dateTimeField(context: context, controller: dto, label: 'ঘটনার তারিখ ও সময়'),
+                FormHelpers.dateTimeField(context: context, controller: dtr, label: 'রিপোর্টের তারিখ ও সময়'),
+                FormHelpers.textField(controller: gist, label: 'এফআইআর-এর সংক্ষিপ্ত ঘটনা', maxLines: 5),
               ],
             ),
           ),
           AppSectionCard(
-            title: 'Step 3: Parties',
+            title: 'ধাপ ৩: সংশ্লিষ্ট পক্ষসমূহ',
             icon: Icons.people,
             child: Column(
               children: [
-                FormHelpers.textField(controller: complainant, label: 'Complainant Details', maxLines: 2),
-                FormHelpers.textField(controller: victim, label: 'Victim Details', maxLines: 2),
-                FormHelpers.textField(controller: accused, label: 'Accused / Suspect Details', maxLines: 3),
+                FormHelpers.textField(controller: complainant, label: 'অভিযোগকারীর বিবরণ', maxLines: 2),
+                FormHelpers.textField(controller: victim, label: 'ভিকটিমের বিবরণ', maxLines: 2),
+                FormHelpers.textField(controller: accused, label: 'অভিযুক্ত/সন্দেহভাজনের বিবরণ', maxLines: 3),
               ],
             ),
           ),
           AppSectionCard(
-            title: 'Step 4: Investigation Start',
-            subtitle: 'Yes হলে details field open হবে। এই data থেকে CD-I auto draft তৈরি হবে।',
+            title: 'ধাপ ৪: তদন্তের সূচনা',
+            subtitle: 'হ্যাঁ নির্বাচন করলে বিস্তারিত লেখার ঘর খুলবে। এই তথ্য থেকে সিডি-১-এর খসড়া স্বয়ংক্রিয়ভাবে তৈরি হবে।',
             icon: Icons.manage_search,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('IO Name: ${widget.profile.rank} ${widget.profile.name}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text('তদন্তকারী অফিসার: ${widget.profile.rank} ${widget.profile.name}', style: const TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-                FormHelpers.dateField(context: context, controller: tookUpDate, label: 'Took up investigation date'),
-                FormHelpers.yesNoTile(title: 'Visited PO?', value: visitedPo, onChanged: (v) => setState(() => visitedPo = v)),
-                if (visitedPo) FormHelpers.textField(controller: poDetails, label: 'Details of PO visit', maxLines: 4),
-                FormHelpers.yesNoTile(title: 'Rough sketch map prepared?', value: sketchPrepared, onChanged: (v) => setState(() => sketchPrepared = v)),
-                if (sketchPrepared) FormHelpers.textField(controller: sketchDetails, label: 'Rough sketch map details', maxLines: 3),
-                FormHelpers.yesNoTile(title: 'Witness examined?', value: witnessExamined, onChanged: (v) => setState(() => witnessExamined = v)),
-                if (witnessExamined) FormHelpers.textField(controller: witnessDetails, label: 'Witness examination details', maxLines: 4),
-                FormHelpers.yesNoTile(title: 'Medical required?', value: medicalRequired, onChanged: (v) => setState(() => medicalRequired = v)),
-                if (medicalRequired) FormHelpers.textField(controller: medicalDetails, label: 'Medical / BHT / Injury details', maxLines: 4),
-                FormHelpers.yesNoTile(title: 'Seizure required?', value: seizureRequired, onChanged: (v) => setState(() => seizureRequired = v)),
-                if (seizureRequired) FormHelpers.textField(controller: seizureDetails, label: 'Seizure details', maxLines: 4),
-                FormHelpers.yesNoTile(title: 'Evidence available/required?', value: evidenceRequired, onChanged: (v) => setState(() => evidenceRequired = v)),
-                if (evidenceRequired) FormHelpers.textField(controller: evidenceDetails, label: 'Evidence details (physical/digital/CCTV/document etc.)', maxLines: 4),
+                FormHelpers.dateField(context: context, controller: tookUpDate, label: 'তদন্তভার গ্রহণের তারিখ'),
+                FormHelpers.yesNoTile(title: 'ঘটনাস্থল পরিদর্শন করেছেন?', value: visitedPo, onChanged: (v) => setState(() => visitedPo = v)),
+                if (visitedPo) FormHelpers.textField(controller: poDetails, label: 'ঘটনাস্থল পরিদর্শনের বিবরণ', maxLines: 4),
+                FormHelpers.yesNoTile(title: 'খসড়া নকশা প্রস্তুত করেছেন?', value: sketchPrepared, onChanged: (v) => setState(() => sketchPrepared = v)),
+                if (sketchPrepared) FormHelpers.textField(controller: sketchDetails, label: 'খসড়া নকশার বিবরণ', maxLines: 3),
+                FormHelpers.yesNoTile(title: 'সাক্ষী পরীক্ষা করেছেন?', value: witnessExamined, onChanged: (v) => setState(() => witnessExamined = v)),
+                if (witnessExamined) FormHelpers.textField(controller: witnessDetails, label: 'সাক্ষী পরীক্ষার বিবরণ', maxLines: 4),
+                FormHelpers.yesNoTile(title: 'চিকিৎসা সংক্রান্ত ব্যবস্থা প্রয়োজন?', value: medicalRequired, onChanged: (v) => setState(() => medicalRequired = v)),
+                if (medicalRequired) FormHelpers.textField(controller: medicalDetails, label: 'চিকিৎসা/বিএইচটি/আঘাতের বিবরণ', maxLines: 4),
+                FormHelpers.yesNoTile(title: 'জব্দ প্রয়োজন?', value: seizureRequired, onChanged: (v) => setState(() => seizureRequired = v)),
+                if (seizureRequired) FormHelpers.textField(controller: seizureDetails, label: 'জব্দের বিবরণ', maxLines: 4),
+                FormHelpers.yesNoTile(title: 'প্রমাণ উপলব্ধ/সংগ্রহ প্রয়োজন?', value: evidenceRequired, onChanged: (v) => setState(() => evidenceRequired = v)),
+                if (evidenceRequired) FormHelpers.textField(controller: evidenceDetails, label: 'প্রমাণের বিবরণ (ভৌত/ডিজিটাল/সিসিটিভি/নথি ইত্যাদি)', maxLines: 4),
               ],
             ),
           ),

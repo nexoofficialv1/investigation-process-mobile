@@ -141,7 +141,7 @@ class CaseFile {
     );
   }
 
-  String get displayTitle => psCaseNo.trim().isEmpty ? 'New Case' : 'PS Case No. $psCaseNo';
+  String get displayTitle => psCaseNo.trim().isEmpty ? 'নতুন মামলা' : 'থানা মামলা নং $psCaseNo';
 
   CaseFile copyWith({
     String? psCaseNo,

@@ -45,7 +45,7 @@ class DocExportService {
   }) async {
     final lines = cd.tableLines.isNotEmpty
         ? cd.tableLines
-        : [CdTableLine(noAndHour: 'I\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation', proceedings: cd.body)];
+        : [CdTableLine(noAndHour: '১\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'এফআইআরের অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত', proceedings: cd.body)];
     final noHour = lines.map((e) => _e(e.noAndHour)).join('<br/><br/><br/>');
     final places = lines.map((e) => _e(e.placeOfEntry)).join('<br/><br/><br/>');
     final synopsis = lines.map((e) => _e(e.synopsis)).join('<br/><br/><br/>');
@@ -72,7 +72,7 @@ class DocExportService {
 </table>
 <div class="right" style="margin-top:18px;margin-right:70px">Submitted<br/><br/><br/>(${_e(officer.name)})<br/>${_e(officer.rank)}<br/>${_e(ps)}</div>
 ''';
-    return _docBytes(_page('CD-${cd.cdNumber}', html));
+    return _docBytes(_page('কেস ডায়েরি-${cd.cdNumber}', html));
   }
 
 
@@ -86,7 +86,7 @@ class DocExportService {
     for (final cd in sortedCds) {
       final lines = cd.tableLines.isNotEmpty
           ? cd.tableLines
-          : [CdTableLine(noAndHour: 'I\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation', proceedings: cd.body)];
+          : [CdTableLine(noAndHour: '১\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'এফআইআরের অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত', proceedings: cd.body)];
       final noHour = lines.map((e) => _e(e.noAndHour)).join('<br/><br/><br/>');
       final places = lines.map((e) => _e(e.placeOfEntry)).join('<br/><br/><br/>');
       final synopsis = lines.map((e) => _e(e.synopsis)).join('<br/><br/><br/>');
@@ -124,13 +124,13 @@ class DocExportService {
     required StatementEntry statement,
   }) async {
     final html = '''
-<div class="center bold">Statement of witness recorded u/s 180 BNSS</div><br/>
-<p>Case Reference: ${_e(officer.policeStation)} PS Case No. ${_e(caseFile.psCaseNo)} dated ${_e(caseFile.caseDate)} u/s ${_e(caseFile.sections)}</p>
-<p>Name of Witness: ${_e(statement.witnessName)}<br/>Witness Details: ${_e(statement.witnessDetails)}<br/>Statement Type: ${_e(statement.statementType)}</p>
+<div class="center bold">বিএনএসএস-এর ১৮০ ধারায় লিপিবদ্ধ সাক্ষীর বিবৃতি</div><br/>
+<p>মামলার রেফারেন্স: ${_e(officer.policeStation)} থানা মামলা নং ${_e(caseFile.psCaseNo)}, তারিখ ${_e(caseFile.caseDate)}, ধারা ${_e(caseFile.sections)}</p>
+<p>সাক্ষীর নাম: ${_e(statement.witnessName)}<br/>সাক্ষীর বিবরণ: ${_e(statement.witnessDetails)}<br/>বিবৃতির ধরন: ${_e(statement.statementType)}</p>
 <p class="justify">${_e(statement.body)}</p>
-<table class="no-border" style="margin-top:40px"><tr><td>Signature/LTI/RTI of witness</td><td class="right">Recorded by<br/><br/>${_e(officer.rank)} ${_e(officer.name)}<br/>${_e(officer.policeStation)}</td></tr></table>
+<table class="no-border" style="margin-top:40px"><tr><td>সাক্ষীর স্বাক্ষর/বাম হাতের ছাপ/ডান হাতের ছাপ</td><td class="right">লিপিবদ্ধ করেছেন<br/><br/>${_e(officer.rank)} ${_e(officer.name)}<br/>${_e(officer.policeStation)}</td></tr></table>
 ''';
-    return _docBytes(_page('Statement', html));
+    return _docBytes(_page('সাক্ষীর বিবৃতি', html));
   }
 
   Future<Uint8List> buildFormNoticeDoc({
@@ -140,9 +140,9 @@ class DocExportService {
   }) async {
     final html = '''
 <div class="center bold">${_e(form.title)}</div><br/>
-<p class="small">Ref: ${_e(officer.policeStation)} Case No. ${_e(caseFile.psCaseNo)} dated ${_e(caseFile.caseDate)} u/s ${_e(caseFile.sections)}</p>
+<p class="small">রেফারেন্স: ${_e(officer.policeStation)} থানা মামলা নং ${_e(caseFile.psCaseNo)}, তারিখ ${_e(caseFile.caseDate)}, ধারা ${_e(caseFile.sections)}</p>
 <p class="justify">${_e(form.body)}</p>
-<div class="right" style="margin-top:36px">Submitted,<br/><br/>${_e(officer.name)}<br/>${_e(officer.rank)}<br/>${_e(officer.policeStation)}, ${_e(officer.district)}</div>
+<div class="right" style="margin-top:36px">পেশ করা হলো,<br/><br/>${_e(officer.name)}<br/>${_e(officer.rank)}<br/>${_e(officer.policeStation)}, ${_e(officer.district)}</div>
 ''';
     return _docBytes(_page(form.title, html));
   }
@@ -154,7 +154,7 @@ class DocExportService {
     final html = '''
 <div class="center bold">${_e(form.title)}</div><br/>
 <p class="justify">${_e(form.body)}</p>
-<div class="right" style="margin-top:36px">${_e(officer.rank)} ${_e(officer.name)}<br/>${_e(officer.policeStation)}<br/>District: ${_e(officer.district)}</div>
+<div class="right" style="margin-top:36px">${_e(officer.rank)} ${_e(officer.name)}<br/>${_e(officer.policeStation)}<br/>জেলা: ${_e(officer.district)}</div>
 ''';
     return _docBytes(_page(form.title, html));
   }
@@ -166,14 +166,14 @@ class DocExportService {
   }) async {
     final rows = sketch.objects.map((o) => '<tr><td>${_e(o.marker)}</td><td>${_e(o.label)}</td><td>${_e(o.direction)}</td><td>${_e(o.indexDescription)}</td></tr>').join();
     final html = '''
-<div class="center bold">ROUGH SKETCH MAP WITH INDEX</div>
-<p>Case Reference: ${_e(officer.policeStation)} PS Case No. ${_e(caseFile.psCaseNo)} dated ${_e(caseFile.caseDate)} u/s ${_e(caseFile.sections)}</p>
-<p>PO: ${_e(sketch.poDescription)}</p>
-<table><tr><th>Marker</th><th>Label</th><th>Direction</th><th>Index Description</th></tr>$rows</table>
-<p>North: ${_e(sketch.north)}<br/>South: ${_e(sketch.south)}<br/>East: ${_e(sketch.east)}<br/>West: ${_e(sketch.west)}</p>
-<div class="right" style="margin-top:36px">Prepared by<br/><br/>(${_e(officer.name)})<br/>${_e(officer.rank)}<br/>${_e(officer.policeStation)}</div>
+<div class="center bold">সূচিসহ ঘটনাস্থলের খসড়া নকশা</div>
+<p>মামলার রেফারেন্স: ${_e(officer.policeStation)} থানা মামলা নং ${_e(caseFile.psCaseNo)}, তারিখ ${_e(caseFile.caseDate)}, ধারা ${_e(caseFile.sections)}</p>
+<p>ঘটনাস্থল: ${_e(sketch.poDescription)}</p>
+<table><tr><th>চিহ্ন</th><th>নাম</th><th>দিক</th><th>সূচির বিবরণ</th></tr>$rows</table>
+<p>উত্তর: ${_e(sketch.north)}<br/>দক্ষিণ: ${_e(sketch.south)}<br/>পূর্ব: ${_e(sketch.east)}<br/>পশ্চিম: ${_e(sketch.west)}</p>
+<div class="right" style="margin-top:36px">প্রস্তুত করেছেন<br/><br/>(${_e(officer.name)})<br/>${_e(officer.rank)}<br/>${_e(officer.policeStation)}</div>
 ''';
-    return _docBytes(_page('Sketch Map', html));
+    return _docBytes(_page('খসড়া নকশা', html));
   }
 }
 
@@ -184,9 +184,9 @@ extension UdInquestDocExport on DocExportService {
   }) async {
     String e(String v) => const HtmlEscape().convert(v).replaceAll('\n', '<br/>');
     String row(String label, String value) => '<p>$label <span style="border-bottom:1px dotted #777;display:inline-block;min-width:480px">${e(value)}</span></p>';
-    final html = _page('UD Inquest', '''
-<div class="center bold">INQUEST FORM</div>
-<div class="center bold">Section 194 / 196 OF BNSS</div>
+    final html = _page('ইউডি সুরতহাল প্রতিবেদন', '''
+<div class="center bold">সুরতহাল প্রতিবেদন</div>
+<div class="center bold">বিএনএসএস-এর ১৯৪/১৯৬ ধারা</div>
 ${row('1. District:', ud.district)}
 ${row('PS:', ud.policeStation)}
 ${row('Date & Time:', ud.dateTime)}
@@ -215,7 +215,7 @@ ${row('9. Identification Mark Teeth:', ud.teeth)} ${row('Eyes:', ud.eyes)} ${row
 ${row('Mole:', ud.mole)} ${row('Tattoo:', ud.tattoo)}
 ${row('Dress/wearing apparel:', ud.dress)}
 ${row('Other features (if any):', ud.otherFeatures)}
-<p>10. Description of external injuries found on Dead Body (if any). Use separate sheet if required.</p>
+<p>১০। মৃতদেহে পাওয়া বাহ্যিক আঘাতের বিবরণ (প্রয়োজনে পৃথক পাতা সংযুক্ত করুন)।</p>
 ${row('a. Head:', ud.injuryHead)} ${row('b. Face:', ud.injuryFace)} ${row('c. Neck:', ud.injuryNeck)} ${row('d. Chest:', ud.injuryChest)}
 ${row('e. Stomach:', ud.injuryStomach)} ${row('f. Shoulder:', ud.injuryShoulder)} ${row('g. Right Hand:', ud.injuryRightHand)}
 ${row('h. Left Hand:', ud.injuryLeftHand)} ${row('i. Right Leg:', ud.injuryRightLeg)} ${row('j. Left Leg:', ud.injuryLeftLeg)}
@@ -231,9 +231,9 @@ ${row('17. Opinion as to probable cause to death:', ud.probableCauseOfDeath)}
 ${row('18. Remarks:', ud.remarks)}
 ${row('19. Witness (i) Name/Address:', ud.witness1NameAddress)}
 ${row('Witness (ii) Name/Address:', ud.witness2NameAddress)}
-<p>Brief facts (please attach separate sheets)</p>
+<p>সংক্ষিপ্ত ঘটনা (প্রয়োজনে পৃথক পাতা সংযুক্ত করুন)</p>
 <p>${e(ud.briefFacts)}</p>
-<div class="right" style="margin-top:40px">Signature of Investigation Officer<br/><br/>Name: ${e(officer.name)}<br/>Rank: ${e(officer.rank)}</div>
+<div class="right" style="margin-top:40px">তদন্তকারী অফিসারের স্বাক্ষর<br/><br/>নাম: ${e(officer.name)}<br/>পদমর্যাদা: ${e(officer.rank)}</div>
 ''');
     return _docBytes(html);
   }

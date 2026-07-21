@@ -83,7 +83,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _needCaseMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('প্রথমে একটি case create করুন, তারপর এই module খুলবে।')),
+      const SnackBar(content: Text('প্রথমে একটি মামলা তৈরি করুন, তারপর এই মডিউল খুলবে।')),
     );
   }
 
@@ -216,7 +216,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _comingSoon(String module) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$module module next patch-এ full screen হবে। এখন Case Detail থেকে কাজ করুন।')),
+      SnackBar(content: Text('$module মডিউলটি পরবর্তী সংস্করণে পূর্ণাঙ্গ হবে। এখন মামলার বিস্তারিত অংশ থেকে কাজ করুন।')),
     );
   }
 
@@ -240,20 +240,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(onPressed: _newCase, icon: const Icon(Icons.add), label: const Text('New Case')),
+      floatingActionButton: FloatingActionButton.extended(onPressed: _newCase, icon: const Icon(Icons.add), label: const Text('নতুন মামলা')),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _tabIndex,
         onTap: (i) {
           setState(() => _tabIndex = i);
           if (i == 1) _openLatestCase();
-          if (i == 2) _comingSoon('Tasks / Pending CD Entries');
+          if (i == 2) _comingSoon('কাজ/অপেক্ষমাণ সিডি এন্ট্রি');
           if (i == 3) _editProfile();
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'HOME'),
-          BottomNavigationBarItem(icon: Icon(Icons.folder_copy_rounded), label: 'CASES'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications_rounded), label: 'TASKS'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'PROFILE'),
+          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'হোম'),
+          BottomNavigationBarItem(icon: Icon(Icons.folder_copy_rounded), label: 'মামলা'),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications_rounded), label: 'কাজ'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'প্রোফাইল'),
         ],
       ),
     );
@@ -269,7 +269,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('INVESTIGO', style: TextStyle(color: Colors.white, fontSize: 24, letterSpacing: 1.1, fontWeight: FontWeight.w900)),
+          const Text('ইনভেস্টিগো — তদন্ত সহায়ক', style: TextStyle(color: Colors.white, fontSize: 24, letterSpacing: 1.1, fontWeight: FontWeight.w900)),
           const SizedBox(height: 6),
           const Text('Investigation Process Manager', style: TextStyle(color: Color(0xFFE6C773), fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
@@ -281,26 +281,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _gridMenu() {
     final items = [
-      _Menu('Investigation', 'SOP guided', Icons.manage_search_rounded, const Color(0xFF00695C), _openInvestigation),
-      _Menu('Case Diary', 'CD writer', Icons.menu_book_rounded, AppTheme.gold, _openCdWriter),
-      _Menu('New Case', 'case entry', Icons.add_box_rounded, AppTheme.teal, _newCase),
-      _Menu('Case Parser', 'auto extract', Icons.document_scanner_rounded, const Color(0xFF0E7C86), _openCaseParser),
-      _Menu('Forms', 'notice/requisition', Icons.description_rounded, AppTheme.purple, _openForms),
-      _Menu('Statement', '180 BNSS', Icons.assignment_ind_rounded, const Color(0xFF673AB7), _openStatements),
-      _Menu('Checklists', 'investigation needs', Icons.checklist_rounded, AppTheme.blue, _openInvestigationChecklist),
-      _Menu('Report', 'SP/SDPO/SDO', Icons.summarize_rounded, const Color(0xFFD68A00), _openReport),
-      _Menu('Compliance', 'legal checklist', Icons.event_available_rounded, const Color(0xFF1B5E4B), _openCompliance),
-      _Menu('SOP', 'DGP directions', Icons.policy_rounded, const Color(0xFF004D40), _openSopCompliance),
-      _Menu('IF5 / CS', 'from final CD', Icons.fact_check_rounded, AppTheme.coral, () => _comingSoon('IF5 / CS')),
-      _Menu('Evidence', 'evidence manager', Icons.inventory_2_rounded, const Color(0xFF795000), _openEvidence),
-      _Menu('UD Case', 'inquest/final report', Icons.assignment_rounded, const Color(0xFF5D4037), _openUdCase),
-      _Menu('Backup', 'manual backup/sync', Icons.backup_rounded, const Color(0xFF455A64), _openBackup),
-      _Menu('Backend', 'server setup', Icons.dns_rounded, const Color(0xFF263238), _openBackendSettings),
-      _Menu('License', 'fees/activation', Icons.workspace_premium_rounded, const Color(0xFF8D6E00), _openLicense),
-      _Menu('Miscellaneous', 'report/duty/inventory', Icons.apps_rounded, const Color(0xFF37474F), _openMiscellaneous),
-      _Menu('PDF Export', 'preview first', Icons.picture_as_pdf_rounded, const Color(0xFF42A5F5), () => _comingSoon('PDF Export')),
-      _Menu('Final CD', 'investigation summary', Icons.verified_rounded, const Color(0xFFC2188B), _openCdWriter),
-      _Menu('Sketch Map', 'builder/index', Icons.map_rounded, const Color(0xFF006B57), _openSketchMap),
+      _Menu('তদন্ত', 'এসওপি নির্দেশিত', Icons.manage_search_rounded, const Color(0xFF00695C), _openInvestigation),
+      _Menu('কেস ডায়েরি', 'সিডি লেখক', Icons.menu_book_rounded, AppTheme.gold, _openCdWriter),
+      _Menu('নতুন মামলা', 'মামলার তথ্য', Icons.add_box_rounded, AppTheme.teal, _newCase),
+      _Menu('মামলা তথ্য বিশ্লেষক', 'স্বয়ংক্রিয় তথ্য সংগ্রহ', Icons.document_scanner_rounded, const Color(0xFF0E7C86), _openCaseParser),
+      _Menu('ফর্ম', 'নোটিশ/রিকুইজিশন', Icons.description_rounded, AppTheme.purple, _openForms),
+      _Menu('বিবৃতি', 'বিএনএসএস ১৮০', Icons.assignment_ind_rounded, const Color(0xFF673AB7), _openStatements),
+      _Menu('যাচাইতালিকা', 'তদন্তের প্রয়োজন', Icons.checklist_rounded, AppTheme.blue, _openInvestigationChecklist),
+      _Menu('প্রতিবেদন', 'এসপি/এসডিপিও/এসডিও', Icons.summarize_rounded, const Color(0xFFD68A00), _openReport),
+      _Menu('আইনগত অনুবর্তিতা', 'আইনগত যাচাইতালিকা', Icons.event_available_rounded, const Color(0xFF1B5E4B), _openCompliance),
+      _Menu('এসওপি', 'ডিজিপি নির্দেশনা', Icons.policy_rounded, const Color(0xFF004D40), _openSopCompliance),
+      _Menu('আইএফ-৫ / চার্জশিট', 'চূড়ান্ত সিডি থেকে', Icons.fact_check_rounded, AppTheme.coral, () => _comingSoon('আইএফ-৫ / চার্জশিট')),
+      _Menu('প্রমাণ', 'প্রমাণ ব্যবস্থাপনা', Icons.inventory_2_rounded, const Color(0xFF795000), _openEvidence),
+      _Menu('অস্বাভাবিক মৃত্যু মামলা', 'সুরতহাল/চূড়ান্ত প্রতিবেদন', Icons.assignment_rounded, const Color(0xFF5D4037), _openUdCase),
+      _Menu('ব্যাকআপ', 'manual backup/sync', Icons.backup_rounded, const Color(0xFF455A64), _openBackup),
+      _Menu('ব্যাকএন্ড', 'সার্ভার সেটআপ', Icons.dns_rounded, const Color(0xFF263238), _openBackendSettings),
+      _Menu('লাইসেন্স', 'ফি/সক্রিয়করণ', Icons.workspace_premium_rounded, const Color(0xFF8D6E00), _openLicense),
+      _Menu('বিবিধ', 'report/duty/inventory', Icons.apps_rounded, const Color(0xFF37474F), _openMiscellaneous),
+      _Menu('পিডিএফ এক্সপোর্ট', 'আগে প্রিভিউ', Icons.picture_as_pdf_rounded, const Color(0xFF42A5F5), () => _comingSoon('পিডিএফ এক্সপোর্ট')),
+      _Menu('চূড়ান্ত সিডি', 'তদন্তের সারাংশ', Icons.verified_rounded, const Color(0xFFC2188B), _openCdWriter),
+      _Menu('খসড়া নকশা', 'নির্মাতা/সূচি', Icons.map_rounded, const Color(0xFF006B57), _openSketchMap),
     ];
 
     return Padding(
@@ -336,14 +336,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const Text('© Astra Technologies', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900, color: AppTheme.deepGreen)),
           const SizedBox(height: 14),
           if (_cases.isEmpty)
-            const Text('Create your first case to generate CD, statement, forms and IF5.', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600))
+            const Text('সিডি, বিবৃতি, ফর্ম ও আইএফ-৫ তৈরি করতে প্রথম মামলা যোগ করুন।', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600))
           else
             ..._cases.take(3).map((file) => Card(
                   margin: const EdgeInsets.only(bottom: 10),
                   child: ListTile(
                     leading: const CircleAvatar(backgroundColor: AppTheme.deepGreen, foregroundColor: Colors.white, child: Icon(Icons.folder_open)),
                     title: Text(file.displayTitle, style: const TextStyle(fontWeight: FontWeight.w900)),
-                    subtitle: Text('Sections: ${file.sections}\nComplainant: ${file.complainantName}', maxLines: 2),
+                    subtitle: Text('ধারা: ${file.sections}\nঅভিযোগকারী: ${file.complainantName}', maxLines: 2),
                     isThreeLine: true,
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => _openCase(file),

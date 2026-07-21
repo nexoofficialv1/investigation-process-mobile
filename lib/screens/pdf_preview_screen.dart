@@ -54,7 +54,7 @@ class PdfPreviewScreen extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.edit),
-                  label: const Text('Edit'),
+                  label: const Text('সম্পাদনা'),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -62,7 +62,7 @@ class PdfPreviewScreen extends StatelessWidget {
               Expanded(
                 child: FilledButton.icon(
                   icon: const Icon(Icons.picture_as_pdf),
-                  label: const Text('PDF'),
+                  label: const Text('পিডিএফ'),
                   onPressed: () => _exportPdf(context),
                 ),
               ),
@@ -71,7 +71,7 @@ class PdfPreviewScreen extends StatelessWidget {
                 Expanded(
                   child: FilledButton.icon(
                     icon: const Icon(Icons.description),
-                    label: const Text('DOC'),
+                    label: const Text('ডক'),
                     onPressed: () => _exportDoc(context),
                   ),
                 ),
@@ -87,7 +87,7 @@ class PdfPreviewScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
             color: Colors.amber.shade100,
             child: const Text(
-              'Preview দেখে নাম, তারিখ, section, লেখা, page break ও official format ঠিক আছে কিনা verify করুন। ভুল থাকলে Edit চাপুন। ঠিক থাকলে PDF বা DOC export করুন।',
+              'প্রিভিউ দেখে নাম, তারিখ, ধারা, লেখা, পৃষ্ঠা বিভাজন ও সরকারি বিন্যাস ঠিক আছে কি না যাচাই করুন। ভুল থাকলে “সম্পাদনা” চাপুন। ঠিক থাকলে পিডিএফ বা ডক এক্সপোর্ট করুন।',
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ),

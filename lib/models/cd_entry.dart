@@ -59,14 +59,14 @@ class CdEntry {
     required String caseId,
     required int cdNumber,
     required String body,
-    String placeOfEntry = 'Kalna PS',
+    String placeOfEntry = 'কালনা থানা',
     List<CdTableLine>? tableLines,
   }) {
     final now = DateTime.now();
     final date = now.toIso8601String().split('T').first;
     final hour = now.hour.toString().padLeft(2, '0');
     final minute = now.minute.toString().padLeft(2, '0');
-    final time = '$hour.$minute hrs.';
+    final time = '$hour.$minute ঘণ্টা';
     return CdEntry(
       id: 'cd_${now.microsecondsSinceEpoch}',
       caseId: caseId,
@@ -78,9 +78,9 @@ class CdEntry {
       body: body,
       tableLines: tableLines ?? [
         CdTableLine(
-          noAndHour: 'I\n$time',
+          noAndHour: '১\n$time',
           placeOfEntry: placeOfEntry,
-          synopsis: cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation',
+          synopsis: cdNumber == 1 ? 'এফআইআরের অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত',
           proceedings: body,
         ),
       ],
@@ -153,9 +153,9 @@ class CdEntry {
     if (cd.tableLines.isNotEmpty) return cd;
     return cd.copyWith(tableLines: [
       CdTableLine(
-        noAndHour: 'I\n${cd.startTime}',
+        noAndHour: '১\n${cd.startTime}',
         placeOfEntry: cd.placeOfEntry,
-        synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation',
+        synopsis: cd.cdNumber == 1 ? 'এফআইআরের অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত',
         proceedings: cd.body,
       )
     ]);

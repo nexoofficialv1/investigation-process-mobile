@@ -4,42 +4,42 @@ extension SketchObjectTypeLabel on SketchObjectType {
   String get label {
     switch (this) {
       case SketchObjectType.house:
-        return 'House';
+        return 'বাড়ি';
       case SketchObjectType.pond:
-        return 'Pond';
+        return 'পুকুর';
       case SketchObjectType.tree:
-        return 'Tree';
+        return 'গাছ';
       case SketchObjectType.shop:
-        return 'Shop';
+        return 'দোকান';
       case SketchObjectType.road:
-        return 'Road';
+        return 'রাস্তা';
       case SketchObjectType.field:
-        return 'Field';
+        return 'মাঠ';
       case SketchObjectType.po:
-        return 'PO';
+        return 'ঘটনাস্থল';
       case SketchObjectType.arrow:
-        return 'Arrow';
+        return 'দিক নির্দেশক তীর';
     }
   }
 
   String get symbol {
     switch (this) {
       case SketchObjectType.house:
-        return 'HOUSE';
+        return 'বাড়ি';
       case SketchObjectType.pond:
-        return 'POND';
+        return 'পুকুর';
       case SketchObjectType.tree:
-        return 'TREE';
+        return 'গাছ';
       case SketchObjectType.shop:
-        return 'SHOP';
+        return 'দোকান';
       case SketchObjectType.road:
-        return 'ROAD';
+        return 'রাস্তা';
       case SketchObjectType.field:
-        return 'FIELD';
+        return 'মাঠ';
       case SketchObjectType.po:
-        return 'PO';
+        return 'ঘটনাস্থল';
       case SketchObjectType.arrow:
-        return 'N';
+        return 'উ';
     }
   }
 }
@@ -92,7 +92,7 @@ class SketchMapObject {
       id: 'sketch_obj_${now.microsecondsSinceEpoch}',
       type: type,
       marker: marker,
-      label: type == SketchObjectType.po ? 'PO' : '$marker (${type.label})',
+      label: type == SketchObjectType.po ? 'ঘটনাস্থল' : '$marker (${type.label})',
       direction: '',
       indexDescription: '',
       x: x,
@@ -194,7 +194,7 @@ class SketchMapEntry {
     return SketchMapEntry(
       id: 'sketch_${now.microsecondsSinceEpoch}',
       caseId: caseId,
-      title: 'Rough Sketch Map with Index',
+      title: 'সূচিসহ ঘটনাস্থলের খসড়া নকশা',
       date: now.toIso8601String().split('T').first,
       poDescription: '',
       north: '',
@@ -252,7 +252,7 @@ class SketchMapEntry {
     return SketchMapEntry(
       id: json['id'] ?? 'sketch_${DateTime.now().microsecondsSinceEpoch}',
       caseId: json['caseId'] ?? '',
-      title: json['title'] ?? 'Rough Sketch Map with Index',
+      title: json['title'] ?? 'সূচিসহ ঘটনাস্থলের খসড়া নকশা',
       date: json['date'] ?? DateTime.now().toIso8601String().split('T').first,
       poDescription: json['poDescription'] ?? '',
       north: json['north'] ?? '',

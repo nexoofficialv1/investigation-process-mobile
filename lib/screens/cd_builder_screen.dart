@@ -96,7 +96,7 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
 
     final service = CdGeneratorService();
     final now = DateTime.now();
-    final time = '${now.hour.toString().padLeft(2, '0')}.${now.minute.toString().padLeft(2, '0')} hrs.';
+    final time = '${now.hour.toString().padLeft(2, '0')}.${now.minute.toString().padLeft(2, '0')} ঘণ্টা';
     final tableLines = service.generateOfficialCdTableLines(
       caseFile: widget.caseFile,
       cdNumber: number,
@@ -125,11 +125,11 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
   Widget build(BuildContext context) {
     final number = cdNumber;
     return Scaffold(
-      appBar: AppBar(title: Text(number == null ? 'New CD' : 'Create CD-$number')),
+      appBar: AppBar(title: Text(number == null ? 'নতুন সিডি' : 'সিডি-$number তৈরি করুন')),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: FilledButton.icon(onPressed: _generate, icon: const Icon(Icons.auto_awesome), label: const Text('Generate CD')),
+          child: FilledButton.icon(onPressed: _generate, icon: const Icon(Icons.auto_awesome), label: const Text('সিডি তৈরি করুন')),
         ),
       ),
       body: number == null
@@ -140,16 +140,16 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Text('CD-$number তৈরি হবে। Yes/No select করে details দিন। Generate CD চাপলে draft তৈরি হবে।', style: const TextStyle(fontWeight: FontWeight.w600)),
+                    child: Text('সিডি-$number তৈরি হবে। হ্যাঁ/না নির্বাচন করে বিস্তারিত লিখুন। “সিডি তৈরি করুন” চাপলে খসড়া তৈরি হবে।', style: const TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ),
                 if (pendingActions.isNotEmpty)
                   AppSectionCard(
-                    title: 'Pending CD Entries from Forms/Requisitions',
+                    title: 'ফর্ম/রিকুইজিশন থেকে অপেক্ষমাণ সিডি এন্ট্রি',
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('আগে save/export করা requisition/form থেকে CD mention pending আছে। যেগুলো আজকের CD-তে রাখতে চান tick রাখুন।'),
+                        const Text('আগে সংরক্ষিত/এক্সপোর্ট করা রিকুইজিশন বা ফর্ম থেকে সিডিতে উল্লেখের অপেক্ষমাণ এন্ট্রি আছে। আজকের সিডিতে যেগুলি রাখতে চান সেগুলি টিক দিন।'),
                         const SizedBox(height: 8),
                         ...pendingActions.map((action) => CheckboxListTile(
                               value: selectedPendingActionIds.contains(action.id),
@@ -168,20 +168,20 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
                       ],
                     ),
                   ),
-                _questionCard('1. Did you examine any witness today?', _answers.examinedWitness, (v) => setState(() => _answers.examinedWitness = v), witness, 'Witness examination details'),
-                _questionCard('2. Did you visit the PO today?', _answers.visitedPo, (v) => setState(() => _answers.visitedPo = v), po, 'PO visit details'),
-                _questionCard('3. Did you prepare/modify rough sketch map?', _answers.sketchMap, (v) => setState(() => _answers.sketchMap = v), sketch, 'Sketch map details'),
-                _questionCard('4. Did you collect any medical paper?', _answers.medicalPaper, (v) => setState(() => _answers.medicalPaper = v), medical, 'Medical / BHT / injury details'),
-                _questionCard('5. Did you send any requisition?', _answers.requisition, (v) => setState(() => _answers.requisition = v), requisition, 'Requisition details'),
-                _questionCard('6. Did you seize any article/document?', _answers.seizure, (v) => setState(() => _answers.seizure = v), seizure, 'Seizure details'),
-                _questionCard('7. Did you arrest any accused?', _answers.arrest, (v) => setState(() => _answers.arrest = v), arrest, 'Arrest details'),
-                _questionCard('8. Did you serve any notice?', _answers.notice, (v) => setState(() => _answers.notice = v), notice, 'Notice details'),
-                _questionCard('9. Did you submit any court prayer?', _answers.courtPrayer, (v) => setState(() => _answers.courtPrayer = v), courtPrayer, 'Court prayer details'),
-                _questionCard('10. Did you receive any order/report/document?', _answers.receivedDocument, (v) => setState(() => _answers.receivedDocument = v), receivedDocument, 'Received document details'),
-                _questionCard('11. Did you conduct local enquiry?', _answers.localEnquiry, (v) => setState(() => _answers.localEnquiry = v), localEnquiry, 'Local enquiry details'),
-                _questionCard('12. Did you verify any person/detail?', _answers.verification, (v) => setState(() => _answers.verification = v), verification, 'Verification details'),
-                _questionCard('13. Did you collect/take steps for evidence?', _answers.digitalEvidence, (v) => setState(() => _answers.digitalEvidence = v), digitalEvidence, 'Digital evidence details'),
-                _questionCard('14. Any important development today?', _answers.importantDevelopment, (v) => setState(() => _answers.importantDevelopment = v), importantDevelopment, 'Important development details'),
+                _questionCard('১। আজ কোনো সাক্ষীকে জিজ্ঞাসাবাদ করেছেন?', _answers.examinedWitness, (v) => setState(() => _answers.examinedWitness = v), witness, 'সাক্ষী জিজ্ঞাসাবাদের বিবরণ'),
+                _questionCard('২। আজ ঘটনাস্থল পরিদর্শন করেছেন?', _answers.visitedPo, (v) => setState(() => _answers.visitedPo = v), po, 'ঘটনাস্থল পরিদর্শনের বিবরণ'),
+                _questionCard('৩। খসড়া নকশা প্রস্তুত/সংশোধন করেছেন?', _answers.sketchMap, (v) => setState(() => _answers.sketchMap = v), sketch, 'খসড়া নকশার বিবরণ'),
+                _questionCard('৪। কোনো চিকিৎসা সংক্রান্ত নথি সংগ্রহ করেছেন?', _answers.medicalPaper, (v) => setState(() => _answers.medicalPaper = v), medical, 'চিকিৎসা / বিএইচটি / আঘাতের বিবরণ'),
+                _questionCard('৫। কোনো রিকুইজিশন পাঠিয়েছেন?', _answers.requisition, (v) => setState(() => _answers.requisition = v), requisition, 'রিকুইজিশনের বিবরণ'),
+                _questionCard('৬। কোনো বস্তু/নথি জব্দ করেছেন?', _answers.seizure, (v) => setState(() => _answers.seizure = v), seizure, 'জব্দের বিবরণ'),
+                _questionCard('৭। কোনো অভিযুক্তকে গ্রেপ্তার করেছেন?', _answers.arrest, (v) => setState(() => _answers.arrest = v), arrest, 'গ্রেপ্তারের বিবরণ'),
+                _questionCard('৮। কোনো নোটিশ তামিল করেছেন?', _answers.notice, (v) => setState(() => _answers.notice = v), notice, 'নোটিশের বিবরণ'),
+                _questionCard('৯। আদালতে কোনো প্রার্থনা পেশ করেছেন?', _answers.courtPrayer, (v) => setState(() => _answers.courtPrayer = v), courtPrayer, 'আদালতের প্রার্থনার বিবরণ'),
+                _questionCard('১০। কোনো আদেশ/প্রতিবেদন/নথি পেয়েছেন?', _answers.receivedDocument, (v) => setState(() => _answers.receivedDocument = v), receivedDocument, 'প্রাপ্ত নথির বিবরণ'),
+                _questionCard('১১। স্থানীয় অনুসন্ধান করেছেন?', _answers.localEnquiry, (v) => setState(() => _answers.localEnquiry = v), localEnquiry, 'স্থানীয় অনুসন্ধানের বিবরণ'),
+                _questionCard('১২। কোনো ব্যক্তি/তথ্য যাচাই করেছেন?', _answers.verification, (v) => setState(() => _answers.verification = v), verification, 'যাচাইয়ের বিবরণ'),
+                _questionCard('১৩। আলামত/প্রমাণ সংগ্রহ বা সংরক্ষণের ব্যবস্থা নিয়েছেন?', _answers.digitalEvidence, (v) => setState(() => _answers.digitalEvidence = v), digitalEvidence, 'ডিজিটাল প্রমাণের বিবরণ'),
+                _questionCard('১৪। আজ কোনো গুরুত্বপূর্ণ অগ্রগতি হয়েছে?', _answers.importantDevelopment, (v) => setState(() => _answers.importantDevelopment = v), importantDevelopment, 'গুরুত্বপূর্ণ অগ্রগতির বিবরণ'),
                 const SizedBox(height: 80),
               ],
             ),
@@ -193,7 +193,7 @@ class _CdBuilderScreenState extends State<CdBuilderScreen> {
       title: title,
       child: Column(
         children: [
-          FormHelpers.yesNoTile(title: 'Answer', value: value, onChanged: onChanged),
+          FormHelpers.yesNoTile(title: 'উত্তর', value: value, onChanged: onChanged),
           if (value) FormHelpers.textField(controller: controller, label: label, maxLines: 4),
         ],
       ),

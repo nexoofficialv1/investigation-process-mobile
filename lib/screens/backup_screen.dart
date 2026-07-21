@@ -25,7 +25,7 @@ class _BackupScreenState extends State<BackupScreen> {
   final LocalStoreService _store = LocalStoreService();
   final TextEditingController _restoreController = TextEditingController();
   BackendConfig _config = BackendConfig.empty();
-  String _status = 'Ready';
+  String _status = 'প্রস্তুত';
   String? _lastBackupPath;
   bool _busy = false;
 
@@ -52,7 +52,7 @@ class _BackupScreenState extends State<BackupScreen> {
       }
     }
     return {
-      'app': 'INVESTIGO',
+      'app': 'ইনভেস্টিগো — তদন্ত সহায়ক',
       'backupVersion': 1,
       'createdAt': DateTime.now().toIso8601String(),
       'officer': widget.profile.toJson(),
@@ -74,14 +74,14 @@ class _BackupScreenState extends State<BackupScreen> {
       if (!mounted) return;
       setState(() {
         _lastBackupPath = file.path;
-        _status = 'Backup created: ${file.path}';
+        _status = 'ব্যাকআপ তৈরি হয়েছে: ${file.path}';
       });
       if (share) {
         await Share.shareXFiles([XFile(file.path)], text: 'INVESTIGO local backup');
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() => _status = 'Backup failed: $e');
+      setState(() => _status = 'ব্যাকআপ তৈরি করা যায়নি: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -90,24 +90,24 @@ class _BackupScreenState extends State<BackupScreen> {
   Future<void> _restoreFromText() async {
     final text = _restoreController.text.trim();
     if (text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Paste backup JSON first')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('প্রথমে ব্যাকআপ জেসন পেস্ট করুন')));
       return;
     }
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Restore backup?'),
-        content: const Text('এতে app-এর local saved data overwrite হতে পারে। আগে current backup নিয়ে নিন।'),
+        title: const Text('ব্যাকআপ পুনরুদ্ধার করবেন?'),
+        content: const Text('এতে অ্যাপের লোকাল সংরক্ষিত তথ্য প্রতিস্থাপিত হতে পারে। আগে বর্তমান ব্যাকআপ নিয়ে রাখুন।'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Restore')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('বাতিল')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('পুনরুদ্ধার')),
         ],
       ),
     );
     if (ok != true) return;
     setState(() {
       _busy = true;
-      _status = 'Restoring backup...';
+      _status = 'ব্যাকআপ পুনরুদ্ধার হচ্ছে...';
     });
     try {
       final decoded = jsonDecode(text) as Map<String, dynamic>;
@@ -170,9 +170,9 @@ class _BackupScreenState extends State<BackupScreen> {
                 const SizedBox(height: 8),
                 Text('Mode: ${_config.mode}'),
                 Text('Sync: ${_config.syncEnabled ? 'Enabled' : 'Disabled'}'),
-                Text('Last status: ${_config.lastStatus}'),
+                Text('সর্বশেষ অবস্থা: ${_config.lastStatus}'),
                 const SizedBox(height: 12),
-                ElevatedButton.icon(onPressed: _openBackend, icon: const Icon(Icons.dns_rounded), label: const Text('Add / Change Server')),
+                ElevatedButton.icon(onPressed: _openBackend, icon: const Icon(Icons.dns_rounded), label: const Text('সার্ভার যোগ/পরিবর্তন করুন')),
               ]),
             ),
           ),
@@ -181,13 +181,13 @@ class _BackupScreenState extends State<BackupScreen> {
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Restore from Backup JSON', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text('ব্যাকআপ জেসন থেকে পুনরুদ্ধার', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
                 const SizedBox(height: 8),
-                const Text('Backup file খুলে JSON text paste করলে restore করা যাবে।'),
+                const Text('ব্যাকআপ ফাইল খুলে জেসন লেখা পেস্ট করলে পুনরুদ্ধার করা যাবে।'),
                 const SizedBox(height: 10),
-                TextField(controller: _restoreController, minLines: 5, maxLines: 10, decoration: const InputDecoration(labelText: 'Paste backup JSON here')),
+                TextField(controller: _restoreController, minLines: 5, maxLines: 10, decoration: const InputDecoration(labelText: 'এখানে ব্যাকআপ জেসন পেস্ট করুন')),
                 const SizedBox(height: 10),
-                ElevatedButton.icon(onPressed: _busy ? null : _restoreFromText, icon: const Icon(Icons.restore), label: const Text('Restore')),
+                ElevatedButton.icon(onPressed: _busy ? null : _restoreFromText, icon: const Icon(Icons.restore), label: const Text('পুনরুদ্ধার')),
               ]),
             ),
           ),

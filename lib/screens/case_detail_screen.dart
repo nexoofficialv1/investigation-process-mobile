@@ -168,8 +168,8 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
         title: Text('Delete CD-${cd.cdNumber}?'),
         content: const Text('এই CD delete করলে local saved CD list থেকে মুছে যাবে। আগে backup নেওয়া থাকলে ভালো।'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton.icon(onPressed: () => Navigator.pop(context, true), icon: const Icon(Icons.delete), label: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('বাতিল')),
+          FilledButton.icon(onPressed: () => Navigator.pop(context, true), icon: const Icon(Icons.delete), label: const Text('মুছুন')),
         ],
       ),
     );
@@ -190,7 +190,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _newCd,
         icon: const Icon(Icons.add),
-        label: const Text('Add CD'),
+        label: const Text('সিডি যোগ করুন'),
       ),
       body: RefreshIndicator(
         onRefresh: _load,
@@ -205,9 +205,9 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                   children: [
                     Text(_caseFile.displayTitle, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text('Date: ${_caseFile.caseDate}'),
-                    Text('Sections: ${_caseFile.sections}'),
-                    if (_caseFile.complainantName.isNotEmpty) Text('Complainant: ${_caseFile.complainantName}', maxLines: 2),
+                    Text('তারিখ: ${_caseFile.caseDate}'),
+                    Text('ধারা: ${_caseFile.sections}'),
+                    if (_caseFile.complainantName.isNotEmpty) Text('অভিযোগকারী: ${_caseFile.complainantName}', maxLines: 2),
                   ],
                 ),
               ),
@@ -221,19 +221,19 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               crossAxisSpacing: 10,
               childAspectRatio: 1.55,
               children: [
-                _moduleCard('Investigation', Icons.manage_search, _openInvestigation),
-                _moduleCard('CD Writer', Icons.note_alt, _newCd),
-                _moduleCard('Statements', Icons.record_voice_over, _openStatements),
-                _moduleCard('Forms', Icons.description, _openForms),
-                _moduleCard('Compliance', Icons.checklist, _openCompliance),
-                _moduleCard('Evidence', Icons.inventory_2, _openEvidence),
-                _moduleCard('Sketch Map', Icons.map, _openSketchMap),
+                _moduleCard('তদন্ত', Icons.manage_search, _openInvestigation),
+                _moduleCard('সিডি প্রস্তুতকারী', Icons.note_alt, _newCd),
+                _moduleCard('বিবৃতি', Icons.record_voice_over, _openStatements),
+                _moduleCard('ফর্ম ও নোটিশ', Icons.description, _openForms),
+                _moduleCard('অনুবর্তিতা', Icons.checklist, _openCompliance),
+                _moduleCard('আলামত/প্রমাণ', Icons.inventory_2, _openEvidence),
+                _moduleCard('খসড়া নকশা', Icons.map, _openSketchMap),
               ],
             ),
             const SizedBox(height: 18),
             Row(
               children: [
-                Expanded(child: Text('Case Diaries', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
+                Expanded(child: Text('কেস ডায়েরিসমূহ', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
                 if (_firstFiveCdsReady)
                   OutlinedButton.icon(
                     onPressed: _previewCdOneToFive,
@@ -249,11 +249,11 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               ),
             const SizedBox(height: 8),
             if (_cds.isEmpty)
-              const Card(child: Padding(padding: EdgeInsets.all(18), child: Text('No CD created yet. Tap Add CD.')))
+              const Card(child: Padding(padding: EdgeInsets.all(18), child: Text('এখনও কোনো সিডি তৈরি হয়নি। “সিডি যোগ করুন” চাপুন।')))
             else
               ..._cds.map((cd) => Card(
                     child: ListTile(
-                      title: Text('CD-${cd.cdNumber}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text('সিডি-${cd.cdNumber}', style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text('${cd.cdDate} • ${cd.isFinal ? 'Final Saved' : 'Draft'}'),
                       trailing: PopupMenuButton<String>(
                         onSelected: (value) {

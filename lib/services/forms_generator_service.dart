@@ -12,24 +12,24 @@ class FormTemplateInfo {
 
 class FormsGeneratorService {
   static const List<FormTemplateInfo> templates = [
-    FormTemplateInfo(id: 'bnss_179_notice', title: 'Notice U/s 179 BNSS', subtitle: 'Witness/person appearance notice', category: 'Notice'),
+    FormTemplateInfo(id: 'bnss_179_notice', title: 'Notice U/s 179 BNSS', subtitle: 'Witness/person appearance notice', category: 'নোটিশ'),
     FormTemplateInfo(id: 'bnss_195_notice', title: 'Notice U/s 195 BNSS', subtitle: 'UD/inquest enquiry appearance notice', category: 'UD Notice'),
-    FormTemplateInfo(id: 'bnss_35_3', title: '35(3) BNSS Notice', subtitle: 'Accused/person appearance and cooperation notice', category: 'Notice'),
-    FormTemplateInfo(id: 'bnss_94', title: '94 BNSS Requisition', subtitle: 'Document / thing production requisition', category: 'Requisition'),
-    FormTemplateInfo(id: 'bnss_183', title: '183 BNSS Prayer', subtitle: 'Judicial statement prayer before Ld. Court', category: 'Court Prayer'),
+    FormTemplateInfo(id: 'bnss_35_3', title: 'বিএনএসএস ৩৫(৩) ধারার নোটিশ', subtitle: 'অভিযুক্ত/ব্যক্তিকে হাজিরা ও তদন্তে সহযোগিতার নোটিশ', category: 'নোটিশ'),
+    FormTemplateInfo(id: 'bnss_94', title: 'বিএনএসএস ৯৪ ধারার রিকুইজিশন', subtitle: 'নথি, তথ্য বা বস্তু উপস্থাপনের রিকুইজিশন', category: 'রিকুইজিশন'),
+    FormTemplateInfo(id: 'bnss_183', title: 'বিএনএসএস ১৮৩ ধারার প্রার্থনা', subtitle: 'মাননীয় আদালতে বিচারবিভাগীয় বিবৃতি লিপিবদ্ধের প্রার্থনা', category: 'আদালতের প্রার্থনা'),
     FormTemplateInfo(id: 'arrest_memo', title: 'Arrest Memo', subtitle: 'Official arrest memo with grounds and witness blocks', category: 'Arrest / Accused'),
     FormTemplateInfo(id: 'arrest_information', title: 'Nominated Person / Arrest Information Notice', subtitle: 'Notice/intimation to nominated person or relative', category: 'Arrest / Accused'),
-    FormTemplateInfo(id: 'medical_exam', title: 'Medical Examination Requisition', subtitle: 'Victim/injured/accused medical examination', category: 'Medical'),
-    FormTemplateInfo(id: 'bht_injury', title: 'BHT / Injury Report Requisition', subtitle: 'Hospital records and injury report collection', category: 'Medical'),
-    FormTemplateInfo(id: 'cdr_caf', title: 'CDR / SDR / CAF Requisition', subtitle: 'Official table format for CDR/SDR/CAF/IMEI request', category: 'Digital Evidence'),
-    FormTemplateInfo(id: 'bank_details', title: 'Bank Account Details Requisition', subtitle: 'Account statement/KYC/lien/freeze details', category: 'Cyber/Bank'),
-    FormTemplateInfo(id: 'fsl', title: 'FSL Form + Challan + Label Package', subtitle: 'WB Form 5203 with exhibit list, challan and labels', category: 'Expert'),
-    FormTemplateInfo(id: 'forwarding', title: 'Accused Forwarding Report', subtitle: 'Forwarding accused before Ld. Court', category: 'Court'),
-    FormTemplateInfo(id: 'further_investigation', title: 'Further Investigation Prayer', subtitle: 'Prayer for further investigation/extension/compliance', category: 'Court Prayer'),
+    FormTemplateInfo(id: 'medical_exam', title: 'চিকিৎসা পরীক্ষার রিকুইজিশন', subtitle: 'ভিকটিম/আহত/অভিযুক্তের চিকিৎসা পরীক্ষা', category: 'চিকিৎসা'),
+    FormTemplateInfo(id: 'bht_injury', title: 'বিএইচটি/আঘাতের প্রতিবেদন রিকুইজিশন', subtitle: 'হাসপাতালের নথি ও আঘাতের প্রতিবেদন সংগ্রহ', category: 'চিকিৎসা'),
+    FormTemplateInfo(id: 'cdr_caf', title: 'সিডিআর/এসডিআর/সিএএফ রিকুইজিশন', subtitle: 'সিডিআর/এসডিআর/সিএএফ/আইএমইআই-এর সরকারি সারণিভিত্তিক আবেদন', category: 'ডিজিটাল প্রমাণ'),
+    FormTemplateInfo(id: 'bank_details', title: 'ব্যাংক হিসাবের তথ্য চেয়ে রিকুইজিশন', subtitle: 'হিসাব বিবরণী/কেওয়াইসি/লিয়েন/ফ্রিজ সংক্রান্ত তথ্য', category: 'সাইবার/ব্যাংক'),
+    FormTemplateInfo(id: 'fsl', title: 'এফএসএল ফর্ম, চালান ও লেবেল প্যাকেজ', subtitle: 'পশ্চিমবঙ্গ ফর্ম নং ৫২০৩, আলামত তালিকা, চালান ও লেবেল', category: 'বিশেষজ্ঞ মতামত'),
+    FormTemplateInfo(id: 'forwarding', title: 'গ্রেপ্তারকৃত অভিযুক্তের ফরওয়ার্ডিং রিপোর্ট', subtitle: 'মাননীয় আদালতে অভিযুক্তকে প্রেরণের প্রতিবেদন', category: 'আদালত'),
+    FormTemplateInfo(id: 'further_investigation', title: 'পরবর্তী তদন্তের প্রার্থনা', subtitle: 'পরবর্তী তদন্ত/সময় বৃদ্ধি/অনুবর্তিতার প্রার্থনা', category: 'আদালতের প্রার্থনা'),
     FormTemplateInfo(id: 'memo_evidence', title: 'Memo of Evidence', subtitle: 'Auto draft from case, CD, investigation and evidence', category: 'Final Documents'),
     FormTemplateInfo(id: 'form54_air', title: 'Form 54 Accident Information Report', subtitle: 'Accident / MACT information report', category: 'Accident / MACT'),
     FormTemplateInfo(id: 'inquest_report_196', title: 'Inquest Report U/s 196 BNSS', subtitle: 'Additional inquest report format', category: 'UD Case'),
-    FormTemplateInfo(id: 'cs_checklist', title: 'CS / FR Draft Checklist', subtitle: 'Pre-submission checklist for charge sheet/final report', category: 'Final Report'),
+    FormTemplateInfo(id: 'cs_checklist', title: 'অভিযোগপত্র/চূড়ান্ত প্রতিবেদন খসড়া যাচাইতালিকা', subtitle: 'দাখিলের পূর্বে প্রয়োজনীয় নথি যাচাই', category: 'চূড়ান্ত প্রতিবেদন'),
   ];
 
   FormTemplateInfo templateById(String id) => templates.firstWhere((e) => e.id == id, orElse: () => templates.first);
@@ -58,7 +58,7 @@ class FormsGeneratorService {
     }
   }
 
-  String _caseRef(OfficerProfile officer, CaseFile caseFile) => '${officer.policeStation} PS Case No. ${caseFile.psCaseNo} dated ${caseFile.caseDate} u/s ${caseFile.sections}';
+  String _caseRef(OfficerProfile officer, CaseFile caseFile) => '${officer.policeStation} থানা মামলা নং ${caseFile.psCaseNo}, তারিখ ${caseFile.caseDate}, ধারা ${caseFile.sections}';
   String _valueOrBlank(String value, String fallback) => value.trim().isEmpty ? fallback : value.trim();
 
   String _notice179(OfficerProfile officer, CaseFile caseFile) => '''NOTICE U/s 179 B.N.S.S.
@@ -133,7 +133,7 @@ District – __________________.
 
 Ref: ${officer.policeStation} Case No- ${caseFile.psCaseNo} Dated-${caseFile.caseDate}, U/S- ${caseFile.sections}.
 
-Whereas an investigation is being conducted in c/w above reference and whereas the records/documents/articles relating to complainant/informant ${_valueOrBlank(caseFile.complainantName, 'the complainant')} and the above noted case are required for the purpose of proper investigation, you are hereby requested under the provisions of Section 94 of the BNSS, 2023, to produce and/or furnish the following documents/information:
+Whereas an investigation is being conducted in c/w above reference and whereas the records/documents/articles relating to complainant/informant ${_valueOrBlank(caseFile.complainantName, 'অভিযোগকারী')} and the above noted case are required for the purpose of proper investigation, you are hereby requested under the provisions of Section 94 of the BNSS, 2023, to produce and/or furnish the following documents/information:
 
 1. Admission Register Entry / relevant register entry.
 2. OPD/IPD tickets and complete treatment/official records.
@@ -149,19 +149,19 @@ You are requested to provide the aforesaid documents, duly attested, at the earl
 
 Failure to comply with this notice without lawful excuse may attract legal consequences as prescribed under law.''';
 
-  String _prayer183(OfficerProfile officer, CaseFile caseFile) => '''In the Court of ${officer.courtName}
+  String _prayer183(OfficerProfile officer, CaseFile caseFile) => '''মাননীয় ${officer.courtName}-এর আদালতে
 
-Sub: Prayer for recording statement u/s 183 BNSS in connection with ${_caseRef(officer, caseFile)}.
+বিষয়: ${_caseRef(officer, caseFile)}-এর সূত্রে বিএনএসএস-এর ১৮৩ ধারায় বিবৃতি লিপিবদ্ধ করার প্রার্থনা।
 
-May it please your honour,
-Most respectfully I beg to submit that during investigation of the above noted case, it is necessary to record the statement of the victim/witness namely ____________________ u/s 183 BNSS for the purpose of fair and proper investigation.
+মহামান্য,
+সবিনয় নিবেদন এই যে, উপরোক্ত মামলার সুষ্ঠু ও নিরপেক্ষ তদন্তের স্বার্থে ভিকটিম/সাক্ষী ____________________-এর বিবৃতি বিএনএসএস-এর ১৮৩ ধারায় লিপিবদ্ধ করা প্রয়োজন।
 
-It is therefore prayed before your honour to kindly allow recording of the statement of the said victim/witness u/s 183 BNSS.
+অতএব মহামান্যের নিকট প্রার্থনা, উক্ত ভিকটিম/সাক্ষীর বিবৃতি বিএনএসএস-এর ১৮৩ ধারায় লিপিবদ্ধ করার জন্য সদয় অনুমতি/ব্যবস্থা প্রদান করা হোক।
 
-Submitted by,
+নিবেদক,
 
 ${officer.rank} ${officer.name}
-Investigating Officer
+তদন্তকারী অফিসার
 ${officer.policeStation}''';
 
   String _arrestMemo(OfficerProfile officer, CaseFile caseFile) => '''ARREST MEMO
@@ -216,38 +216,38 @@ Mobile: ${officer.mobile}
 Signature of recipient/nominated person: ______________________________
 Signature of I.O.: ______________________________''';
 
-  String _medicalExam(OfficerProfile officer, CaseFile caseFile) => '''To,
-The Medical Officer,
-____________________________ Hospital
+  String _medicalExam(OfficerProfile officer, CaseFile caseFile) => '''প্রতি,
+মেডিক্যাল অফিসার,
+____________________________ হাসপাতাল
 
-Sub: Medical examination requisition in connection with ${_caseRef(officer, caseFile)}.
+বিষয়: ${_caseRef(officer, caseFile)}-এর সূত্রে চিকিৎসা পরীক্ষার রিকুইজিশন।
 
-Sir/Madam,
-The person named ____________________, S/O/W/O ____________________, address ____________________, is being sent for medical examination in connection with the above noted case.
+মহাশয়/মহাশয়া,
+উপরোক্ত মামলার সূত্রে ____________________, পিতা/স্বামী/স্ত্রী ____________________, ঠিকানা ____________________-কে চিকিৎসা পরীক্ষার জন্য প্রেরণ করা হলো।
 
-Kindly examine the said person and furnish the injury report/medical examination report at the earliest for the purpose of investigation.
+অনুগ্রহ করে উক্ত ব্যক্তির চিকিৎসা পরীক্ষা করে তদন্তের স্বার্থে আঘাতের প্রতিবেদন/চিকিৎসা পরীক্ষার প্রতিবেদন দ্রুত সরবরাহ করবেন।
 
-Yours faithfully,
+বিশ্বস্ত,
 
 ${officer.rank} ${officer.name}
-Investigating Officer
+তদন্তকারী অফিসার
 ${officer.policeStation}''';
 
-  String _bhtInjury(OfficerProfile officer, CaseFile caseFile) => '''To,
-The Superintendent / Medical Officer,
-____________________________ Hospital
+  String _bhtInjury(OfficerProfile officer, CaseFile caseFile) => '''প্রতি,
+অধীক্ষক/মেডিক্যাল অফিসার,
+____________________________ হাসপাতাল
 
-Sub: Requisition for BHT / injury report / treatment papers in connection with ${_caseRef(officer, caseFile)}.
+বিষয়: ${_caseRef(officer, caseFile)}-এর সূত্রে বিএইচটি/আঘাতের প্রতিবেদন/চিকিৎসা নথি চেয়ে রিকুইজিশন।
 
-Sir/Madam,
-It is requested to provide certified copy of BHT/injury report/treatment papers of ____________________, who was treated/admitted at your hospital on __________ in connection with the above noted case.
+মহাশয়/মহাশয়া,
+উপরোক্ত মামলার সূত্রে আপনার হাসপাতালে __________ তারিখে চিকিৎসাধীন/ভর্তি হওয়া ____________________-এর বিএইচটি/আঘাতের প্রতিবেদন/চিকিৎসা নথির প্রত্যয়িত অনুলিপি সরবরাহ করার জন্য অনুরোধ করা হলো।
 
-The said medical papers are urgently required for investigation.
+উক্ত চিকিৎসা নথি তদন্তের জন্য জরুরি প্রয়োজন।
 
-Yours faithfully,
+বিশ্বস্ত,
 
 ${officer.rank} ${officer.name}
-Investigating Officer
+তদন্তকারী অফিসার
 ${officer.policeStation}''';
 
   String _cdrCaf(OfficerProfile officer, CaseFile caseFile) {
@@ -474,14 +474,22 @@ ${officer.rank} ${officer.name}
 Investigating Officer
 ${officer.policeStation}''';
 
-  String _generic(OfficerProfile officer, CaseFile caseFile) => '''Reference: ${_caseRef(officer, caseFile)}
+  String _generic(OfficerProfile officer, CaseFile caseFile) => '''মাননীয় ${officer.courtName}-এর আদালতে
 
-Draft details:
-______________________________________
-______________________________________
-______________________________________
+বিষয়: ${_caseRef(officer, caseFile)}-এর সূত্রে পরবর্তী তদন্ত/অনুবর্তিতার প্রার্থনা।
+
+মহামান্য,
+সবিনয় নিবেদন এই যে, উপরোক্ত মামলায় নিম্নলিখিত কারণে পরবর্তী তদন্ত/অনুবর্তিতা প্রয়োজন:–
+
+১। ______________________________________
+২। ______________________________________
+৩। ______________________________________
+
+অতএব মহামান্যের নিকট প্রার্থনা, নিম্নস্বাক্ষরকারীকে প্রয়োজনীয় পরবর্তী তদন্ত/অনুবর্তিতা সম্পন্ন করার সদয় অনুমতি প্রদান করা হোক।
+
+নিবেদক,
 
 ${officer.rank} ${officer.name}
-Investigating Officer
+তদন্তকারী অফিসার
 ${officer.policeStation}''';
 }

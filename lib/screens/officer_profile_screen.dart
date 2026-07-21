@@ -52,7 +52,7 @@ class _OfficerProfileScreenState extends State<OfficerProfileScreen> {
 
   void _save() {
     if (name.text.trim().isEmpty || rank.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Officer name and rank required')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অফিসারের নাম ও পদবি আবশ্যক')));
       return;
     }
     widget.onSaved(OfficerProfile(
@@ -70,22 +70,22 @@ class _OfficerProfileScreenState extends State<OfficerProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Officer Profile')),
+      appBar: AppBar(title: const Text('অফিসার প্রোফাইল')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('প্রথমে officer profile সেট করুন। এই profile থেকে CD, statement, form auto-fill হবে।', style: Theme.of(context).textTheme.bodyMedium),
+          Text('প্রথমে অফিসার প্রোফাইল পূরণ করুন। এই প্রোফাইল থেকে সিডি, বিবৃতি ও ফর্ম স্বয়ংক্রিয়ভাবে পূরণ হবে।', style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 16),
-          FormHelpers.textField(controller: name, label: 'Officer Name'),
-          FormHelpers.textField(controller: rank, label: 'Rank'),
-          FormHelpers.textField(controller: beltNo, label: 'Belt / ID No.'),
+          FormHelpers.textField(controller: name, label: 'অফিসারের নাম'),
+          FormHelpers.textField(controller: rank, label: 'পদবি'),
+          FormHelpers.textField(controller: beltNo, label: 'বেল্ট/আইডি নং'),
           FormHelpers.textField(controller: ps, label: 'PS'),
-          FormHelpers.textField(controller: district, label: 'District'),
-          FormHelpers.textField(controller: court, label: 'Default Court'),
-          FormHelpers.textField(controller: mobile, label: 'Mobile No.'),
-          FormHelpers.textField(controller: email, label: 'Email'),
+          FormHelpers.textField(controller: district, label: 'জেলা'),
+          FormHelpers.textField(controller: court, label: 'ডিফল্ট আদালত'),
+          FormHelpers.textField(controller: mobile, label: 'মোবাইল নং'),
+          FormHelpers.textField(controller: email, label: 'ই-মেইল'),
           const SizedBox(height: 10),
-          FilledButton.icon(onPressed: _save, icon: const Icon(Icons.save), label: const Text('Save Profile')),
+          FilledButton.icon(onPressed: _save, icon: const Icon(Icons.save), label: const Text('প্রোফাইল সংরক্ষণ করুন')),
         ],
       ),
     );

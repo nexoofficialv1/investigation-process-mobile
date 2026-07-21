@@ -76,8 +76,15 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   String _fullReportBody() {
-    final memo = _memoController.text.trim().isEmpty ? '' : 'Memo No.: ${_memoController.text.trim()}\n\n';
-    final reference = _referenceController.text.trim().isEmpty ? '' : 'Reference: ${_referenceController.text.trim()}\n\n';
+    final memo = _memoController.text.trim().isEmpty ? '' : 'রেফারেন্স: ${_referenceController.text.trim()}\n\n';
+    final reference = _referenceController.text.trim().isEmpty ? '' : 'প্রতি
+${_recipientController.text.trim()}
+
+বিষয়: ${_subjectController.text.trim()}
+
+$memo$reference${_bodyController.text.trim()}
+
+সদয় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য প্রতিবেদনটি পেশ করা হলো।';
     return '''To
 ${_recipientController.text.trim()}
 
@@ -113,7 +120,7 @@ Submitted for favour of kind information and necessary action.''';
       context,
       MaterialPageRoute(
         builder: (_) => PdfPreviewScreen(
-          title: 'Report Preview',
+          title: 'প্রতিবেদন প্রিভিউ',
           filename: '${fileSlug}_Report.pdf',
           docFilename: '${fileSlug}_Report.doc',
           buildPdf: () async {
@@ -140,7 +147,7 @@ Submitted for favour of kind information and necessary action.''';
     if (!templates.contains(_selected)) _selected = templates.first;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reports')),
+      appBar: AppBar(title: const Text('প্রতিবেদন')),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -149,7 +156,7 @@ Submitted for favour of kind information and necessary action.''';
               Expanded(
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.save),
-                  label: const Text('Save Draft'),
+                  label: const Text('খসড়া সংরক্ষণ'),
                   onPressed: _saveDraft,
                 ),
               ),
@@ -157,7 +164,7 @@ Submitted for favour of kind information and necessary action.''';
               Expanded(
                 child: FilledButton.icon(
                   icon: const Icon(Icons.preview),
-                  label: const Text('Preview'),
+                  label: const Text('প্রিভিউ'),
                   onPressed: _preview,
                 ),
               ),
@@ -174,21 +181,21 @@ Submitted for favour of kind information and necessary action.''';
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Office Report Generator', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+                  Text('দাপ্তরিক প্রতিবেদন প্রস্তুতকারী', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 6),
-                  const Text('কেস ছাড়াও যে কোনো office report এখান থেকে তৈরি করা যাবে। SP / SDPO / SDO / Court / Bank / BDO / Hospital / General report — সব edit করে Preview দেখে export করবেন।', style: TextStyle(fontWeight: FontWeight.w700)),
+                  const Text('কেস-সংযুক্ত অথবা সাধারণ প্রতিবেদন—এসপি, এসডিপিও, এসডিও, আদালত, ব্যাংক, হাসপাতাল ও অন্যান্য দপ্তরের জন্য—এখানে বাংলায় তৈরি ও সম্পাদনা করা যাবে। ইংরেজিতে লিখলে অনুবাদ চিহ্নে চাপুন অথবা ফিল্ড থেকে বের হলে তা বাংলায় রূপান্তর হবে।', style: TextStyle(fontWeight: FontWeight.w700)),
                   if (_hasCase) ...[
                     const SizedBox(height: 10),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
                       value: _caseLinked,
                       onChanged: _toggleCaseLink,
-                      title: const Text('Link this report with current case'),
+                      title: const Text('বর্তমান মামলার সঙ্গে প্রতিবেদন যুক্ত করুন'),
                       subtitle: Text(widget.caseFile!.displayTitle),
                     ),
                   ] else ...[
                     const SizedBox(height: 10),
-                    const Text('Mode: General / Non-case report', style: TextStyle(fontWeight: FontWeight.w800)),
+                    const Text('ধরন: সাধারণ / কেস-বহির্ভূত প্রতিবেদন', style: TextStyle(fontWeight: FontWeight.w800)),
                   ],
                 ],
               ),
@@ -197,7 +204,7 @@ Submitted for favour of kind information and necessary action.''';
           const SizedBox(height: 10),
           DropdownButtonFormField<_ReportTemplate>(
             value: _selected,
-            decoration: const InputDecoration(labelText: 'Report Type'),
+            decoration: const InputDecoration(labelText: 'প্রতিবেদনের ধরন'),
             items: templates.map((t) => DropdownMenuItem(value: t, child: Text(t.name))).toList(),
             onChanged: (value) {
               if (value != null) _applyTemplate(value);
@@ -206,30 +213,30 @@ Submitted for favour of kind information and necessary action.''';
           const SizedBox(height: 10),
           TextFormField(
             controller: _recipientController,
-            decoration: const InputDecoration(labelText: 'To / Recipient Office'),
+            decoration: const InputDecoration(labelText: 'প্রাপক / দপ্তর'),
             maxLines: 2,
           ),
           const SizedBox(height: 10),
           TextFormField(
             controller: _subjectController,
-            decoration: const InputDecoration(labelText: 'Subject'),
+            decoration: const InputDecoration(labelText: 'বিষয়'),
             maxLines: 2,
           ),
           const SizedBox(height: 10),
           TextFormField(
             controller: _memoController,
-            decoration: const InputDecoration(labelText: 'Memo No. / Reference, if any'),
+            decoration: const InputDecoration(labelText: 'মেমো নং (যদি থাকে)'),
           ),
           const SizedBox(height: 10),
           TextFormField(
             controller: _referenceController,
-            decoration: const InputDecoration(labelText: 'Case / Petition / GDE / Memo Reference, if any'),
+            decoration: const InputDecoration(labelText: 'মামলা / আবেদন / জিডিই / মেমো রেফারেন্স (যদি থাকে)'),
             maxLines: 2,
           ),
           const SizedBox(height: 10),
           TextFormField(
             controller: _bodyController,
-            decoration: const InputDecoration(labelText: 'Report Body'),
+            decoration: const InputDecoration(labelText: 'প্রতিবেদনের মূল বক্তব্য'),
             minLines: 14,
             maxLines: 28,
             textAlignVertical: TextAlignVertical.top,
@@ -254,175 +261,175 @@ class _ReportTemplate {
 final List<_ReportTemplate> _caseTemplates = [
   _ReportTemplate(
     id: 'sp_progress',
-    name: 'Case Report to Superintendent of Police',
-    recipient: 'The Superintendent of Police, Purba Bardhaman',
-    subject: (file) => 'Progress report in connection with ${file?.displayTitle ?? 'the matter'}',
-    body: (officer, file) => '''Most respectfully I beg to submit that the above noted case was started on ${file?.caseDate ?? ''} u/s ${file?.sections ?? ''} on the basis of a written complaint/FIR.
+    name: 'পুলিশ সুপারের নিকট মামলা অগ্রগতি প্রতিবেদন',
+    recipient: 'পুলিশ সুপার, পূর্ব বর্ধমান',
+    subject: (file) => 'Progress report in connection with ${file?.displayTitle ?? 'the matte'}-এর তদন্তের অগ্রগতি প্রতিবেদন',
+    body: (officer, file) => '''সবিনয় নিবেদন এই যে, লিখিত অভিযোগ/এফআইআরের ভিত্তিতে ${file?.caseDate ?? ''} তারিখে ${file?.sections ?? ''} ধারায় উপরোক্ত মামলাটি রুজু হয়।
 
-During investigation, I took up investigation, perused the case record, visited/verified the relevant place and examined available witnesses as applicable. The present status of investigation is submitted below:
+তদন্তকালে মামলার নথিপত্র পর্যালোচনা, প্রাসঙ্গিক স্থান পরিদর্শন/যাচাই এবং প্রযোজ্য ক্ষেত্রে সাক্ষীদের জিজ্ঞাসাবাদ করা হয়েছে। তদন্তের বর্তমান অগ্রগতি নিম্নরূপ:
 
-1. Brief fact: ${file?.firGist ?? ''}
-2. PO: ${file?.placeOfOccurrence ?? ''}
-3. Complainant: ${file?.complainantName ?? ''}
-4. Victim: ${file?.victimName ?? ''}
-5. Accused/Suspect: ${file?.accusedName ?? ''}
-6. Present progress: 
-7. Further action proposed: 
+১। সংক্ষিপ্ত ঘটনা: ${file?.firGist ?? ''}
+২। ঘটনাস্থল: ${file?.placeOfOccurrence ?? ''}
+৩। অভিযোগকারী: ${file?.complainantName ?? ''}
+৪। ভুক্তভোগী: ${file?.victimName ?? ''}
+৫। অভিযুক্ত/সন্দেহভাজন: ${file?.accusedName ?? ''}
+৬। বর্তমান অগ্রগতি: 
+৭। প্রস্তাবিত পরবর্তী পদক্ষেপ: 
 
-This is submitted for favour of kind information.''',
+সদয় অবগতির জন্য পেশ করা হলো।''',
   ),
   _ReportTemplate(
     id: 'sdpo_progress',
-    name: 'Case Report to SDPO',
-    recipient: 'The Sub-Divisional Police Officer, Kalna',
-    subject: (file) => 'Report regarding ${file?.displayTitle ?? 'the matter'}',
-    body: (officer, file) => '''Most respectfully I submit that in connection with the above noted case, the undersigned has conducted investigation and the following facts have come to light.
+    name: 'এসডিপিও-র নিকট মামলা প্রতিবেদন',
+    recipient: 'মহকুমা পুলিশ আধিকারিক, কালনা',
+    subject: (file) => 'Report regarding ${file?.displayTitle ?? 'the matte'}-এর তদন্তের অগ্রগতি প্রতিবেদন',
+    body: (officer, file) => '''সবিনয় নিবেদন এই যে, উপরোক্ত মামলার তদন্তকালে নিম্নলিখিত তথ্য ও অগ্রগতি পাওয়া গেছে।
 
-Case reference: ${officer.policeStation} Case No. ${file?.psCaseNo ?? ''} dated ${file?.caseDate ?? ''} u/s ${file?.sections ?? ''}.
+মামলার রেফারেন্স: ${officer.policeStation} থানা মামলা নং ${file?.psCaseNo ?? ''}, তারিখ ${file?.caseDate ?? ''} তারিখে ${file?.sections ?? ''}।
 
-Brief fact: ${file?.firGist ?? ''}
+সংক্ষিপ্ত ঘটনা: ${file?.firGist ?? ''}
 
-Steps taken during investigation:
-1. Case record perused.
-2. Relevant witnesses examined.
-3. Necessary requisition/document collection steps taken as applicable.
-4. Present status: 
+তদন্তে গৃহীত পদক্ষেপ:
+১। মামলার নথিপত্র পর্যালোচনা করা হয়েছে।
+২। প্রাসঙ্গিক সাক্ষীদের জিজ্ঞাসাবাদ করা হয়েছে।
+৩। প্রয়োজনীয় রিকুইজিশন/নথি সংগ্রহের ব্যবস্থা গ্রহণ করা হয়েছে।
+৪। বর্তমান অবস্থা: 
 
-Further action: 
+পরবর্তী পদক্ষেপ: 
 
-Submitted for kind perusal and necessary direction.''',
+সদয় পর্যালোচনা ও প্রয়োজনীয় নির্দেশের জন্য পেশ করা হলো।''',
   ),
   _ReportTemplate(
     id: 'sdo_report',
-    name: 'Case / Enquiry Report to SDO',
-    recipient: 'The Sub-Divisional Officer, Kalna',
-    subject: (file) => 'Enquiry report regarding ${file?.displayTitle ?? 'the matter'}',
-    body: (officer, file) => '''Most respectfully I beg to submit that as per direction/endorsement, an enquiry/investigation was conducted in connection with the above noted matter.
+    name: 'এসডিও-র নিকট মামলা / অনুসন্ধান প্রতিবেদন',
+    recipient: 'মহকুমা শাসক, কালনা',
+    subject: (file) => 'Enquiry report regarding ${file?.displayTitle ?? 'the matte'}-এর তদন্তের অগ্রগতি প্রতিবেদন',
+    body: (officer, file) => '''সবিনয় নিবেদন এই যে, নির্দেশ/এন্ডোর্সমেন্ট অনুসারে উপরোক্ত বিষয়ে অনুসন্ধান/তদন্ত করা হয়েছে।
 
-During enquiry/investigation, local enquiry was held and available persons were contacted. The relevant facts are as follows:
+অনুসন্ধানকালে স্থানীয়ভাবে যাচাই করা হয় এবং উপলব্ধ ব্যক্তিদের সঙ্গে কথা বলা হয়। প্রাপ্ত তথ্য নিম্নরূপ:
 
-1. Case/Matter reference: ${file?.displayTitle ?? ''}
-2. Sections/Subject: ${file?.sections ?? ''}
-3. Place: ${file?.placeOfOccurrence ?? ''}
-4. Brief fact: ${file?.firGist ?? ''}
-5. Enquiry finding: 
-6. Present situation: 
-7. Police action taken/proposed: 
+১। মামলা/বিষয়ের রেফারেন্স: ${file?.displayTitle ?? ''}
+২। ধারা/বিষয়: ${file?.sections ?? ''}
+৩। স্থান: ${file?.placeOfOccurrence ?? ''}
+৪। সংক্ষিপ্ত ঘটনা: ${file?.firGist ?? ''}
+৫। অনুসন্ধানে প্রাপ্ত ফলাফল: 
+৬। বর্তমান পরিস্থিতি: 
+৭। গৃহীত/প্রস্তাবিত পুলিশি ব্যবস্থা: 
 
-Submitted for favour of kind information and necessary order.''',
+সদয় অবগতি ও প্রয়োজনীয় আদেশের জন্য পেশ করা হলো।''',
   ),
 ];
 
 final List<_ReportTemplate> _generalTemplates = [
   _ReportTemplate(
     id: 'general_sp',
-    name: 'General Report to Superintendent of Police',
-    recipient: 'The Superintendent of Police, Purba Bardhaman',
-    subject: (_) => 'Submission of report',
-    body: (officer, _) => '''Most respectfully I beg to submit the following report for favour of kind information.
+    name: 'পুলিশ সুপারের নিকট সাধারণ প্রতিবেদন',
+    recipient: 'পুলিশ সুপার, পূর্ব বর্ধমান',
+    subject: (_) => 'প্রতিবেদন পেশ প্রসঙ্গে',
+    body: (officer, _) => '''সবিনয় নিবেদন এই যে, সদয় অবগতির জন্য নিম্নলিখিত প্রতিবেদন পেশ করা হলো।
 
-1. Reference / source of information: 
-2. Date and time: 
-3. Place / office / area concerned: 
-4. Brief facts: 
-5. Enquiry conducted / action taken: 
-6. Present status: 
-7. Further action proposed / prayer: 
+১। রেফারেন্স / তথ্যের উৎস: 
+২। তারিখ ও সময়: 
+৩। সংশ্লিষ্ট স্থান / দপ্তর / এলাকা: 
+৪। সংক্ষিপ্ত ঘটনা: 
+৫। অনুসন্ধান / গৃহীত ব্যবস্থা: 
+৬। বর্তমান অবস্থা: 
+৭। প্রস্তাবিত পরবর্তী ব্যবস্থা / প্রার্থনা: 
 
-This is submitted for favour of kind information and necessary direction.''',
+সদয় অবগতি ও প্রয়োজনীয় নির্দেশের জন্য পেশ করা হলো।''',
   ),
   _ReportTemplate(
     id: 'general_sdpo',
-    name: 'General Report to SDPO',
-    recipient: 'The Sub-Divisional Police Officer, Kalna',
-    subject: (_) => 'Report for kind perusal',
-    body: (officer, _) => '''Most respectfully I submit that the following facts are placed before your kind honour for perusal and necessary direction.
+    name: 'এসডিপিও-র নিকট সাধারণ প্রতিবেদন',
+    recipient: 'মহকুমা পুলিশ আধিকারিক, কালনা',
+    subject: (_) => 'সদয় পর্যালোচনার জন্য প্রতিবেদন',
+    body: (officer, _) => '''সবিনয় নিবেদন এই যে, সদয় পর্যালোচনা ও প্রয়োজনীয় নির্দেশের জন্য নিম্নলিখিত বিষয়সমূহ পেশ করা হলো।
 
-1. Reference: 
-2. Subject matter: 
-3. Facts learned during enquiry/local verification: 
-4. Action taken so far: 
-5. Present situation: 
-6. Further action proposed: 
+১। রেফারেন্স: 
+২। বিষয়বস্তু: 
+৩। অনুসন্ধান/স্থানীয় যাচাইয়ে প্রাপ্ত তথ্য: 
+৪। এ পর্যন্ত গৃহীত ব্যবস্থা: 
+৫। বর্তমান পরিস্থিতি: 
+৬। প্রস্তাবিত পরবর্তী ব্যবস্থা: 
 
-Submitted for kind perusal and necessary direction.''',
+সদয় পর্যালোচনা ও প্রয়োজনীয় নির্দেশের জন্য পেশ করা হলো।''',
   ),
   _ReportTemplate(
     id: 'general_sdo',
-    name: 'General Report to SDO / Executive Magistrate',
-    recipient: 'The Sub-Divisional Officer, Kalna',
-    subject: (_) => 'Enquiry report',
-    body: (officer, _) => '''Most respectfully I beg to submit that as per endorsement/direction, enquiry was conducted locally regarding the subject matter.
+    name: 'এসডিও / এক্সিকিউটিভ ম্যাজিস্ট্রেটের নিকট সাধারণ প্রতিবেদন',
+    recipient: 'মহকুমা শাসক, কালনা',
+    subject: (_) => 'অনুসন্ধান প্রতিবেদন',
+    body: (officer, _) => '''সবিনয় নিবেদন এই যে, এন্ডোর্সমেন্ট/নির্দেশ অনুসারে বিষয়টি সম্পর্কে স্থানীয়ভাবে অনুসন্ধান করা হয়েছে।
 
-During enquiry, the following facts came to notice:
+অনুসন্ধানে নিম্নলিখিত তথ্য পাওয়া গেছে:
 
-1. Name and address of petitioner/informant, if any: 
-2. Place of enquiry: 
-3. Persons contacted: 
-4. Fact revealed during enquiry: 
-5. Police action taken/proposed: 
-6. Opinion / finding: 
+১। আবেদনকারী/তথ্যদাতার নাম ও ঠিকানা (যদি থাকে): 
+২। অনুসন্ধানের স্থান: 
+৩। যাঁদের সঙ্গে যোগাযোগ করা হয়েছে: 
+৪। অনুসন্ধানে প্রকাশিত তথ্য: 
+৫। গৃহীত/প্রস্তাবিত পুলিশি ব্যবস্থা: 
+৬। মতামত / অনুসন্ধানের ফলাফল: 
 
-Submitted for favour of kind information and necessary order.''',
+সদয় অবগতি ও প্রয়োজনীয় আদেশের জন্য পেশ করা হলো।''',
   ),
   _ReportTemplate(
     id: 'court_report',
-    name: 'General Report to Ld. Court',
-    recipient: 'The Learned Court Concerned',
-    subject: (_) => 'Submission of report',
-    body: (officer, _) => '''Most respectfully I beg to submit the following report before your kind honour.
+    name: 'বিজ্ঞ আদালতের নিকট সাধারণ প্রতিবেদন',
+    recipient: 'বিজ্ঞ সংশ্লিষ্ট আদালত',
+    subject: (_) => 'প্রতিবেদন পেশ প্রসঙ্গে',
+    body: (officer, _) => '''সবিনয় নিবেদন এই যে, বিজ্ঞ আদালতের সদয় পর্যালোচনার জন্য নিম্নলিখিত প্রতিবেদন পেশ করা হলো।
 
-1. Reference: 
-2. Background of the matter: 
-3. Steps taken by police: 
-4. Present status: 
-5. Prayer / submission: 
+১। রেফারেন্স: 
+২। বিষয়ের পটভূমি: 
+৩। পুলিশ কর্তৃক গৃহীত পদক্ষেপ: 
+৪। বর্তমান অবস্থা: 
+৫। প্রার্থনা / নিবেদন: 
 
-Submitted for favour of kind perusal and necessary order.''',
+সদয় পর্যালোচনা ও প্রয়োজনীয় আদেশের জন্য পেশ করা হলো।''',
   ),
   _ReportTemplate(
     id: 'bank_report',
-    name: 'Report / Letter to Bank',
-    recipient: 'The Branch Manager, Concerned Bank',
-    subject: (_) => 'Request for necessary information / compliance',
-    body: (officer, _) => '''Sir/Madam,
+    name: 'ব্যাংকের নিকট প্রতিবেদন / পত্র',
+    recipient: 'শাখা ব্যবস্থাপক, সংশ্লিষ্ট ব্যাংক',
+    subject: (_) => 'প্রয়োজনীয় তথ্য / ব্যবস্থা গ্রহণের অনুরোধ',
+    body: (officer, _) => '''মহাশয়/মহাশয়া,
 
-With reference to the subject noted above, you are requested to kindly take necessary action / furnish the following information for the purpose of enquiry/investigation.
+উপরোক্ত বিষয়ের প্রেক্ষিতে অনুসন্ধান/তদন্তের স্বার্থে অনুগ্রহ করে প্রয়োজনীয় ব্যবস্থা গ্রহণ এবং নিম্নলিখিত তথ্য সরবরাহ করার জন্য অনুরোধ করা হচ্ছে।
 
-1. Account / transaction details: 
-2. Required information / action: 
-3. Reference number / acknowledgement, if any: 
-4. Time period: 
+১। অ্যাকাউন্ট / লেনদেনের বিবরণ: 
+২। প্রয়োজনীয় তথ্য / ব্যবস্থা: 
+৩। রেফারেন্স নং / স্বীকৃতি নং (যদি থাকে): 
+৪। প্রয়োজনীয় সময়সীমা: 
 
-You are requested to treat the matter as urgent and furnish the available information at the earliest.
+বিষয়টি জরুরি হিসেবে বিবেচনা করে যত দ্রুত সম্ভব উপলব্ধ তথ্য সরবরাহ করার অনুরোধ রইল।
 
-This is for your kind information and necessary compliance.''',
+সদয় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য প্রেরিত।''',
   ),
   _ReportTemplate(
     id: 'hospital_report',
-    name: 'Report / Requisition to Hospital',
-    recipient: 'The Medical Officer / Superintendent, Concerned Hospital',
-    subject: (_) => 'Request for medical papers / report',
-    body: (officer, _) => '''Sir/Madam,
+    name: 'হাসপাতালের নিকট প্রতিবেদন / রিকুইজিশন',
+    recipient: 'মেডিক্যাল অফিসার / সুপারিনটেনডেন্ট, সংশ্লিষ্ট হাসপাতাল',
+    subject: (_) => 'চিকিৎসা সংক্রান্ত নথি / প্রতিবেদন প্রদানের অনুরোধ',
+    body: (officer, _) => '''মহাশয়/মহাশয়া,
 
-With reference to the subject noted above, you are requested to kindly provide the necessary medical papers/report as mentioned below.
+উপরোক্ত বিষয়ের প্রেক্ষিতে নিম্নোক্ত প্রয়োজনীয় চিকিৎসা সংক্রান্ত নথি/প্রতিবেদন সরবরাহ করার জন্য অনুরোধ করা হচ্ছে।
 
-1. Name of patient/person concerned: 
-2. Date of treatment/admission: 
-3. Required document/report: 
-4. Purpose: 
+১। রোগী/সংশ্লিষ্ট ব্যক্তির নাম: 
+২। চিকিৎসা/ভর্তির তারিখ: 
+৩। প্রয়োজনীয় নথি/প্রতিবেদন: 
+৪। উদ্দেশ্য: 
 
-This is for your kind information and necessary action.''',
+সদয় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য প্রেরিত।''',
   ),
   _ReportTemplate(
     id: 'blank_report',
-    name: 'Blank Custom Report',
-    recipient: 'The Officer Concerned',
-    subject: (_) => 'Report',
-    body: (officer, _) => '''Most respectfully I beg to submit that:
+    name: 'ফাঁকা কাস্টম প্রতিবেদন',
+    recipient: 'সংশ্লিষ্ট আধিকারিক',
+    subject: (_) => 'প্রতিবেদন',
+    body: (officer, _) => '''সবিনয় নিবেদন এই যে,
 
 
 
-Submitted for favour of kind information and necessary action.''',
+সদয় অবগতি ও প্রয়োজনীয় ব্যবস্থা গ্রহণের জন্য পেশ করা হলো।''',
   ),
 ];

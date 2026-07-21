@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/app_theme.dart';
 import 'models/officer_profile.dart';
@@ -19,7 +20,14 @@ class InvestigationProcessApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'INVESTIGO',
+      title: 'ইনভেস্টিগো — তদন্ত সহায়ক',
+      locale: const Locale('bn', 'BD'),
+      supportedLocales: const [Locale('bn', 'BD'), Locale('en', 'US')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: AppTheme.light(),
       home: const StartupGate(),
     );

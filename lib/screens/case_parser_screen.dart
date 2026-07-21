@@ -130,7 +130,7 @@ class _CaseParserScreenState extends State<CaseParserScreen> {
       builder: (_) => AlertDialog(
         title: const Text('Scan Document / Camera OCR'),
         content: const Text('এই version-এ Text Parser ready. Camera দিয়ে complaint/FIR/report scan করে OCR extraction next online/OCR patch-এ add হবে। এখন document text copy/paste করে Parse করুন।'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('ঠিক আছে'))],
       ),
     );
   }
@@ -179,15 +179,15 @@ Arrest: NIL.''';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Case Parser')),
+      appBar: AppBar(title: const Text('মামলা তথ্য বিশ্লেষক')),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Expanded(child: OutlinedButton.icon(onPressed: _showUseOptions, icon: const Icon(Icons.rule), label: const Text('Use Data'))),
+              Expanded(child: OutlinedButton.icon(onPressed: _showUseOptions, icon: const Icon(Icons.rule), label: const Text('তথ্য ব্যবহার করুন'))),
               const SizedBox(width: 10),
-              Expanded(child: FilledButton.icon(onPressed: _parse, icon: const Icon(Icons.auto_fix_high), label: const Text('Parse'))),
+              Expanded(child: FilledButton.icon(onPressed: _parse, icon: const Icon(Icons.auto_fix_high), label: const Text('বিশ্লেষণ করুন'))),
             ],
           ),
         ),
@@ -196,25 +196,25 @@ Arrest: NIL.''';
         padding: const EdgeInsets.all(16),
         children: [
           AppSectionCard(
-            title: 'Paste / Scan Case Text',
-            subtitle: 'Ref, P.O, D.O, D.R, Complt, Accused, I.O, Gist, Arrest format চিনে নেবে।',
+            title: 'মামলার লেখা পেস্ট/স্ক্যান করুন',
+            subtitle: 'রেফারেন্স, ঘটনাস্থল, ঘটনার তারিখ, রিপোর্টের তারিখ, অভিযোগকারী, অভিযুক্ত, তদন্তকারী অফিসার, সংক্ষিপ্ত ঘটনা ও গ্রেপ্তার সংক্রান্ত বিন্যাস শনাক্ত করবে।',
             icon: Icons.document_scanner,
             child: Column(
               children: [
-                FormHelpers.textField(controller: rawText, label: 'Paste complaint/FIR/order/report text here', maxLines: 10),
+                FormHelpers.textField(controller: rawText, label: 'এখানে অভিযোগ/এফআইআর/আদেশ/প্রতিবেদনের লেখা পেস্ট করুন', maxLines: 10),
                 Row(
                   children: [
-                    Expanded(child: OutlinedButton.icon(onPressed: _fillDemo, icon: const Icon(Icons.text_snippet), label: const Text('Demo'))),
+                    Expanded(child: OutlinedButton.icon(onPressed: _fillDemo, icon: const Icon(Icons.text_snippet), label: const Text('ডেমো'))),
                     const SizedBox(width: 10),
-                    Expanded(child: OutlinedButton.icon(onPressed: _showCameraNote, icon: const Icon(Icons.camera_alt), label: const Text('Scan Document'))),
+                    Expanded(child: OutlinedButton.icon(onPressed: _showCameraNote, icon: const Icon(Icons.camera_alt), label: const Text('নথি স্ক্যান করুন'))),
                   ],
                 ),
               ],
             ),
           ),
           AppSectionCard(
-            title: 'Review Extracted Data',
-            subtitle: 'Direct save হবে না। আগে IO verify/edit করবে, তারপর save/update।',
+            title: 'সংগৃহীত তথ্য যাচাই করুন',
+            subtitle: 'সরাসরি সংরক্ষণ হবে না। আগে তদন্তকারী অফিসার যাচাই/সম্পাদনা করবেন, তারপর সংরক্ষণ/হালনাগাদ করবেন।',
             icon: Icons.fact_check,
             child: Column(
               children: [
@@ -223,29 +223,29 @@ Arrest: NIL.''';
                     value: _selectedCase,
                     items: _cases.map((c) => DropdownMenuItem(value: c, child: Text(c.displayTitle, overflow: TextOverflow.ellipsis))).toList(),
                     onChanged: (v) => setState(() => _selectedCase = v),
-                    decoration: const InputDecoration(labelText: 'Update existing case (optional)', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'বর্তমান মামলা হালনাগাদ (ঐচ্ছিক)', border: OutlineInputBorder()),
                   ),
                 if (_cases.isNotEmpty) const SizedBox(height: 12),
-                FormHelpers.textField(controller: psCaseNo, label: 'PS Case No.'),
-                FormHelpers.textField(controller: caseDate, label: 'Case Date'),
-                FormHelpers.textField(controller: sections, label: 'Sections'),
-                FormHelpers.textField(controller: po, label: 'P.O / Place of Occurrence', maxLines: 2),
-                FormHelpers.textField(controller: dO, label: 'D.O / Date & Time of Occurrence'),
-                FormHelpers.textField(controller: dR, label: 'D.R / Date & Time of Reporting'),
-                FormHelpers.textField(controller: complainant, label: 'Complainant / Informant', maxLines: 3),
-                FormHelpers.textField(controller: victim, label: 'Victim', maxLines: 2),
-                FormHelpers.textField(controller: accused, label: 'FIR Named Accused', maxLines: 4),
+                FormHelpers.textField(controller: psCaseNo, label: 'থানা মামলা নং'),
+                FormHelpers.textField(controller: caseDate, label: 'মামলার তারিখ'),
+                FormHelpers.textField(controller: sections, label: 'ধারা'),
+                FormHelpers.textField(controller: po, label: 'ঘটনাস্থল', maxLines: 2),
+                FormHelpers.textField(controller: dO, label: 'ঘটনার তারিখ ও সময়'),
+                FormHelpers.textField(controller: dR, label: 'রিপোর্টের তারিখ ও সময়'),
+                FormHelpers.textField(controller: complainant, label: 'অভিযোগকারী/সংবাদদাতা', maxLines: 3),
+                FormHelpers.textField(controller: victim, label: 'ভিকটিম', maxLines: 2),
+                FormHelpers.textField(controller: accused, label: 'এফআইআরে নামীয় অভিযুক্ত', maxLines: 4),
                 Row(
                   children: [
-                    Expanded(child: FormHelpers.textField(controller: io, label: 'I.O Name')),
+                    Expanded(child: FormHelpers.textField(controller: io, label: 'তদন্তকারী অফিসারের নাম')),
                     const SizedBox(width: 10),
-                    Expanded(child: FormHelpers.textField(controller: ioMobile, label: 'I.O Mobile')),
+                    Expanded(child: FormHelpers.textField(controller: ioMobile, label: 'তদন্তকারী অফিসারের মোবাইল')),
                   ],
                 ),
-                FormHelpers.textField(controller: gist, label: 'Gist / Brief Facts', maxLines: 6),
-                FormHelpers.textField(controller: arrest, label: 'Arrest Status'),
+                FormHelpers.textField(controller: gist, label: 'সংক্ষিপ্ত ঘটনা', maxLines: 6),
+                FormHelpers.textField(controller: arrest, label: 'গ্রেপ্তারের অবস্থা'),
                 const SizedBox(height: 8),
-                const Text('After save, this data will auto-fill Case Entry, CD-I, Forms, Statement, Final CD and IF5.', style: TextStyle(color: AppTheme.deepGreen, fontWeight: FontWeight.w700)),
+                const Text('সংরক্ষণের পরে এই তথ্য মামলা এন্ট্রি, সিডি-১, ফর্ম, বিবৃতি, চূড়ান্ত সিডি ও আইএফ-৫-এ স্বয়ংক্রিয়ভাবে বসবে।', style: TextStyle(color: AppTheme.deepGreen, fontWeight: FontWeight.w700)),
               ],
             ),
           ),

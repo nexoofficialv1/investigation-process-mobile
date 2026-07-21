@@ -25,7 +25,7 @@ class _StatementScreenState extends State<StatementScreen> {
 
   final witnessName = TextEditingController();
   final witnessDetails = TextEditingController();
-  final statementType = TextEditingController(text: 'Complainant / Victim / Eye witness / Local witness');
+  final statementType = TextEditingController(text: 'অভিযোগকারী / ভুক্তভোগী / প্রত্যক্ষদর্শী / স্থানীয় সাক্ষী');
   final body = TextEditingController();
 
   @override
@@ -50,12 +50,12 @@ class _StatementScreenState extends State<StatementScreen> {
   }
 
   void _generateBasicDraft() {
-    body.text = 'Today I examined the witness namely ${witnessName.text.trim()} in connection with ${widget.profile.policeStation} PS Case No. ${widget.caseFile.psCaseNo} dated ${widget.caseFile.caseDate} u/s ${widget.caseFile.sections}. The witness stated about the facts and circumstances of the case. The statement was recorded u/s 180 BNSS.';
+    body.text = 'আজ আমি ${widget.profile.policeStation} থানা মামলা নং ${widget.caseFile.psCaseNo}, তারিখ ${widget.caseFile.caseDate}, ধারা ${widget.caseFile.sections}-এর তদন্তের স্বার্থে ${witnessName.text.trim()} নামীয় সাক্ষীকে জিজ্ঞাসাবাদ করলাম। সাক্ষী মামলার ঘটনা ও পারিপার্শ্বিক পরিস্থিতি সম্পর্কে বিবৃতি প্রদান করেন। উক্ত বিবৃতি বিএনএসএস-এর ১৮০ ধারায় লিপিবদ্ধ করা হলো।';
   }
 
   Future<void> _saveStatement() async {
     if (witnessName.text.trim().isEmpty || body.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Witness name and statement body required')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('সাক্ষীর নাম ও বিবৃতির মূল লেখা আবশ্যক')));
       return;
     }
     final entry = StatementEntry.create(
@@ -71,7 +71,7 @@ class _StatementScreenState extends State<StatementScreen> {
     witnessDetails.clear();
     body.clear();
     await _load();
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Statement saved')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('বিবৃতি সংরক্ষিত হয়েছে')));
   }
 
   Future<void> _preview(StatementEntry entry) async {
@@ -79,7 +79,7 @@ class _StatementScreenState extends State<StatementScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => PdfPreviewScreen(
-          title: 'Preview Statement',
+          title: 'বিবৃতি প্রিভিউ',
           filename: 'Statement_${entry.witnessName}.pdf',
           docFilename: 'Statement_${entry.witnessName}.doc',
           buildPdf: () => PdfService().buildStatementPdf(officer: widget.profile, caseFile: widget.caseFile, statement: entry),
@@ -92,7 +92,7 @@ class _StatementScreenState extends State<StatementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Statements')),
+      appBar: AppBar(title: const Text('বিবৃতিসমূহ')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -102,28 +102,28 @@ class _StatementScreenState extends State<StatementScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('New Statement', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text('নতুন বিবৃতি', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-                  FormHelpers.textField(controller: witnessName, label: 'Witness Name'),
-                  FormHelpers.textField(controller: witnessDetails, label: 'Witness Details', maxLines: 2),
-                  FormHelpers.textField(controller: statementType, label: 'Statement Type'),
+                  FormHelpers.textField(controller: witnessName, label: 'সাক্ষীর নাম'),
+                  FormHelpers.textField(controller: witnessDetails, label: 'সাক্ষীর বিবরণ', maxLines: 2),
+                  FormHelpers.textField(controller: statementType, label: 'বিবৃতির ধরন'),
                   Row(
                     children: [
-                      Expanded(child: OutlinedButton.icon(onPressed: _generateBasicDraft, icon: const Icon(Icons.auto_awesome), label: const Text('Generate Basic Draft'))),
+                      Expanded(child: OutlinedButton.icon(onPressed: _generateBasicDraft, icon: const Icon(Icons.auto_awesome), label: const Text('প্রাথমিক খসড়া তৈরি করুন'))),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  FormHelpers.textField(controller: body, label: 'Statement Body', maxLines: 8),
-                  FilledButton.icon(onPressed: _saveStatement, icon: const Icon(Icons.save), label: const Text('Save Statement')),
+                  FormHelpers.textField(controller: body, label: 'বিবৃতির মূল লেখা', maxLines: 8),
+                  FilledButton.icon(onPressed: _saveStatement, icon: const Icon(Icons.save), label: const Text('বিবৃতি সংরক্ষণ করুন')),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 12),
-          Text('Saved Statements', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text('সংরক্ষিত বিবৃতিসমূহ', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           if (statements.isEmpty)
-            const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('No statement saved yet.')))
+            const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('এখনও কোনো বিবৃতি সংরক্ষিত নেই।')))
           else
             ...statements.map((e) => Card(
                   child: ListTile(

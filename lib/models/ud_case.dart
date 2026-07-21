@@ -341,7 +341,7 @@ class UdCase {
     );
   }
 
-  String get displayTitle => udNo.trim().isEmpty ? 'New UD Case' : 'UD Case No. $udNo';
+  String get displayTitle => udNo.trim().isEmpty ? 'নতুন ইউডি মামলা' : 'ইউডি মামলা নং $udNo';
 
   UdCase copyWith(Map<String, String> v) => UdCase(
         id: id,

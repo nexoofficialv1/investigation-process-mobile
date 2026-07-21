@@ -41,9 +41,9 @@ class PdfService {
         ? cd.tableLines
         : [
             CdTableLine(
-              noAndHour: 'I\n${cd.startTime}',
+              noAndHour: '১\n${cd.startTime}',
               placeOfEntry: cd.placeOfEntry,
-              synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation',
+              synopsis: cd.cdNumber == 1 ? 'এফআইআর অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত',
               proceedings: cd.body,
             ),
           ];
@@ -123,7 +123,7 @@ class PdfService {
     return parts;
   }
 
-  String _shortPsName(String ps) => ps.replaceAll('Police Station', 'PS').trim();
+  String _shortPsName(String ps) => ps.replaceAll('থানা', 'থানা').trim();
 
   pw.Widget _wbOfficialCdHeader({
     required OfficerProfile officer,
@@ -145,30 +145,30 @@ class PdfService {
         pw.Center(child: pw.Text('CASE DIARY UNDER SECTION 192 BNSS${continued ? ' (Continued)' : ''}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 8),
         pw.Center(child: pw.RichText(text: pw.TextSpan(children: [
-          pw.TextSpan(text: '(P.R.B FROM NO. 43 – Vide ', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
-          pw.TextSpan(text: 'Rule 229', style: pw.TextStyle(fontSize: 11, fontStyle: pw.FontStyle.italic, fontWeight: pw.FontWeight.bold)),
+          pw.TextSpan(text: '(পি.আর.বি ফর্ম নং ৪৩ – দ্রষ্টব্য ', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+          pw.TextSpan(text: 'বিধি ২২৯', style: pw.TextStyle(fontSize: 11, fontStyle: pw.FontStyle.italic, fontWeight: pw.FontWeight.bold)),
           pw.TextSpan(text: ')', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
         ]))),
         pw.SizedBox(height: 4),
         pw.Row(
           children: [
             pw.Expanded(flex: 3, child: pw.Text('PS: -${_shortPsName(officer.policeStation)}', style: _cdTopStyle())),
-            pw.Expanded(flex: 2, child: pw.Text('District: -${officer.district}', style: _cdTopStyle())),
+            pw.Expanded(flex: 2, child: pw.Text('জেলা: -${officer.district}', style: _cdTopStyle())),
           ],
         ),
         pw.SizedBox(height: 2),
         pw.Row(
           children: [
-            pw.Expanded(flex: 2, child: pw.Text('First information No: -${caseFile.psCaseNo}', style: _cdTopStyle())),
-            pw.Expanded(flex: 1, child: pw.Text('Dated: -${caseFile.caseDate}', style: _cdTopStyle())),
-            pw.Expanded(flex: 2, child: pw.Text('Section: -${caseFile.sections}', style: _cdTopStyle())),
+            pw.Expanded(flex: 2, child: pw.Text('প্রথম সংবাদ নং: -${caseFile.psCaseNo}', style: _cdTopStyle())),
+            pw.Expanded(flex: 1, child: pw.Text('তারিখ: -${caseFile.caseDate}', style: _cdTopStyle())),
+            pw.Expanded(flex: 2, child: pw.Text('ধারা: -${caseFile.sections}', style: _cdTopStyle())),
           ],
         ),
-        pw.Text('Name of Complainant: -${caseFile.complainantName}', style: _cdTopStyle()),
+        pw.Text('অভিযোগকারীর নাম: -${caseFile.complainantName}', style: _cdTopStyle()),
         pw.Row(
           children: [
-            pw.Expanded(child: pw.Text('Case Diary No: -${cd.cdNumber}', style: _cdTopStyle())),
-            pw.Expanded(child: pw.Text('Dated: -${cd.cdDate}', style: _cdTopStyle())),
+            pw.Expanded(child: pw.Text('কেস ডায়েরি নং: -${cd.cdNumber}', style: _cdTopStyle())),
+            pw.Expanded(child: pw.Text('তারিখ: -${cd.cdDate}', style: _cdTopStyle())),
           ],
         ),
         pw.SizedBox(height: 4),
@@ -184,9 +184,9 @@ class PdfService {
       columnWidths: const {0: pw.FlexColumnWidth(1), 1: pw.FlexColumnWidth(1.1), 2: pw.FlexColumnWidth(1.1)},
       children: [
         pw.TableRow(children: [
-          _officialCell('Arrested and sent up', center: true, fontSize: 11),
-          _officialCell('Arrested and released on bail.', center: true, fontSize: 11),
-          _officialCell('At large.', center: true, fontSize: 11),
+          _officialCell('গ্রেপ্তার করে আদালতে প্রেরিত', center: true, fontSize: 11),
+          _officialCell('গ্রেপ্তার করে জামিনে মুক্ত।', center: true, fontSize: 11),
+          _officialCell('পলাতক।', center: true, fontSize: 11),
         ]),
       ],
     );
@@ -195,7 +195,7 @@ class PdfService {
   pw.Widget _wbOfficialCdContinuousTable(CdEntry cd, OfficerProfile officer) {
     final lines = cd.tableLines.isNotEmpty
         ? cd.tableLines
-        : [CdTableLine(noAndHour: 'I\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation', proceedings: cd.body)];
+        : [CdTableLine(noAndHour: '১\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'এফআইআর অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত', proceedings: cd.body)];
     return _wbOfficialCdContinuousTableFromLines(lines, officer, showSignature: true);
   }
 
@@ -219,7 +219,7 @@ class PdfService {
         pw.TableRow(children: [
           pw.Container(
             padding: const pw.EdgeInsets.fromLTRB(8, 3, 8, 3),
-            child: pw.Text('Particulars of Enquiry.', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold)),
+            child: pw.Text('তদন্তের বিবরণ।', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold)),
           ),
           pw.SizedBox(height: 20),
         ]),
@@ -238,9 +238,9 @@ class PdfService {
               },
               children: [
                 pw.TableRow(children: [
-                  _officialCell('No. and\nhour of\nentry.', center: true, fontSize: 9.0),
-                  _officialCell('Place of\nentry.', center: true, fontSize: 9.0),
-                  _officialCell('Synopsis of\nentry.', center: true, fontSize: 9.0),
+                  _officialCell('এন্ট্রি নং ও\nসময়', center: true, fontSize: 9.0),
+                  _officialCell('এন্ট্রির\nস্থান', center: true, fontSize: 9.0),
+                  _officialCell('এন্ট্রির\nসারাংশ', center: true, fontSize: 9.0),
                 ]),
                 pw.TableRow(
                   verticalAlignment: pw.TableCellVerticalAlignment.top,
@@ -267,7 +267,7 @@ class PdfService {
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.center,
                           children: [
-                            pw.Text('Submitted', style: const pw.TextStyle(fontSize: 10.0)),
+                            pw.Text('নিবেদিত', style: const pw.TextStyle(fontSize: 10.0)),
                             pw.SizedBox(height: 22),
                             pw.Text('(${officer.name})', style: const pw.TextStyle(fontSize: 10.0)),
                             pw.Text(officer.rank, style: const pw.TextStyle(fontSize: 10.0)),
@@ -313,9 +313,9 @@ class PdfService {
           ? cd.tableLines
           : [
               CdTableLine(
-                noAndHour: 'I\n${cd.startTime}',
+                noAndHour: '১\n${cd.startTime}',
                 placeOfEntry: cd.placeOfEntry,
-                synopsis: cd.cdNumber == 1 ? 'Received copy of FIR\n+\nGist' : 'Further investigation',
+                synopsis: cd.cdNumber == 1 ? 'এফআইআর অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত',
                 proceedings: cd.body,
               ),
             ];
@@ -352,24 +352,24 @@ class PdfService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(42, 36, 42, 36),
         build: (context) => [
-          _centerBold('Statement of witness recorded u/s 180 BNSS'),
+          _centerBold('বিএনএসএস-এর ১৮০ ধারায় লিপিবদ্ধ সাক্ষীর বিবৃতি'),
           pw.SizedBox(height: 16),
-          pw.Text('Case Reference: ${officer.policeStation} PS Case No. ${caseFile.psCaseNo} dated ${caseFile.caseDate} u/s ${caseFile.sections}'),
+          pw.Text('মামলার রেফারেন্স: ${officer.policeStation} থানা মামলা নং ${caseFile.psCaseNo}, তারিখ ${caseFile.caseDate}, ধারা ${caseFile.sections}'),
           pw.SizedBox(height: 8),
-          pw.Text('Name of Witness: ${statement.witnessName}'),
-          pw.Text('Witness Details: ${statement.witnessDetails}'),
-          pw.Text('Statement Type: ${statement.statementType}'),
+          pw.Text('সাক্ষীর নাম: ${statement.witnessName}'),
+          pw.Text('সাক্ষীর বিবরণ: ${statement.witnessDetails}'),
+          pw.Text('বিবৃতির ধরন: ${statement.statementType}'),
           pw.SizedBox(height: 14),
           pw.Text(statement.body, style: const pw.TextStyle(fontSize: 12), textAlign: pw.TextAlign.justify),
           pw.SizedBox(height: 30),
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Text('Signature/LTI/RTI of witness'),
+              pw.Text('সাক্ষীর স্বাক্ষর/বাম হাতের ছাপ/ডান হাতের ছাপ'),
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
-                  pw.Text('Recorded by'),
+                  pw.Text('লিপিবদ্ধকারী'),
                   pw.SizedBox(height: 24),
                   pw.Text('${officer.rank} ${officer.name}'),
                   pw.Text(officer.policeStation),
@@ -430,7 +430,7 @@ class PdfService {
         margin: const pw.EdgeInsets.fromLTRB(46, 30, 46, 30),
         footer: (context) => pw.Align(
           alignment: pw.Alignment.centerRight,
-          child: pw.Text('Page ${context.pageNumber} of ${context.pagesCount}', style: const pw.TextStyle(fontSize: 8)),
+          child: pw.Text('পৃষ্ঠা ${context.pageNumber}/${context.pagesCount}', style: const pw.TextStyle(fontSize: 8)),
         ),
         build: (context) {
           if (is35) return _notice35Pdf(officer, caseFile, body);
@@ -439,7 +439,7 @@ class PdfService {
           return [
             _centerBold(form.title),
             pw.SizedBox(height: 10),
-            pw.Text('Ref: ${officer.policeStation} Case No. ${caseFile.psCaseNo} dated ${caseFile.caseDate} u/s ${caseFile.sections}', style: const pw.TextStyle(fontSize: 10.5)),
+            pw.Text('রেফারেন্স: ${officer.policeStation} থানা মামলা নং ${caseFile.psCaseNo}, তারিখ ${caseFile.caseDate}, ধারা ${caseFile.sections}', style: const pw.TextStyle(fontSize: 10.5)),
             pw.SizedBox(height: 16),
             pw.Text(body, style: const pw.TextStyle(fontSize: 11.5), textAlign: pw.TextAlign.justify),
             pw.SizedBox(height: 26),
@@ -502,49 +502,49 @@ class PdfService {
   }
 
   void _addCdrCafOfficialPages(pw.Document doc, OfficerProfile officer, CaseFile caseFile, String body) {
-    final ref = '${_shortPsName(officer.policeStation)} Case No-${caseFile.psCaseNo} Dated-${caseFile.caseDate}, U/S-${caseFile.sections}';
-    final gist = _extractFormField(body, 'GIST', fallback: caseFile.firGist.isEmpty ? '____________________________________________________________' : caseFile.firGist);
-    final mobile = _extractFormField(body, 'REQUIRED MOBILE/IMEI', fallback: '____________________________');
-    final user = _extractFormField(body, 'ACTUAL USER / INVOLVEMENT', fallback: '____________________________');
-    final justification = _extractFormField(body, 'JUSTIFICATION', fallback: '____________________________');
-    final dateRange = _extractFormField(body, 'CDR DATE RANGE', fallback: 'From ____________ To ____________');
-    final sdr = _extractFormField(body, 'SDR REQUIRED', fallback: 'Yes / No');
-    final caf = _extractFormField(body, 'CAF REQUIRED', fallback: 'Yes / No');
-    final imei = _extractFormField(body, 'IMEI SEARCH DATE RANGE', fallback: '---');
-    final other = _extractFormField(body, 'ANY OTHER POINTS', fallback: 'N/A');
-    final ioName = _extractFormField(body, 'IO NAME', fallback: '${officer.rank} ${officer.name}');
-    final ioPhone = _extractFormField(body, 'IO PHONE', fallback: officer.mobile);
+    final ref = '${_shortPsName(officer.policeStation)} মামলা নং-${caseFile.psCaseNo}, তারিখ-${caseFile.caseDate}, ধারা-${caseFile.sections}';
+    final gist = _extractFormField(body, 'সংক্ষিপ্ত ঘটনা', fallback: caseFile.firGist.isEmpty ? '____________________________________________________________' : caseFile.firGist);
+    final mobile = _extractFormField(body, 'প্রয়োজনীয় মোবাইল/আইএমইআই', fallback: '____________________________');
+    final user = _extractFormField(body, 'প্রকৃত ব্যবহারকারী/সংশ্লিষ্টতা', fallback: '____________________________');
+    final justification = _extractFormField(body, 'প্রয়োজনীয়তার যুক্তি', fallback: '____________________________');
+    final dateRange = _extractFormField(body, 'সিডিআর-এর সময়সীমা', fallback: '____________ থেকে ____________ পর্যন্ত');
+    final sdr = _extractFormField(body, 'এসডিআর প্রয়োজন', fallback: 'হ্যাঁ / না');
+    final caf = _extractFormField(body, 'সিএএফ প্রয়োজন', fallback: 'হ্যাঁ / না');
+    final imei = _extractFormField(body, 'আইএমইআই অনুসন্ধানের সময়সীমা', fallback: '---');
+    final other = _extractFormField(body, 'অন্যান্য বিষয়', fallback: 'প্রযোজ্য নয়');
+    final ioName = _extractFormField(body, 'তদন্তকারী অফিসারের নাম', fallback: '${officer.rank} ${officer.name}');
+    final ioPhone = _extractFormField(body, 'তদন্তকারী অফিসারের ফোন', fallback: officer.mobile);
     final rows = <pw.Widget>[
-      _twoColRow('NAME OF THE P.S / O.P', _shortPsName(officer.policeStation)),
-      _twoColRow('CASE REFERENCE / GDE NO.', ref),
+      _twoColRow('থানা/আউটপোস্টের নাম', _shortPsName(officer.policeStation)),
+      _twoColRow('মামলার রেফারেন্স/জিডিই নং', ref),
     ];
     final gistParts = _splitChunks(gist, max: 760);
     for (var i = 0; i < gistParts.length; i++) {
-      rows.add(_twoColRow(i == 0 ? 'GIST OF THE CASE / GDE' : 'GIST OF THE CASE / GDE (CONTINUED)', gistParts[i], fontSize: 9.3));
+      rows.add(_twoColRow(i == 0 ? 'মামলা/জিডিই-এর সংক্ষিপ্ত ঘটনা' : 'মামলা/জিডিই-এর সংক্ষিপ্ত ঘটনা (চলমান)', gistParts[i], fontSize: 9.3));
     }
     rows.addAll([
-      _twoColRow('REQUIRED MOBILE NO\'S / IMEI NO\'S.', mobile),
-      _twoColRow('NAME OF THE ACTUAL USER OF THE MOBILENO/IMEI NO & HIS/HER INVOLVEMENT IN THE CASE', user, fontSize: 9.6),
-      _twoColRow('JUSTIFICATION OF THE REQUIRED MOBILE NO./IMEI NO. IN CASE/GDE', justification, fontSize: 9.6),
-      _twoColRow('REQUIRED CDR (CALL DETAILS REPORT) FROM DATE .....TO DATE', dateRange),
-      _twoColRow('REQUIRED SDR - (SUBSCRIBER DETAILS REPORT)', sdr),
-      _twoColRow('REQUIRED CAF - (CUSTOMER APPLICATION FORM)', caf),
-      _twoColRow('REQUIRED IMEI SEARCHING - FROM DATE .... TO DATE)', imei),
-      _twoColRow('NAME OF THE I.O / E.O.', ioName),
-      _twoColRow('PHONE NO. OF THE I.O / E.O.', ioPhone),
-      _twoColRow('ANY OTHER POINTS', other),
+      _twoColRow('প্রয়োজনীয় মোবাইল নং/আইএমইআই নং', mobile),
+      _twoColRow('মোবাইল/আইএমইআই-এর প্রকৃত ব্যবহারকারীর নাম ও মামলায় সংশ্লিষ্টতা', user, fontSize: 9.6),
+      _twoColRow('মামলা/জিডিই-তে উক্ত মোবাইল/আইএমইআই প্রয়োজন হওয়ার যুক্তি', justification, fontSize: 9.6),
+      _twoColRow('প্রয়োজনীয় সিডিআর (কল ডিটেলস রিপোর্ট)-এর সময়সীমা', dateRange),
+      _twoColRow('প্রয়োজনীয় এসডিআর (সাবস্ক্রাইবার ডিটেলস রিপোর্ট)', sdr),
+      _twoColRow('প্রয়োজনীয় সিএএফ (কাস্টমার অ্যাপ্লিকেশন ফর্ম)', caf),
+      _twoColRow('প্রয়োজনীয় আইএমইআই অনুসন্ধানের সময়সীমা', imei),
+      _twoColRow('তদন্তকারী/অনুসন্ধানকারী অফিসারের নাম', ioName),
+      _twoColRow('তদন্তকারী/অনুসন্ধানকারী অফিসারের ফোন নং', ioPhone),
+      _twoColRow('অন্যান্য বিষয়', other),
       pw.SizedBox(height: 26),
-      pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('Submitted', style: const pw.TextStyle(fontSize: 11))),
+      pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('নিবেদিত', style: const pw.TextStyle(fontSize: 11))),
     ]);
     doc.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(32, 24, 32, 24),
       build: (_) => [
-        pw.Text('To: SP/${officer.district} =w= O/C SOG Cell, ${officer.district} =w= SDPO Kalna', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('প্রতি: পুলিশ সুপার, ${officer.district} মারফত ওসি, এসওজি সেল, ${officer.district} মারফত এসডিপিও, কালনা', style: const pw.TextStyle(fontSize: 10.5)),
         pw.SizedBox(height: 12),
-        pw.Text('From: I/C ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('প্রেরক: আইসি, ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
         pw.SizedBox(height: 18),
-        pw.Center(child: pw.Text('REQUISITION FOR CDR/SDR/CAF', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, decoration: pw.TextDecoration.underline))),
+        pw.Center(child: pw.Text('সিডিআর/এসডিআর/সিএএফ-এর রিকুইজিশন', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, decoration: pw.TextDecoration.underline))),
         pw.SizedBox(height: 8),
         ...rows,
       ],
@@ -552,30 +552,30 @@ class PdfService {
   }
 
   void _addFslPackageOfficialPages(pw.Document doc, OfficerProfile officer, CaseFile caseFile, String body) {
-    final ref = '${_shortPsName(officer.policeStation)} Case No ${caseFile.psCaseNo} Date ${caseFile.caseDate} u/s ${caseFile.sections}';
-    final natureCrime = _extractFormField(body, 'NATURE OF CRIME', fallback: caseFile.firGist.isEmpty ? 'The fact of the case in brief is that ________________________________________________.' : caseFile.firGist);
-    final exhibitsRaw = _extractFormField(body, 'EXHIBITS', fallback: _extractFormField(body, 'EXHIBIT DESCRIPTION', fallback: 'A | One sealed packet/jar/container containing said to be ________________________________. | Seized on ____________ at ________________________________ by ${officer.rank} ${officer.name}. | Ld. C.J.M / Magistrate, ${officer.district} | May be confiscated to the State after examination / may be returned after examination'));
-    final exam = _extractFormField(body, 'NATURE OF EXAMINATION', fallback: 'Whether relevant material/poison/blood/semen/chemical/biological trace could be detected in Exhibit Mark “A” or not.');
-    final accusedRaw = _extractFormField(body, 'PERSONS IN CUSTODY', fallback: _extractFormField(body, 'PERSON IN CUSTODY', fallback: '${caseFile.accusedName} | Occupation | Age | Sex | Date & time of arrest | J/C / P/C / Bail / At large | Ld. Court'));
-    final fslOffice = _extractFormField(body, 'FSL OFFICE', fallback: 'Head of Office & Assistant Director\nRegional Forensic Science Laboratory\nShankarpur, Durgapur\nPaschim Bardhaman, 713212');
-    final court = _extractFormField(body, 'COURT', fallback: 'Ld. C.J.M / Magistrate, ${officer.district}');
-    final contact = _extractFormField(body, 'IO / PS CONTACT DETAILS', fallback: 'I.O. Name:- ${officer.name}\nDesignation:- ${officer.rank}\nMobile No. of I.O.:- ${officer.mobile}\nName of the PS:- ${officer.policeStation}\nDistrict:- ${officer.district}');
-    final exhibits = _parsePipeRows(exhibitsRaw, 5, fallback: ['A', 'One sealed packet/jar/container containing said to be ________________________________.', 'Seized on ____________ at ________________________________ by ${officer.rank} ${officer.name}.', court, 'May be confiscated to the State after examination / may be returned after examination']);
-    final accusedRows = _parsePipeRows(accusedRaw, 7, fallback: [caseFile.accusedName.isEmpty ? '____________________' : caseFile.accusedName, 'Occupation', 'Age', 'Sex', 'Date & time of arrest', 'J/C / P/C / Bail / At large', court]);
+    final ref = '${_shortPsName(officer.policeStation)} মামলা নং ${caseFile.psCaseNo}, তারিখ ${caseFile.caseDate}, ধারা ${caseFile.sections}';
+    final natureCrime = _extractFormField(body, 'অপরাধের প্রকৃতি', fallback: caseFile.firGist.isEmpty ? 'মামলার সংক্ষিপ্ত ঘটনা হলো ________________________________________________।' : caseFile.firGist);
+    final exhibitsRaw = _extractFormField(body, 'আলামতসমূহ', fallback: _extractFormField(body, 'আলামতের বিবরণ', fallback: 'ক | একটি সিলমোহরযুক্ত প্যাকেট/জার/পাত্র, যার মধ্যে ________________________________ আছে বলে উল্লেখ | __________ তারিখে ________________________________ স্থান থেকে ${officer.rank} ${officer.name} কর্তৃক জব্দ | মাননীয় সিজেএম/ম্যাজিস্ট্রেট, ${officer.district} | পরীক্ষার পরে রাষ্ট্রের অনুকূলে বাজেয়াপ্ত/ফেরতযোগ্য'));
+    final exam = _extractFormField(body, 'প্রয়োজনীয় পরীক্ষার প্রকৃতি', fallback: 'আলামত চিহ্ন “ক”-তে প্রাসঙ্গিক পদার্থ/বিষ/রক্ত/বীর্য/রাসায়নিক/জৈব চিহ্ন শনাক্ত করা যায় কি না।');
+    final accusedRaw = _extractFormField(body, 'হেফাজতে থাকা ব্যক্তিবর্গ', fallback: _extractFormField(body, 'হেফাজতে থাকা ব্যক্তি', fallback: '${caseFile.accusedName} | পেশা | বয়স | লিঙ্গ | গ্রেপ্তারের তারিখ ও সময় | বিচারবিভাগীয়/পুলিশ হেফাজত/জামিন/পলাতক | বিজ্ঞ আদালত'));
+    final fslOffice = _extractFormField(body, 'এফএসএল কার্যালয়', fallback: 'দপ্তর প্রধান ও সহকারী পরিচালক\nআঞ্চলিক ফরেনসিক বিজ্ঞানাগার\nশংকরপুর, দুর্গাপুর\nপশ্চিম বর্ধমান, ৭১৩২১২');
+    final court = _extractFormField(body, 'আদালত', fallback: 'বিজ্ঞ সিজেএম/ম্যাজিস্ট্রেট, ${officer.district}');
+    final contact = _extractFormField(body, 'তদন্তকারী অফিসার/থানার যোগাযোগের বিবরণ', fallback: 'তদন্তকারী অফিসারের নাম: ${officer.name}\nপদবি: ${officer.rank}\nমোবাইল: ${officer.mobile}\nথানা: ${officer.policeStation}\nজেলা: ${officer.district}');
+    final exhibits = _parsePipeRows(exhibitsRaw, 5, fallback: ['ক', 'একটি সিলমোহরযুক্ত প্যাকেট/জার/পাত্র, যার মধ্যে ________________________________ আছে বলে উল্লেখ।', '__________ তারিখে ________________________________ স্থান থেকে ${officer.rank} ${officer.name} কর্তৃক জব্দ।', court, 'পরীক্ষার পরে রাষ্ট্রের অনুকূলে বাজেয়াপ্ত/ফেরতযোগ্য']);
+    final accusedRows = _parsePipeRows(accusedRaw, 7, fallback: [caseFile.accusedName.isEmpty ? '____________________' : caseFile.accusedName, 'পেশা', 'বয়স', 'লিঙ্গ', 'গ্রেপ্তারের তারিখ ও সময়', 'বিচারবিভাগীয়/পুলিশ হেফাজত/জামিন/পলাতক', court]);
 
     doc.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(42, 30, 42, 30),
       build: (_) => [
-        pw.Text('West Bengal Form No- 5203', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('পশ্চিমবঙ্গ ফর্ম নং–৫২০৩', style: const pw.TextStyle(fontSize: 10.5)),
         pw.SizedBox(height: 8),
-        pw.Center(child: pw.Text('WEST BENGAL POLICE', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('পশ্চিমবঙ্গ পুলিশ', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 12),
-        pw.Text('Case No:- ${caseFile.psCaseNo}  Date ${caseFile.caseDate}', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('মামলা নং: ${caseFile.psCaseNo}  তারিখ ${caseFile.caseDate}', style: const pw.TextStyle(fontSize: 10.5)),
         pw.Text('PS:- ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
-        pw.Text('Section of Law:- ${caseFile.sections}        District- ${officer.district}', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('আইনের ধারা: ${caseFile.sections}        জেলা–${officer.district}', style: const pw.TextStyle(fontSize: 10.5)),
         pw.SizedBox(height: 10),
-        pw.Center(child: pw.Text('I. NATURE OF CRIME', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('১। অপরাধের প্রকৃতি', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 4),
         ..._splitLongText(natureCrime, chunkSize: 850),
         pw.SizedBox(height: 14),
@@ -587,18 +587,18 @@ class PdfService {
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(32, 28, 32, 28),
       build: (_) => [
-        pw.Center(child: pw.Text('II. LIST OF EXHIBITS SENT FOR EXAMINATION', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('২। পরীক্ষার জন্য প্রেরিত আলামতের তালিকা', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 8),
         pw.Table(
           border: pw.TableBorder.all(width: .5),
           columnWidths: const {0: pw.FlexColumnWidth(.75), 1: pw.FlexColumnWidth(2.7), 2: pw.FlexColumnWidth(2.1), 3: pw.FlexColumnWidth(1.55), 4: pw.FlexColumnWidth(1.55)},
           children: [
-            _tableRow(['Label No', 'Description of the exhibit', 'How and when found and by whom', 'Ownership of exhibit', 'Remarks'], header: true, fontSize: 8.7),
-            ...exhibits.map((e) => _tableRow(['EXHIBIT- “${e[0]}”', e[1], e[2], e[3], e[4]], fontSize: 8.5)),
+            _tableRow(['লেবেল নং', 'আলামতের বিবরণ', 'কীভাবে, কখন ও কার দ্বারা পাওয়া/জব্দ', 'আলামতের মালিকানা', 'মন্তব্য'], header: true, fontSize: 8.7),
+            ...exhibits.map((e) => _tableRow(['আলামত- “${e[0]}”', e[1], e[2], e[3], e[4]], fontSize: 8.5)),
           ],
         ),
         pw.SizedBox(height: 14),
-        pw.Center(child: pw.Text('III. NATURE OF EXAMINATION REQUIRED', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('৩। প্রয়োজনীয় পরীক্ষার প্রকৃতি', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 4),
         ..._splitLongText(exam, chunkSize: 850),
       ],
@@ -608,24 +608,24 @@ class PdfService {
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(30, 28, 30, 28),
       build: (_) => [
-        pw.Center(child: pw.Text('IV. PARTICULARS OF PERSONS IN CUSTODY', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('৪। হেফাজতে থাকা ব্যক্তিদের বিবরণ', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 8),
         pw.Table(
           border: pw.TableBorder.all(width: .5),
           columnWidths: const {0: pw.FlexColumnWidth(.55), 1: pw.FlexColumnWidth(2.2), 2: pw.FlexColumnWidth(1.05), 3: pw.FlexColumnWidth(.65), 4: pw.FlexColumnWidth(.65), 5: pw.FlexColumnWidth(1.25), 6: pw.FlexColumnWidth(1.25), 7: pw.FlexColumnWidth(1.25)},
           children: [
-            _tableRow(['SL No.', 'Full name', 'Occupation', 'Age', 'Sex', 'Date & time of arrest', 'Whether on bail or in custody', 'Court'], header: true, fontSize: 8.2),
+            _tableRow(['ক্রমিক নং', 'পূর্ণ নাম', 'পেশা', 'বয়স', 'লিঙ্গ', 'গ্রেপ্তারের তারিখ ও সময়', 'জামিনে নাকি হেফাজতে', 'আদালত'], header: true, fontSize: 8.2),
             ...accusedRows.asMap().entries.map((entry) => _tableRow(['${entry.key + 1}', ...entry.value], fontSize: 8.1)),
           ],
         ),
         pw.SizedBox(height: 18),
-        pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('………………………………………\nSignature and Rank of the I.O\nDated…………………', style: const pw.TextStyle(fontSize: 10.5))),
+        pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('………………………………………\nতদন্তকারী অফিসারের স্বাক্ষর ও পদমর্যাদা\nতারিখ…………………', style: const pw.TextStyle(fontSize: 10.5))),
         pw.SizedBox(height: 18),
-        pw.Text('Memo No……………..               Dated, the………..20………', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('মেমো নং……………..               তারিখ………..২০………', style: const pw.TextStyle(fontSize: 10.5)),
         pw.SizedBox(height: 8),
-        pw.Text('Forwarded to\n$fslOffice', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('প্রেরিত\n$fslOffice', style: const pw.TextStyle(fontSize: 10.5)),
         pw.SizedBox(height: 12),
-        pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('Seal', style: const pw.TextStyle(fontSize: 10.5)), pw.Text(court, style: const pw.TextStyle(fontSize: 10.5))]),
+        pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('সিল', style: const pw.TextStyle(fontSize: 10.5)), pw.Text(court, style: const pw.TextStyle(fontSize: 10.5))]),
       ],
     ));
 
@@ -633,11 +633,11 @@ class PdfService {
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(42, 30, 42, 30),
       build: (_) => [
-        pw.Text('Certified that the Head of office & Assistant Director, Regional Forensic Science Laboratory, to the Govt. of West Bengal has the authority to examine the exhibits sent to him in connection with the case of State versus ${caseFile.accusedName.isEmpty ? '____________________' : caseFile.accusedName} under section ${caseFile.sections} and if necessary, to take them to pieces or remove portions for the purposes of the said examination.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+        pw.Text('প্রত্যয়ন করা যাচ্ছে যে, পশ্চিমবঙ্গ সরকারের আঞ্চলিক ফরেনসিক বিজ্ঞানাগারের দপ্তর প্রধান ও সহকারী পরিচালক রাষ্ট্র বনাম ${caseFile.accusedName.isEmpty ? '____________________' : caseFile.accusedName}, ধারা ${caseFile.sections} মামলার সূত্রে প্রেরিত আলামত পরীক্ষা করার এবং প্রয়োজনে পরীক্ষার জন্য আলামত খোলা বা অংশবিশেষ পৃথক/অপসারণ করার ক্ষমতাপ্রাপ্ত।', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
         pw.SizedBox(height: 18),
-        pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('Date………………\nPlace…………..', style: const pw.TextStyle(fontSize: 10.5)), pw.Text('Signature………………………………………….\nCJM / MAGISTRATE', style: const pw.TextStyle(fontSize: 10.5))]),
+        pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('তারিখ………………\nস্থান…………..', style: const pw.TextStyle(fontSize: 10.5)), pw.Text('স্বাক্ষর………………………………………….\nসিজেএম/ম্যাজিস্ট্রেট', style: const pw.TextStyle(fontSize: 10.5))]),
         pw.SizedBox(height: 18),
-        pw.Text('Certified to be signed by Ld. Chief Judicial Magistrate / Magistrate and forwarded to the Head of office & Assistant Director, Regional Forensic Science Laboratory with Exhibit.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+        pw.Text('মাননীয় মুখ্য বিচারবিভাগীয় ম্যাজিস্ট্রেট/ম্যাজিস্ট্রেটের স্বাক্ষরের জন্য প্রত্যয়িত এবং আলামতসহ আঞ্চলিক ফরেনসিক বিজ্ঞানাগারের দপ্তর প্রধান ও সহকারী পরিচালকের নিকট প্রেরিত।', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
       ],
     ));
 
@@ -645,13 +645,13 @@ class PdfService {
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(42, 30, 42, 30),
       build: (_) => [
-        pw.Center(child: pw.Text('Exhibit Challan', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('আলামত চালান', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 10),
-        pw.Text('To\n$fslOffice\n\nThrough $court\nRef:- $ref', style: const pw.TextStyle(fontSize: 10.5)),
+        pw.Text('প্রতি\n$fslOffice\n\nমারফত $court\nরেফারেন্স:- $ref', style: const pw.TextStyle(fontSize: 10.5)),
         pw.SizedBox(height: 10),
-        pw.Text('Sir,\nI am sending herewith the following Exhibits in c/w above noted case before you for examination and your opinion for the interest of investigation of the case.\n\nKindly arrange to acknowledge and receipt the same.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+        pw.Text('মহাশয়,\nউপরোক্ত মামলার তদন্তের স্বার্থে পরীক্ষা ও মতামতের জন্য নিম্নলিখিত আলামতসমূহ প্রেরণ করা হলো।\n\nঅনুগ্রহ করে আলামতগুলি গ্রহণ করে প্রাপ্তিস্বীকার করবেন।', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
         pw.SizedBox(height: 10),
-        ...exhibits.asMap().entries.map((entry) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 5), child: pw.Text('${entry.key + 1}) Exhibit Mark “${entry.value[0]}” ---- ${entry.value[1]}', style: const pw.TextStyle(fontSize: 10.5)))),
+        ...exhibits.asMap().entries.map((entry) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 5), child: pw.Text('${entry.key + 1}) আলামত চিহ্ন “${entry.value[0]}” ---- ${entry.value[1]}', style: const pw.TextStyle(fontSize: 10.5)))),
         pw.SizedBox(height: 16),
         _submittedOfficerBlock(officer),
       ],
@@ -671,9 +671,9 @@ class PdfService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(42, 30, 42, 30),
         build: (_) => [
-          pw.Center(child: pw.Text(i == 0 ? 'Label' : 'Label - Exhibit ${e[0]}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+          pw.Center(child: pw.Text(i == 0 ? 'লেবেল' : 'লেবেল - আলামত ${e[0]}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
           pw.SizedBox(height: 8),
-          pw.Text('To\n$fslOffice\n\nThrough $court\n\nRef:- $ref\n\nDescription of Article.\nExhibit Mark “${e[0]}” ---- ${e[1]}\n\nLabeled & prepared by me -', style: const pw.TextStyle(fontSize: 10.5)),
+          pw.Text('প্রতি\n$fslOffice\n\nমারফত $court\n\nরেফারেন্স:- $ref\n\nবস্তুর বিবরণ।\nআলামত চিহ্ন “${e[0]}” ---- ${e[1]}\n\nলেবেলযুক্ত ও প্রস্তুত করেছেন -', style: const pw.TextStyle(fontSize: 10.5)),
           pw.SizedBox(height: 16),
           _submittedOfficerBlock(officer),
         ],
@@ -709,41 +709,41 @@ class PdfService {
   }
 
   List<pw.Widget> _cdrCafOfficialPdf(OfficerProfile officer, CaseFile caseFile, String body) {
-    final ref = '${_shortPsName(officer.policeStation)} Case No-${caseFile.psCaseNo} Dated-${caseFile.caseDate}, U/S-${caseFile.sections}';
-    final gist = _extractFormField(body, 'GIST', fallback: caseFile.firGist.isEmpty ? '____________________________________________________________' : caseFile.firGist);
-    final mobile = _extractFormField(body, 'REQUIRED MOBILE/IMEI', fallback: '____________________________');
-    final user = _extractFormField(body, 'ACTUAL USER / INVOLVEMENT', fallback: '____________________________');
-    final justification = _extractFormField(body, 'JUSTIFICATION', fallback: '____________________________');
-    final dateRange = _extractFormField(body, 'CDR DATE RANGE', fallback: 'From ____________ To ____________');
-    final sdr = _extractFormField(body, 'SDR REQUIRED', fallback: 'Yes / No');
-    final caf = _extractFormField(body, 'CAF REQUIRED', fallback: 'Yes / No');
-    final imei = _extractFormField(body, 'IMEI SEARCH DATE RANGE', fallback: '---');
-    final other = _extractFormField(body, 'ANY OTHER POINTS', fallback: 'N/A');
-    final ioName = _extractFormField(body, 'IO NAME', fallback: '${officer.rank} ${officer.name}');
-    final ioPhone = _extractFormField(body, 'IO PHONE', fallback: officer.mobile);
+    final ref = '${_shortPsName(officer.policeStation)} মামলা নং-${caseFile.psCaseNo}, তারিখ-${caseFile.caseDate}, ধারা-${caseFile.sections}';
+    final gist = _extractFormField(body, 'সংক্ষিপ্ত ঘটনা', fallback: caseFile.firGist.isEmpty ? '____________________________________________________________' : caseFile.firGist);
+    final mobile = _extractFormField(body, 'প্রয়োজনীয় মোবাইল/আইএমইআই', fallback: '____________________________');
+    final user = _extractFormField(body, 'প্রকৃত ব্যবহারকারী/সংশ্লিষ্টতা', fallback: '____________________________');
+    final justification = _extractFormField(body, 'প্রয়োজনীয়তার যুক্তি', fallback: '____________________________');
+    final dateRange = _extractFormField(body, 'সিডিআর-এর সময়সীমা', fallback: '____________ থেকে ____________ পর্যন্ত');
+    final sdr = _extractFormField(body, 'এসডিআর প্রয়োজন', fallback: 'হ্যাঁ / না');
+    final caf = _extractFormField(body, 'সিএএফ প্রয়োজন', fallback: 'হ্যাঁ / না');
+    final imei = _extractFormField(body, 'আইএমইআই অনুসন্ধানের সময়সীমা', fallback: '---');
+    final other = _extractFormField(body, 'অন্যান্য বিষয়', fallback: 'প্রযোজ্য নয়');
+    final ioName = _extractFormField(body, 'তদন্তকারী অফিসারের নাম', fallback: '${officer.rank} ${officer.name}');
+    final ioPhone = _extractFormField(body, 'তদন্তকারী অফিসারের ফোন', fallback: officer.mobile);
 
     return [
-      pw.Text('To: SP/${officer.district} =w= O/C SOG Cell, ${officer.district} =w= SDPO Kalna', style: const pw.TextStyle(fontSize: 11)),
+      pw.Text('প্রতি: পুলিশ সুপার, ${officer.district} মারফত ওসি, এসওজি সেল, ${officer.district} মারফত এসডিপিও, কালনা', style: const pw.TextStyle(fontSize: 11)),
       pw.SizedBox(height: 14),
-      pw.Text('From: I/C ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 11)),
+      pw.Text('প্রেরক: আইসি, ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 11)),
       pw.SizedBox(height: 20),
-      pw.Center(child: pw.Text('REQUISITION FOR CDR/SDR/CAF', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, decoration: pw.TextDecoration.underline))),
+      pw.Center(child: pw.Text('সিডিআর/এসডিআর/সিএএফ-এর রিকুইজিশন', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, decoration: pw.TextDecoration.underline))),
       pw.SizedBox(height: 8),
-      _twoColRow('NAME OF THE P.S / O.P', _shortPsName(officer.policeStation)),
-      _twoColRow('CASE REFERENCE / GDE NO.', ref),
-      _twoColRow('GIST OF THE CASE / GDE', gist, fontSize: 10.0),
-      _twoColRow('REQUIRED MOBILE NO\'S / IMEI NO\'S.', mobile),
-      _twoColRow('NAME OF THE ACTUAL USER OF THE MOBILENO/IMEI NO & HIS/HER INVOLVEMENT IN THE CASE', user),
-      _twoColRow('JUSTIFICATION OF THE REQUIRED MOBILE NO./IMEI NO. IN CASE/GDE', justification),
-      _twoColRow('REQUIRED CDR (CALL DETAILS REPORT) FROM DATE .....TO DATE', dateRange),
-      _twoColRow('REQUIRED SDR - (SUBSCRIBER DETAILS REPORT)', sdr),
-      _twoColRow('REQUIRED CAF - (CUSTOMER APPLICATION FORM)', caf),
-      _twoColRow('REQUIRED IMEI SEARCHING - FROM DATE .... TO DATE)', imei),
-      _twoColRow('NAME OF THE I.O / E.O.', ioName),
-      _twoColRow('PHONE NO. OF THE I.O / E.O.', ioPhone),
-      _twoColRow('ANY OTHER POINTS', other),
+      _twoColRow('থানা/আউটপোস্টের নাম', _shortPsName(officer.policeStation)),
+      _twoColRow('মামলার রেফারেন্স/জিডিই নং', ref),
+      _twoColRow('মামলা/জিডিই-এর সংক্ষিপ্ত ঘটনা', gist, fontSize: 10.0),
+      _twoColRow('প্রয়োজনীয় মোবাইল নং/আইএমইআই নং', mobile),
+      _twoColRow('মোবাইল/আইএমইআই-এর প্রকৃত ব্যবহারকারীর নাম ও মামলায় সংশ্লিষ্টতা', user),
+      _twoColRow('মামলা/জিডিই-তে উক্ত মোবাইল/আইএমইআই প্রয়োজন হওয়ার যুক্তি', justification),
+      _twoColRow('প্রয়োজনীয় সিডিআর (কল ডিটেলস রিপোর্ট)-এর সময়সীমা', dateRange),
+      _twoColRow('প্রয়োজনীয় এসডিআর (সাবস্ক্রাইবার ডিটেলস রিপোর্ট)', sdr),
+      _twoColRow('প্রয়োজনীয় সিএএফ (কাস্টমার অ্যাপ্লিকেশন ফর্ম)', caf),
+      _twoColRow('প্রয়োজনীয় আইএমইআই অনুসন্ধানের সময়সীমা', imei),
+      _twoColRow('তদন্তকারী/অনুসন্ধানকারী অফিসারের নাম', ioName),
+      _twoColRow('তদন্তকারী/অনুসন্ধানকারী অফিসারের ফোন নং', ioPhone),
+      _twoColRow('অন্যান্য বিষয়', other),
       pw.SizedBox(height: 26),
-      pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('Submitted', style: const pw.TextStyle(fontSize: 11))),
+      pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('নিবেদিত', style: const pw.TextStyle(fontSize: 11))),
     ];
   }
 
@@ -766,79 +766,79 @@ class PdfService {
   }
 
   List<pw.Widget> _fslPackageOfficialPdf(OfficerProfile officer, CaseFile caseFile, String body) {
-    final ref = '${_shortPsName(officer.policeStation)} Case No ${caseFile.psCaseNo} Date ${caseFile.caseDate} u/s ${caseFile.sections}';
-    final natureCrime = _extractFormField(body, 'NATURE OF CRIME', fallback: caseFile.firGist.isEmpty ? 'The fact of the case in brief is that ________________________________________________.' : caseFile.firGist);
-    final exhibit = _extractFormField(body, 'EXHIBIT DESCRIPTION', fallback: 'Exhibit Mark "A" ---- One sealed packet/jar/container containing said to be ________________________________.');
-    final found = _extractFormField(body, 'HOW FOUND / SEIZED', fallback: 'Seized on ____________ at ________________________________ by ${officer.rank} ${officer.name}.');
-    final exam = _extractFormField(body, 'NATURE OF EXAMINATION', fallback: 'Whether relevant material/poison/blood/semen/chemical/biological trace could be detected in Exhibit Mark "A" or not.');
-    final accused = _extractFormField(body, 'PERSON IN CUSTODY', fallback: '____________________________');
-    final fslOffice = _extractFormField(body, 'FSL OFFICE', fallback: 'Head of Office & Assistant Director\nRegional Forensic Science Laboratory\nShankarpur, Durgapur\nPaschim Bardhaman, 713212');
-    final court = _extractFormField(body, 'COURT', fallback: 'Ld. C.J.M / Magistrate, ${officer.district}');
+    final ref = '${_shortPsName(officer.policeStation)} মামলা নং ${caseFile.psCaseNo}, তারিখ ${caseFile.caseDate}, ধারা ${caseFile.sections}';
+    final natureCrime = _extractFormField(body, 'অপরাধের প্রকৃতি', fallback: caseFile.firGist.isEmpty ? 'মামলার সংক্ষিপ্ত ঘটনা হলো ________________________________________________।' : caseFile.firGist);
+    final exhibit = _extractFormField(body, 'আলামতের বিবরণ', fallback: 'আলামত চিহ্ন "ক" ---- একটি সিলমোহরযুক্ত প্যাকেট/জার/পাত্র, যার মধ্যে ________________________________ আছে বলে উল্লেখ।');
+    final found = _extractFormField(body, 'কীভাবে পাওয়া/জব্দ', fallback: '__________ তারিখে ________________________________ স্থান থেকে ${officer.rank} ${officer.name} কর্তৃক জব্দ।');
+    final exam = _extractFormField(body, 'প্রয়োজনীয় পরীক্ষার প্রকৃতি', fallback: 'আলামত চিহ্ন "ক"-তে প্রাসঙ্গিক পদার্থ/বিষ/রক্ত/বীর্য/রাসায়নিক/জৈব চিহ্ন শনাক্ত করা যায় কি না।');
+    final accused = _extractFormField(body, 'হেফাজতে থাকা ব্যক্তি', fallback: '____________________________');
+    final fslOffice = _extractFormField(body, 'এফএসএল কার্যালয়', fallback: 'দপ্তর প্রধান ও সহকারী পরিচালক\nআঞ্চলিক ফরেনসিক বিজ্ঞানাগার\nশংকরপুর, দুর্গাপুর\nপশ্চিম বর্ধমান, ৭১৩২১২');
+    final court = _extractFormField(body, 'আদালত', fallback: 'বিজ্ঞ সিজেএম/ম্যাজিস্ট্রেট, ${officer.district}');
 
     final widgets = <pw.Widget>[];
     widgets.addAll([
-      pw.Text('West Bengal Form No- 5203', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('পশ্চিমবঙ্গ ফর্ম নং–৫২০৩', style: const pw.TextStyle(fontSize: 10.5)),
       pw.SizedBox(height: 8),
-      pw.Center(child: pw.Text('WEST BENGAL POLICE', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+      pw.Center(child: pw.Text('পশ্চিমবঙ্গ পুলিশ', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
       pw.SizedBox(height: 12),
-      pw.Text('Case No:- ${caseFile.psCaseNo}  Date ${caseFile.caseDate}', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('মামলা নং: ${caseFile.psCaseNo}  তারিখ ${caseFile.caseDate}', style: const pw.TextStyle(fontSize: 10.5)),
       pw.Text('PS:- ${_shortPsName(officer.policeStation)}', style: const pw.TextStyle(fontSize: 10.5)),
-      pw.Text('Section of Law:- ${caseFile.sections}        District- ${officer.district}', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('আইনের ধারা: ${caseFile.sections}        জেলা–${officer.district}', style: const pw.TextStyle(fontSize: 10.5)),
       pw.SizedBox(height: 10),
-      pw.Center(child: pw.Text('I. NATURE OF CRIME', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+      pw.Center(child: pw.Text('১। অপরাধের প্রকৃতি', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
       pw.SizedBox(height: 4),
       ..._splitLongText(natureCrime, chunkSize: 850),
       pw.SizedBox(height: 16),
       _submittedOfficerBlock(officer),
       pw.NewPage(),
-      pw.Center(child: pw.Text('II. LIST OF EXHIBITS SENT FOR EXAMINATION', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+      pw.Center(child: pw.Text('২। পরীক্ষার জন্য প্রেরিত আলামতের তালিকা', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
       pw.SizedBox(height: 8),
       pw.Table(border: pw.TableBorder.all(width: .5), columnWidths: const {0: pw.FlexColumnWidth(.8), 1: pw.FlexColumnWidth(2.6), 2: pw.FlexColumnWidth(2.3), 3: pw.FlexColumnWidth(1.7), 4: pw.FlexColumnWidth(1.7)}, children: [
-        pw.TableRow(children: [_cell('Label No', bold: true), _cell('Description of the exhibit', bold: true), _cell('How and when found and by whom', bold: true), _cell('Ownership of exhibit', bold: true), _cell('Remarks', bold: true)]),
-        pw.TableRow(children: [_cell('EXHIBIT- "A"'), _cell(exhibit), _cell(found), _cell(court), _cell('May be confiscated to the State after examination / may be returned after examination')]),
+        pw.TableRow(children: [_cell('লেবেল নং', bold: true), _cell('আলামতের বিবরণ', bold: true), _cell('কীভাবে, কখন ও কার দ্বারা পাওয়া/জব্দ', bold: true), _cell('আলামতের মালিকানা', bold: true), _cell('মন্তব্য', bold: true)]),
+        pw.TableRow(children: [_cell('আলামত–"ক"'), _cell(exhibit), _cell(found), _cell(court), _cell('পরীক্ষার পরে রাষ্ট্রের অনুকূলে বাজেয়াপ্ত/ফেরতযোগ্য')]),
       ]),
       pw.SizedBox(height: 14),
-      pw.Center(child: pw.Text('III. NATURE OF EXAMINATION REQUIRED', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+      pw.Center(child: pw.Text('৩। প্রয়োজনীয় পরীক্ষার প্রকৃতি', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
       pw.SizedBox(height: 4),
       ..._splitLongText(exam, chunkSize: 800),
       pw.NewPage(),
-      pw.Center(child: pw.Text('IV. PARTICULARS OF PERSONS IN CUSTODY', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
+      pw.Center(child: pw.Text('৪। হেফাজতে থাকা ব্যক্তিদের বিবরণ', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold))),
       pw.SizedBox(height: 8),
-      _twoColRow('Full name / particulars', accused),
-      _twoColRow('Whether on bail or in custody', '____________________________'),
-      _twoColRow('Court', court),
+      _twoColRow('পূর্ণ নাম/বিবরণ', accused),
+      _twoColRow('জামিনে নাকি হেফাজতে', '____________________________'),
+      _twoColRow('আদালত', court),
       pw.SizedBox(height: 16),
-      pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('Signature and Rank of the I.O\nDated: ____________', style: const pw.TextStyle(fontSize: 10.5))),
+      pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text('তদন্তকারী অফিসারের স্বাক্ষর ও পদবি\nতারিখ: ____________', style: const pw.TextStyle(fontSize: 10.5))),
       pw.SizedBox(height: 18),
-      pw.Text('Memo No. ____________        Dated, the ____________ 20____', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('মেমো নং ____________        তারিখ ____________ ২০____', style: const pw.TextStyle(fontSize: 10.5)),
       pw.SizedBox(height: 8),
-      pw.Text('Forwarded to\n$fslOffice', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('প্রেরিত\n$fslOffice', style: const pw.TextStyle(fontSize: 10.5)),
       pw.SizedBox(height: 12),
-      pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('Seal', style: const pw.TextStyle(fontSize: 10.5)), pw.Text(court, style: const pw.TextStyle(fontSize: 10.5))]),
+      pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('সিল', style: const pw.TextStyle(fontSize: 10.5)), pw.Text(court, style: const pw.TextStyle(fontSize: 10.5))]),
       pw.NewPage(),
-      pw.Text('Certified that the Head of Office & Assistant Director, Regional Forensic Science Laboratory has the authority to examine the exhibits sent in connection with the case and if necessary, to take them to pieces or remove portions for the purposes of the said examination.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+      pw.Text('প্রত্যয়ন করা যাচ্ছে যে, আঞ্চলিক ফরেনসিক বিজ্ঞানাগারের দপ্তর প্রধান ও সহকারী পরিচালক মামলার সূত্রে প্রেরিত আলামত পরীক্ষা করার এবং প্রয়োজন হলে উক্ত পরীক্ষার জন্য আলামত খোলা, অংশবিশেষ পৃথক করা বা অপসারণ করার ক্ষমতাপ্রাপ্ত।', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
       pw.SizedBox(height: 18),
-      pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('Date: ____________\nPlace: ___________', style: const pw.TextStyle(fontSize: 10.5)), pw.Text('Signature: ____________________\nCJM / MAGISTRATE', style: const pw.TextStyle(fontSize: 10.5))]),
+      pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [pw.Text('তারিখ: ____________\nস্থান: ___________', style: const pw.TextStyle(fontSize: 10.5)), pw.Text('স্বাক্ষর: ____________________\nসিজেএম/ম্যাজিস্ট্রেট', style: const pw.TextStyle(fontSize: 10.5))]),
       pw.SizedBox(height: 22),
-      pw.Center(child: pw.Text('EXHIBIT CHALLAN', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+      pw.Center(child: pw.Text('আলামত চালান', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
       pw.SizedBox(height: 8),
-      pw.Text('To\n$fslOffice\n\nThrough $court\n\nRef:- $ref', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('প্রতি\n$fslOffice\n\nমারফত $court\n\nরেফারেন্স:- $ref', style: const pw.TextStyle(fontSize: 10.5)),
       pw.SizedBox(height: 8),
-      pw.Text('Sir,\nI am sending herewith the following exhibit(s) in c/w above noted case before you for examination and your opinion in the interest of investigation of the case. Kindly arrange to acknowledge receipt of the same.', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
+      pw.Text('মহাশয়,\nউপরোক্ত মামলার তদন্তের স্বার্থে পরীক্ষা ও মতামতের জন্য নিম্নলিখিত আলামত/আলামতসমূহ প্রেরণ করা হলো। অনুগ্রহ করে প্রাপ্তিস্বীকার করবেন।', style: const pw.TextStyle(fontSize: 10.5), textAlign: pw.TextAlign.justify),
       pw.SizedBox(height: 8),
-      pw.Text('1) $exhibit', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('১) $exhibit', style: const pw.TextStyle(fontSize: 10.5)),
       pw.SizedBox(height: 16),
       _submittedOfficerBlock(officer),
       pw.NewPage(),
-      pw.Center(child: pw.Text('LABEL', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+      pw.Center(child: pw.Text('লেবেল', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
       pw.SizedBox(height: 8),
-      pw.Text('To\n$fslOffice\n\nThrough $court\n\nRef:- $ref\n\nDescription of Article:\n$exhibit\n\nLabeled & prepared by me -', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('প্রতি\n$fslOffice\n\nমারফত $court\n\nরেফারেন্স:- $ref\n\nবস্তুর বিবরণ:\n$exhibit\n\nলেবেলযুক্ত ও প্রস্তুত করেছেন -', style: const pw.TextStyle(fontSize: 10.5)),
       pw.SizedBox(height: 16),
       _submittedOfficerBlock(officer),
       pw.SizedBox(height: 24),
-      pw.Center(child: pw.Text('LABEL - DUPLICATE / COPY', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+      pw.Center(child: pw.Text('লেবেল — প্রতিলিপি', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
       pw.SizedBox(height: 8),
-      pw.Text('To\n$fslOffice\n\nThrough $court\n\nRef:- $ref\n\nDescription of Article:\n$exhibit\n\nLabeled & prepared by me -', style: const pw.TextStyle(fontSize: 10.5)),
+      pw.Text('প্রতি\n$fslOffice\n\nমারফত $court\n\nরেফারেন্স:- $ref\n\nবস্তুর বিবরণ:\n$exhibit\n\nলেবেলযুক্ত ও প্রস্তুত করেছেন -', style: const pw.TextStyle(fontSize: 10.5)),
       pw.SizedBox(height: 16),
       _submittedOfficerBlock(officer),
     ]);
@@ -846,12 +846,12 @@ class PdfService {
   }
 
   List<pw.Widget> _notice35Pdf(OfficerProfile officer, CaseFile caseFile, String body) => [
-        pw.Center(child: pw.Text('NOTICE OF APPEARANCE BY THE POLICE', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold))),
-        pw.Center(child: pw.Text('[As per section – 35 (3) BNSS Act.]', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('পুলিশের নিকট হাজির হওয়ার নোটিশ', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('[বিএনএসএস-এর ৩৫(৩) ধারা অনুযায়ী]', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 20),
         pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-          pw.Text('Serial\nNo.............', style: const pw.TextStyle(fontSize: 10.5)),
-          pw.Text('Annexure-A', style: const pw.TextStyle(fontSize: 11)),
+          pw.Text('ক্রমিক\nনং.............', style: const pw.TextStyle(fontSize: 10.5)),
+          pw.Text('সংযোজনী–ক', style: const pw.TextStyle(fontSize: 11)),
         ]),
         pw.SizedBox(height: 12),
         pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text(_shortPsName(officer.policeStation), style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
@@ -862,7 +862,7 @@ class PdfService {
       ];
 
   List<pw.Widget> _notice94Pdf(OfficerProfile officer, CaseFile caseFile, String body) => [
-        pw.Center(child: pw.Text('NOTICE U/S 94 BNSS, 2023', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold))),
+        pw.Center(child: pw.Text('বিএনএসএস, ২০২৩-এর ৯৪ ধারার নোটিশ', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold))),
         pw.SizedBox(height: 18),
         pw.Text(body, style: const pw.TextStyle(fontSize: 11.5), textAlign: pw.TextAlign.justify),
         pw.SizedBox(height: 30),
@@ -870,16 +870,16 @@ class PdfService {
       ];
 
   List<pw.Widget> _forwardingPdf(OfficerProfile officer, CaseFile caseFile, String body) => [
-        pw.Text('In the court of ${officer.courtName}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+        pw.Text('মাননীয় ${officer.courtName}-এর আদালতে', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 20),
-        pw.Center(child: pw.Text('Through GRO Kalna Court', style: const pw.TextStyle(fontSize: 11))),
+        pw.Center(child: pw.Text('জিআরও, কালনা আদালত মারফত', style: const pw.TextStyle(fontSize: 11))),
         pw.SizedBox(height: 22),
         pw.Text(body, style: const pw.TextStyle(fontSize: 11.3), textAlign: pw.TextAlign.justify),
         pw.SizedBox(height: 24),
         pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
-            pw.Expanded(child: pw.Text('Enclosure:\n1. Original FIR.\n2. Memo of Arrest.\n3. Inspection Memos.\n4. Medical treatment Slip.\n5. Intimation of arrest.', style: const pw.TextStyle(fontSize: 10.8))),
+            pw.Expanded(child: pw.Text('সংযুক্তি:\n১। মূল এফআইআর।\n২। গ্রেপ্তার মেমো।\n৩। পরিদর্শন মেমো।\n৪। চিকিৎসার স্লিপ।\n৫। গ্রেপ্তার সংক্রান্ত সংবাদ।', style: const pw.TextStyle(fontSize: 10.8))),
             pw.Expanded(child: _submittedOfficerBlock(officer)),
           ],
         ),
@@ -897,7 +897,7 @@ class PdfService {
   pw.Widget _submittedOfficerBlock(OfficerProfile officer) => pw.Align(
         alignment: pw.Alignment.centerRight,
         child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.center, children: [
-          pw.Text('Submitted,', style: const pw.TextStyle(fontSize: 11)),
+          pw.Text('নিবেদক,', style: const pw.TextStyle(fontSize: 11)),
           pw.SizedBox(height: 26),
           pw.Text(officer.name, style: const pw.TextStyle(fontSize: 11)),
           pw.Text(officer.rank, style: const pw.TextStyle(fontSize: 11)),
@@ -916,7 +916,7 @@ class PdfService {
         margin: const pw.EdgeInsets.fromLTRB(42, 36, 42, 36),
         footer: (context) => pw.Align(
           alignment: pw.Alignment.centerRight,
-          child: pw.Text('Page ${context.pageNumber} of ${context.pagesCount}', style: const pw.TextStyle(fontSize: 9)),
+          child: pw.Text('পৃষ্ঠা ${context.pageNumber}/${context.pagesCount}', style: const pw.TextStyle(fontSize: 9)),
         ),
         build: (context) => [
           _centerBold(form.title),
@@ -930,7 +930,7 @@ class PdfService {
               children: [
                 pw.Text('${officer.rank} ${officer.name}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                 pw.Text(officer.policeStation),
-                pw.Text('District: ${officer.district}'),
+                pw.Text('জেলা: ${officer.district}'),
               ],
             ),
           ),
@@ -964,11 +964,11 @@ class PdfService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(32, 24, 32, 24),
         build: (context) => [
-          _centerBold('ROUGH SKETCH MAP WITH INDEX'),
+          _centerBold('সূচিসহ ঘটনাস্থলের খসড়া নকশা'),
           pw.SizedBox(height: 6),
-          pw.Text('Case Reference: ${officer.policeStation} PS Case No. ${caseFile.psCaseNo} dated ${caseFile.caseDate} u/s ${caseFile.sections}', style: const pw.TextStyle(fontSize: 10)),
-          pw.Text('Date: ${sketch.date}', style: const pw.TextStyle(fontSize: 10)),
-          if (sketch.poDescription.trim().isNotEmpty) pw.Text('PO: ${sketch.poDescription}', style: const pw.TextStyle(fontSize: 10)),
+          pw.Text('মামলার রেফারেন্স: ${officer.policeStation} থানা মামলা নং ${caseFile.psCaseNo}, তারিখ ${caseFile.caseDate}, ধারা ${caseFile.sections}', style: const pw.TextStyle(fontSize: 10)),
+          pw.Text('তারিখ: ${sketch.date}', style: const pw.TextStyle(fontSize: 10)),
+          if (sketch.poDescription.trim().isNotEmpty) pw.Text('ঘটনাস্থল: ${sketch.poDescription}', style: const pw.TextStyle(fontSize: 10)),
           pw.SizedBox(height: 10),
           pw.Container(
             width: canvasW,
@@ -976,7 +976,7 @@ class PdfService {
             decoration: pw.BoxDecoration(border: pw.Border.all(width: 0.8)),
             child: pw.Stack(
               children: [
-                pw.Positioned(top: 8, right: 10, child: pw.Text('N', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold))),
+                pw.Positioned(top: 8, right: 10, child: pw.Text('উ', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold))),
                 ...sketch.objects.map((o) => pw.Positioned(
                       left: (o.x.clamp(0.0, 0.95)) * canvasW,
                       top: (o.y.clamp(0.0, 0.95)) * canvasH,
@@ -986,23 +986,23 @@ class PdfService {
             ),
           ),
           pw.SizedBox(height: 10),
-          pw.Text('Index', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+          pw.Text('সূচি', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           _sketchIndexTable(sketch),
           pw.SizedBox(height: 14),
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Expanded(child: pw.Text('North: ${sketch.north}', style: const pw.TextStyle(fontSize: 10))),
-              pw.Expanded(child: pw.Text('South: ${sketch.south}', style: const pw.TextStyle(fontSize: 10))),
+              pw.Expanded(child: pw.Text('উত্তর: ${sketch.north}', style: const pw.TextStyle(fontSize: 10))),
+              pw.Expanded(child: pw.Text('দক্ষিণ: ${sketch.south}', style: const pw.TextStyle(fontSize: 10))),
             ],
           ),
           pw.SizedBox(height: 3),
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Expanded(child: pw.Text('East: ${sketch.east}', style: const pw.TextStyle(fontSize: 10))),
-              pw.Expanded(child: pw.Text('West: ${sketch.west}', style: const pw.TextStyle(fontSize: 10))),
+              pw.Expanded(child: pw.Text('পূর্ব: ${sketch.east}', style: const pw.TextStyle(fontSize: 10))),
+              pw.Expanded(child: pw.Text('পশ্চিম: ${sketch.west}', style: const pw.TextStyle(fontSize: 10))),
             ],
           ),
           pw.SizedBox(height: 30),
@@ -1011,7 +1011,7 @@ class PdfService {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Text('Prepared by', style: const pw.TextStyle(fontSize: 10)),
+                pw.Text('প্রস্তুতকারী', style: const pw.TextStyle(fontSize: 10)),
                 pw.SizedBox(height: 24),
                 pw.Text('(${officer.name})', style: const pw.TextStyle(fontSize: 10)),
                 pw.Text(officer.rank, style: const pw.TextStyle(fontSize: 10)),
@@ -1106,7 +1106,7 @@ class PdfService {
 
   pw.Widget _sketchIndexTable(SketchMapEntry sketch) {
     final rows = sketch.objects.isEmpty
-        ? [const SketchMapObject(id: '', type: SketchObjectType.house, marker: '-', label: 'No object added', direction: '', indexDescription: '', x: 0, y: 0, width: 0, height: 0, rotationDeg: 0)]
+        ? [const SketchMapObject(id: '', type: SketchObjectType.house, marker: '-', label: 'কোনো বস্তু যোগ করা হয়নি', direction: '', indexDescription: '', x: 0, y: 0, width: 0, height: 0, rotationDeg: 0)]
         : sketch.objects;
     return pw.Table(
       border: pw.TableBorder.all(width: 0.5),
@@ -1118,10 +1118,10 @@ class PdfService {
       },
       children: [
         pw.TableRow(children: [
-          _cell('Mark', bold: true),
-          _cell('Direction', bold: true),
-          _cell('Type', bold: true),
-          _cell('Description', bold: true),
+          _cell('চিহ্ন', bold: true),
+          _cell('দিক', bold: true),
+          _cell('ধরন', bold: true),
+          _cell('বিবরণ', bold: true),
         ]),
         ...rows.map((o) => pw.TableRow(children: [
               _cell(o.marker),
@@ -1179,91 +1179,91 @@ extension UdInquestPdfService on PdfService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(50, 44, 46, 36),
         build: (context) => [
-          pw.Center(child: pw.Text('INQUEST FORM', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold))),
+          pw.Center(child: pw.Text('সুরতহাল ফর্ম', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold))),
           pw.SizedBox(height: 16),
-          pw.Center(child: pw.Text('Section 194 / 196 OF BNSS', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+          pw.Center(child: pw.Text('বিএনএসএস-এর ১৯৪/১৯৬ ধারা', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
           pw.SizedBox(height: 22),
-          line('1. District: ', ud.district),
-          line('   PS: ', ud.policeStation),
-          line('   Date & Time: ', ud.dateTime),
-          line('2. FIR/UD No. ', ud.udNo),
-          line('   GDE No. ', ud.gdeNo),
-          line('3. a) Distance from PS ', ud.distanceFromPs.isEmpty ? '' : '${ud.distanceFromPs} Km'),
-          line('   b) Direction from PS ', ud.directionFromPs),
-          line('   c) Place Where Dead Body Found ', ud.placeFound, height: 22),
-          line('      Longitude ', ud.longitude),
-          line('      Latitude ', ud.latitude),
-          line('   d) Dead body found /traced Date: ', ud.deadBodyFoundDate),
-          line('      Time ', ud.deadBodyFoundTime),
-          line('4. Informant’s Particulars: Name ', ud.informantName),
-          line('      Age ', ud.informantAge),
-          line('      Sex ', ud.informantSex),
-          line('      Address ', ud.informantAddress, height: 24),
-          line('5. Dead Body identified by: Name ', ud.identifiedByName),
-          line('      Age ', ud.identifiedByAge),
-          line('      Sex ', ud.identifiedBySex),
-          line('      Relation (if any) ', ud.identifiedByRelation),
-          line('      Address ', ud.identifiedByAddress, height: 24),
-          line('6. Name & address of deceased: Name ', ud.deceasedName),
-          line('      Sex: Male / Female ', ud.deceasedSex),
-          line('      Approx. Age ', ud.deceasedAge),
-          line('      Address ', ud.deceasedAddress, height: 24),
-          line('7. Position of dead body (including PM staining) ', ud.bodyPosition, height: 42),
-          line('8. Description of Dead Body     Build ', ud.build),
-          line('   Height ', ud.height),
-          line('   (Rigor Mortis) ', ud.rigorMortis),
-          line('   Complexion ', ud.complexion),
-          line('   Deformities, if any ', ud.deformities),
-          line('   Religion/Race/Community: ', ud.religionRaceCommunity),
-          line('9. Identification Mark: Teeth: ', ud.teeth),
-          line('   Eyes ', ud.eyes),
-          line('   Lace derma: ', ud.laceDerma),
-          line('   Mole: ', ud.mole),
-          line('   Tattoo: ', ud.tattoo),
-          line('   Dress/wearing apparel: ', ud.dress, height: 28),
-          line('   Other features (if any) ', ud.otherFeatures, height: 24),
-          pw.Text('10. Description of external injuries found on Dead Body (if any). Use separate sheet if required.', style: normal()),
-          line('a. Head: ', ud.injuryHead),
-          line('b. Face: ', ud.injuryFace),
-          line('c. Neck: ', ud.injuryNeck),
-          line('d. Chest: ', ud.injuryChest),
-          line('e. Stomach: ', ud.injuryStomach),
-          line('f. Shoulder: ', ud.injuryShoulder),
-          line('g. Right Hand: ', ud.injuryRightHand),
-          line('h. Left Hand: ', ud.injuryLeftHand),
-          line('i. Right Leg: ', ud.injuryRightLeg),
-          line('j. Left Leg: ', ud.injuryLeftLeg),
-          line('k. Private parts: ', ud.injuryPrivateParts),
-          line('l. Back: ', ud.injuryBack),
-          line('m. Any other injury: ', ud.injuryOther),
+          line('১। জেলা: ', ud.district),
+          line('   থানা: ', ud.policeStation),
+          line('   তারিখ ও সময়: ', ud.dateTime),
+          line('২। এফআইআর/ইউডি নং: ', ud.udNo),
+          line('   জিডিই নং: ', ud.gdeNo),
+          line('৩(ক)। থানা থেকে দূরত্ব: ', ud.distanceFromPs.isEmpty ? '' : '${ud.distanceFromPs} কিমি'),
+          line('   (খ) থানা থেকে দিক: ', ud.directionFromPs),
+          line('   (গ) মৃতদেহ পাওয়ার স্থান: ', ud.placeFound, height: 22),
+          line('      দ্রাঘিমাংশ: ', ud.longitude),
+          line('      অক্ষাংশ: ', ud.latitude),
+          line('   (ঘ) মৃতদেহ পাওয়া/সন্ধান পাওয়ার তারিখ: ', ud.deadBodyFoundDate),
+          line('      সময়: ', ud.deadBodyFoundTime),
+          line('৪। তথ্যদাতার নাম: ', ud.informantName),
+          line('      বয়স: ', ud.informantAge),
+          line('      লিঙ্গ: ', ud.informantSex),
+          line('      ঠিকানা: ', ud.informantAddress, height: 24),
+          line('৫। মৃতদেহ শনাক্তকারীর নাম: ', ud.identifiedByName),
+          line('      বয়স: ', ud.identifiedByAge),
+          line('      লিঙ্গ: ', ud.identifiedBySex),
+          line('      সম্পর্ক (যদি থাকে): ', ud.identifiedByRelation),
+          line('      ঠিকানা: ', ud.identifiedByAddress, height: 24),
+          line('৬। মৃত ব্যক্তির নাম: ', ud.deceasedName),
+          line('      লিঙ্গ: পুরুষ/মহিলা: ', ud.deceasedSex),
+          line('      আনুমানিক বয়স: ', ud.deceasedAge),
+          line('      ঠিকানা: ', ud.deceasedAddress, height: 24),
+          line('৭। পোস্টমর্টেম স্টেইনিংসহ মৃতদেহের অবস্থান: ', ud.bodyPosition, height: 42),
+          line('৮। মৃতদেহের বিবরণ—দেহের গঠন: ', ud.build),
+          line('   উচ্চতা: ', ud.height),
+          line('   রিগর মর্টিস: ', ud.rigorMortis),
+          line('   গায়ের রং: ', ud.complexion),
+          line('   বিকৃতি (যদি থাকে): ', ud.deformities),
+          line('   ধর্ম/জাতি/সম্প্রদায়: ', ud.religionRaceCommunity),
+          line('৯। শনাক্তকরণ চিহ্ন—দাঁত: ', ud.teeth),
+          line('   চোখ: ', ud.eyes),
+          line('   ত্বকের বিশেষ চিহ্ন: ', ud.laceDerma),
+          line('   তিল: ', ud.mole),
+          line('   উল্কি: ', ud.tattoo),
+          line('   পোশাক/পরিধেয় বস্ত্র: ', ud.dress, height: 28),
+          line('   অন্যান্য বৈশিষ্ট্য (যদি থাকে): ', ud.otherFeatures, height: 24),
+          pw.Text('১০। মৃতদেহে পাওয়া বাহ্যিক আঘাতের বিবরণ (যদি থাকে)। প্রয়োজনে পৃথক কাগজ ব্যবহার করুন।', style: normal()),
+          line('(ক) মাথা: ', ud.injuryHead),
+          line('(খ) মুখ: ', ud.injuryFace),
+          line('(গ) ঘাড়: ', ud.injuryNeck),
+          line('(ঘ) বুক: ', ud.injuryChest),
+          line('(ঙ) পেট: ', ud.injuryStomach),
+          line('(চ) কাঁধ: ', ud.injuryShoulder),
+          line('(ছ) ডান হাত: ', ud.injuryRightHand),
+          line('(জ) বাঁ হাত: ', ud.injuryLeftHand),
+          line('(ঝ) ডান পা: ', ud.injuryRightLeg),
+          line('(ঞ) বাঁ পা: ', ud.injuryLeftLeg),
+          line('(ট) গোপনাঙ্গ: ', ud.injuryPrivateParts),
+          line('(ঠ) পিঠ: ', ud.injuryBack),
+          line('(ড) অন্যান্য আঘাত: ', ud.injuryOther),
           pw.SizedBox(height: 20),
-          pw.Text('11. Discharge form:', style: normal()),
-          line('a. Nostrils: ', ud.nostrils),
-          line('b. Ears / Eyes: ', ud.earsEyes),
-          line('c. Mouth: ', ud.mouth),
-          line('d. Penis/Vagina: ', ud.penisVagina),
-          line('e. Anus: ', ud.anus),
+          pw.Text('১১। নির্গমন/স্রাবের ধরন:', style: normal()),
+          line('(ক) নাসারন্ধ্র: ', ud.nostrils),
+          line('(খ) কান/চোখ: ', ud.earsEyes),
+          line('(গ) মুখ: ', ud.mouth),
+          line('(ঘ) পুরুষাঙ্গ/যোনি: ', ud.penisVagina),
+          line('(ঙ) মলদ্বার: ', ud.anus),
           pw.SizedBox(height: 14),
-          line('12. Opinion on nature of weapon used and manner in which injuries may have been caused/inflicted. ', ud.weaponOpinion, height: 36),
-          line('13. If death by hanging strangulation, description of ligature mark, rope & Knot around the neck: ', ud.ligatureDescription, height: 36),
-          line('14. Any foreign material such as weeds, straw, hair, etc. clinched in the hand of the deceased or attaches on any part of the body: ', ud.foreignMaterial, height: 36),
-          line('15. Description of place of occurrence: ', ud.poDescription, height: 32),
-          line('16. Description of articles at the place of occurrence including weapon of offence, ornaments etc. ', ud.articlesAtPo, height: 32),
-          line('17. Opinion as to the probable cause to death: ', ud.probableCauseOfDeath, height: 26),
-          line('18. Remarks (comment on condition of body & other relevant information on crime): ', ud.remarks, height: 38),
+          line('১২। ব্যবহৃত অস্ত্রের প্রকৃতি ও আঘাত সৃষ্টির সম্ভাব্য পদ্ধতি সম্পর্কে মতামত: ', ud.weaponOpinion, height: 36),
+          line('১৩। ফাঁসি/শ্বাসরোধের ক্ষেত্রে গলার দাগ, দড়ি ও গিঁটের বিবরণ: ', ud.ligatureDescription, height: 36),
+          line('১৪। মৃত ব্যক্তির হাত বা দেহের কোনো অংশে পাওয়া ঘাস, খড়, চুল ইত্যাদি বহিরাগত পদার্থের বিবরণ: ', ud.foreignMaterial, height: 36),
+          line('১৫। ঘটনাস্থলের বিবরণ: ', ud.poDescription, height: 32),
+          line('১৬। ঘটনাস্থলে পাওয়া অপরাধের অস্ত্র, অলংকার ও অন্যান্য সামগ্রীর বিবরণ: ', ud.articlesAtPo, height: 32),
+          line('১৭। মৃত্যুর সম্ভাব্য কারণ সম্পর্কে মতামত: ', ud.probableCauseOfDeath, height: 26),
+          line('১৮। মন্তব্য (মৃতদেহের অবস্থা ও অপরাধ সম্পর্কিত অন্যান্য প্রাসঙ্গিক তথ্য): ', ud.remarks, height: 38),
           pw.SizedBox(height: 8),
           pw.Row(children: [
-            pw.Expanded(child: line('19. Witnesses: Name /Address: ', ud.witness1NameAddress, height: 22)),
+            pw.Expanded(child: line('১৯। সাক্ষী (১)-এর নাম/ঠিকানা: ', ud.witness1NameAddress, height: 22)),
             pw.SizedBox(width: 16),
-            pw.Expanded(child: line('Signature ', '', height: 22)),
+            pw.Expanded(child: line('স্বাক্ষর: ', '', height: 22)),
           ]),
           pw.Row(children: [
-            pw.Expanded(child: line('(ii) ', ud.witness2NameAddress, height: 22)),
+            pw.Expanded(child: line('(২) ', ud.witness2NameAddress, height: 22)),
             pw.SizedBox(width: 16),
-            pw.Expanded(child: line('(ii) ', '', height: 22)),
+            pw.Expanded(child: line('(২) ', '', height: 22)),
           ]),
           pw.SizedBox(height: 14),
-          pw.Text('Brief facts (please attach separate sheets)', style: normal()),
+          pw.Text('সংক্ষিপ্ত ঘটনা (প্রয়োজনে পৃথক কাগজ সংযুক্ত করুন)', style: normal()),
           pw.Container(
             height: 70,
             decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(width: .35, color: PdfColors.grey600))),
@@ -1273,10 +1273,10 @@ extension UdInquestPdfService on PdfService {
           pw.Align(
             alignment: pw.Alignment.centerRight,
             child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-              pw.Text('Signature of Investigation Officer', style: normal()),
+              pw.Text('তদন্তকারী অফিসারের স্বাক্ষর', style: normal()),
               pw.SizedBox(height: 18),
-              pw.Text('Name: ${officer.name}', style: normal()),
-              pw.Text('Rank: ${officer.rank}', style: normal()),
+              pw.Text('নাম: ${officer.name}', style: normal()),
+              pw.Text('পদবি: ${officer.rank}', style: normal()),
             ]),
           ),
         ],

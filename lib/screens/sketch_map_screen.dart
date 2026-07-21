@@ -150,7 +150,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       height: _heightEdit,
       rotationDeg: _rotationEdit,
     ));
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Object updated')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('বস্তুটির তথ্য হালনাগাদ হয়েছে।')));
   }
 
   SketchMapEntry _currentMap() => _map.copyWith(
@@ -167,11 +167,11 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       await _store.saveSketchMap(updated);
       if (!mounted) return;
       setState(() => _map = updated);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sketch map saved • v2.4 no popup editor')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('খসড়া নকশা সংরক্ষিত হয়েছে।')));
       if (askCd) await _askMentionInCd();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sketch map save failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('খসড়া নকশা সংরক্ষণ করা যায়নি: $e')));
     }
   }
 
@@ -179,11 +179,11 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
     final yes = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Mention in Case Diary?'),
-        content: const Text('Prepared rough sketch map with index — এই action-টা CD-তে mention করা হবে?'),
+        title: const Text('কেস ডায়েরিতে উল্লেখ করবেন?'),
+        content: const Text('সূচিসহ ঘটনাস্থলের খসড়া নকশা প্রস্তুত করা হয়েছে—এই কাজটি সিডিতে উল্লেখ করা হবে কি?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('না')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('হ্যাঁ')),
         ],
       ),
     );
@@ -192,13 +192,13 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       caseId: widget.caseFile.id,
       sourceType: 'Sketch Map',
       sourceId: _map.id,
-      title: 'Rough Sketch Map prepared',
+      title: 'সূচিসহ ঘটনাস্থলের খসড়া নকশা প্রস্তুত',
       actionDate: DateTime.now().toIso8601String().split('T').first,
-      paragraph: 'Prepared rough sketch map of the PO with index.',
+      paragraph: 'সূচিসহ ঘটনাস্থলের খসড়া নকশা প্রস্তুত করলাম।',
     );
     await _store.savePendingCdAction(action);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('CD pending entry created')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('সিডির অপেক্ষমাণ এন্ট্রি তৈরি হয়েছে।')));
   }
 
   Future<void> _preview() async {
@@ -208,7 +208,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => PdfPreviewScreen(
-          title: 'Preview Sketch Map',
+          title: 'খসড়া নকশা প্রিভিউ',
           filename: 'Sketch_Map_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.pdf',
           docFilename: 'Sketch_Map_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.doc',
           buildPdf: () => _pdf.buildSketchMapPdf(officer: widget.profile, caseFile: widget.caseFile, sketch: _currentMap()),
@@ -223,25 +223,25 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.cream,
-      appBar: AppBar(title: const Text('Sketch Map Builder v2.4')),
+      appBar: AppBar(title: const Text('খসড়া নকশা প্রস্তুতকারী')),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Expanded(child: OutlinedButton.icon(onPressed: () => _save(), icon: const Icon(Icons.save), label: const Text('Save'))),
+              Expanded(child: OutlinedButton.icon(onPressed: () => _save(), icon: const Icon(Icons.save), label: const Text('সংরক্ষণ'))),
               const SizedBox(width: 8),
               IconButton.filledTonal(
-                tooltip: 'Clear map objects',
+                tooltip: 'নকশার সব বস্তু মুছুন',
                 onPressed: () async {
                   final ok = await showDialog<bool>(
                     context: context,
                     builder: (_) => AlertDialog(
-                      title: const Text('Clear sketch map?'),
-                      content: const Text('This will remove all map objects from this case sketch. Continue?'),
+                      title: const Text('খসড়া নকশা মুছে ফেলবেন?'),
+                      content: const Text('এতে এই মামলার খসড়া নকশা থেকে সব বস্তু মুছে যাবে। চালিয়ে যাবেন?'),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
-                        FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes')),
+                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('না')),
+                        FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('হ্যাঁ')),
                       ],
                     ),
                   );
@@ -255,7 +255,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
                 icon: const Icon(Icons.delete_sweep_outlined),
               ),
               const SizedBox(width: 8),
-              Expanded(child: FilledButton.icon(onPressed: _preview, icon: const Icon(Icons.picture_as_pdf), label: const Text('Preview'))),
+              Expanded(child: FilledButton.icon(onPressed: _preview, icon: const Icon(Icons.picture_as_pdf), label: const Text('প্রিভিউ'))),
             ],
           ),
         ),
@@ -288,9 +288,9 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(widget.caseFile.displayTitle, style: const TextStyle(fontWeight: FontWeight.w900)),
-            Text('PO: ${widget.caseFile.placeOfOccurrence.isEmpty ? 'Not mentioned' : widget.caseFile.placeOfOccurrence}'),
+            Text('ঘটনাস্থল: ${widget.caseFile.placeOfOccurrence.isEmpty ? 'Not mentioned' : widget.caseFile.placeOfOccurrence}'),
             const SizedBox(height: 4),
-            const Text('v2.4 SAFE MODE: object edit এখন popup/bottom sheet নয়। Object tap করলে নিচের editor card-এ edit করুন। Crash বন্ধ করার জন্য এই mode করা হয়েছে.', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF004D40))),
+            const Text('নিরাপদ সম্পাদনা ব্যবস্থা: নকশার কোনো বস্তুতে চাপ দিলে নিচের সম্পাদনা কার্ডে তার চিহ্ন, নাম, সূচি, আকার ও ঘূর্ণন পরিবর্তন করুন।', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF004D40))),
           ],
         ),
       ),
@@ -299,14 +299,14 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
 
   Widget _toolbar() {
     final items = [
-      _SketchTool(SketchObjectType.house, 'House'),
-      _SketchTool(SketchObjectType.pond, 'Pond'),
-      _SketchTool(SketchObjectType.tree, 'Tree'),
-      _SketchTool(SketchObjectType.shop, 'Shop'),
-      _SketchTool(SketchObjectType.road, 'Road ↔/↕'),
-      _SketchTool(SketchObjectType.field, 'Field'),
+      _SketchTool(SketchObjectType.house, 'বাড়ি'),
+      _SketchTool(SketchObjectType.pond, 'পুকুর'),
+      _SketchTool(SketchObjectType.tree, 'গাছ'),
+      _SketchTool(SketchObjectType.shop, 'দোকান'),
+      _SketchTool(SketchObjectType.road, 'রাস্তা ↔/↕'),
+      _SketchTool(SketchObjectType.field, 'মাঠ'),
       _SketchTool(SketchObjectType.po, 'PO'),
-      _SketchTool(SketchObjectType.arrow, 'North'),
+      _SketchTool(SketchObjectType.arrow, 'উত্তর'),
     ];
     return Card(
       child: Padding(
@@ -459,7 +459,7 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
             const SizedBox(height: 6),
             Wrap(
               spacing: 8,
-              children: ['', 'North', 'South', 'East', 'West', 'Inside PO', 'Near PO']
+              children: ['', 'উত্তর', 'দক্ষিণ', 'পূর্ব', 'পশ্চিম', 'Inside PO', 'Near PO']
                   .map((d) => ChoiceChip(
                         label: Text(d.isEmpty ? 'None' : d),
                         selected: _directionEdit == d,
@@ -505,18 +505,18 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  ActionChip(label: const Text('East-West'), onPressed: () => setState(() => _rotationEdit = 0)),
-                  ActionChip(label: const Text('North-South'), onPressed: () => setState(() => _rotationEdit = 90)),
-                  ActionChip(label: const Text('Diagonal'), onPressed: () => setState(() => _rotationEdit = 45)),
+                  ActionChip(label: const Text('পূর্ব-পশ্চিম'), onPressed: () => setState(() => _rotationEdit = 0)),
+                  ActionChip(label: const Text('উত্তর-দক্ষিণ'), onPressed: () => setState(() => _rotationEdit = 90)),
+                  ActionChip(label: const Text('তির্যক'), onPressed: () => setState(() => _rotationEdit = 45)),
                 ],
               ),
             ],
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: OutlinedButton.icon(onPressed: _deleteSelectedObject, icon: const Icon(Icons.delete_outline), label: const Text('Delete'))),
+                Expanded(child: OutlinedButton.icon(onPressed: _deleteSelectedObject, icon: const Icon(Icons.delete_outline), label: const Text('মুছুন'))),
                 const SizedBox(width: 8),
-                Expanded(child: FilledButton.icon(onPressed: _applyEditorToSelected, icon: const Icon(Icons.check), label: const Text('Apply'))),
+                Expanded(child: FilledButton.icon(onPressed: _applyEditorToSelected, icon: const Icon(Icons.check), label: const Text('প্রয়োগ করুন'))),
               ],
             ),
           ],
@@ -532,14 +532,14 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('PO & Surroundings / Direction Index', style: TextStyle(fontWeight: FontWeight.w900)),
+            const Text('ঘটনাস্থল ও পার্শ্ববর্তী এলাকার দিক-সূচি', style: TextStyle(fontWeight: FontWeight.w900)),
             const SizedBox(height: 8),
-            TextField(controller: _poCtrl, decoration: const InputDecoration(labelText: 'PO description')),
+            TextField(controller: _poCtrl, decoration: const InputDecoration(labelText: 'ঘটনাস্থলের বিবরণ')),
             const SizedBox(height: 8),
-            TextField(controller: _northCtrl, decoration: const InputDecoration(labelText: 'North')),
-            TextField(controller: _southCtrl, decoration: const InputDecoration(labelText: 'South')),
-            TextField(controller: _eastCtrl, decoration: const InputDecoration(labelText: 'East')),
-            TextField(controller: _westCtrl, decoration: const InputDecoration(labelText: 'West')),
+            TextField(controller: _northCtrl, decoration: const InputDecoration(labelText: 'উত্তর')),
+            TextField(controller: _southCtrl, decoration: const InputDecoration(labelText: 'দক্ষিণ')),
+            TextField(controller: _eastCtrl, decoration: const InputDecoration(labelText: 'পূর্ব')),
+            TextField(controller: _westCtrl, decoration: const InputDecoration(labelText: 'পশ্চিম')),
           ],
         ),
       ),
@@ -553,10 +553,10 @@ class _SketchMapScreenState extends State<SketchMapScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Object Index', style: TextStyle(fontWeight: FontWeight.w900)),
+            const Text('বস্তু-সূচি', style: TextStyle(fontWeight: FontWeight.w900)),
             const SizedBox(height: 8),
             if (_map.objects.isEmpty)
-              const Text('No object added yet. Add House/Pond/Road/PO etc.')
+              const Text('এখনও কোনো বস্তু যোগ করা হয়নি। বাড়ি/পুকুর/রাস্তা/ঘটনাস্থল ইত্যাদি যোগ করুন।')
             else
               ..._map.objects.map((o) => ListTile(
                     dense: true,

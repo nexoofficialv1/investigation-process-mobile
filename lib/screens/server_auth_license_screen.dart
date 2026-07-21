@@ -255,7 +255,7 @@ class _ServerAuthLicenseScreenState extends State<ServerAuthLicenseScreen> {
     if (_busy) return const Scaffold(body: Center(child: CircularProgressIndicator()));
     return Scaffold(
       backgroundColor: AppTheme.cream,
-      appBar: AppBar(title: const Text('Officer Login & License')),
+      appBar: AppBar(title: const Text('অফিসার লগইন ও লাইসেন্স')),
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
@@ -317,11 +317,11 @@ class _ServerAuthLicenseScreenState extends State<ServerAuthLicenseScreen> {
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Officer Login', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+            const Text('অফিসার লগইন', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
             const SizedBox(height: 8),
             TextField(controller: _loginController, decoration: const InputDecoration(labelText: 'Mobile or Email')),
             const SizedBox(height: 8),
-            TextField(controller: _loginPasswordController, obscureText: true, decoration: const InputDecoration(labelText: 'Password')),
+            TextField(controller: _loginPasswordController, obscureText: true, decoration: const InputDecoration(labelText: 'পাসওয়ার্ড')),
             const SizedBox(height: 12),
             ElevatedButton.icon(onPressed: _working ? null : _loginOfficer, icon: const Icon(Icons.login), label: Text(_working ? 'Please wait...' : 'Login & Save Token')),
           ]),
@@ -336,7 +336,7 @@ class _ServerAuthLicenseScreenState extends State<ServerAuthLicenseScreen> {
             const SizedBox(height: 6),
             const Text('শুধু প্রথম setup/admin officer create করার সময় ব্যবহার করুন। Setup code server .env-এর ADMIN_SETUP_CODE।'),
             const SizedBox(height: 8),
-            TextField(controller: _setupCodeController, obscureText: true, decoration: const InputDecoration(labelText: 'Private Setup Code')),
+            TextField(controller: _setupCodeController, obscureText: true, decoration: const InputDecoration(labelText: 'ব্যক্তিগত সেটআপ কোড')),
             const SizedBox(height: 8),
             TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Officer Name')),
             const SizedBox(height: 8),
@@ -367,7 +367,7 @@ class _ServerAuthLicenseScreenState extends State<ServerAuthLicenseScreen> {
             const SizedBox(height: 8),
             Text('Current: ${_config.licensePlanName} / ${_config.licenseStatus}', style: const TextStyle(fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
-            TextField(controller: _activationController, decoration: const InputDecoration(labelText: 'Activation Code')),
+            TextField(controller: _activationController, decoration: const InputDecoration(labelText: 'অ্যাক্টিভেশন কোড')),
             const SizedBox(height: 12),
             Row(children: [
               Expanded(child: OutlinedButton.icon(onPressed: _working ? null : _refreshLicense, icon: const Icon(Icons.refresh), label: const Text('Check'))),
@@ -411,11 +411,11 @@ class _ServerAuthLicenseScreenState extends State<ServerAuthLicenseScreen> {
               onChanged: (v) => setState(() => _grantDays = v ?? _grantDays),
             ),
             const SizedBox(height: 8),
-            TextField(controller: _grantCodeController, decoration: const InputDecoration(labelText: 'Activation Code')),
+            TextField(controller: _grantCodeController, decoration: const InputDecoration(labelText: 'অ্যাক্টিভেশন কোড')),
             const SizedBox(height: 8),
             TextField(controller: _paymentRefController, decoration: const InputDecoration(labelText: 'Payment Ref')),
             const SizedBox(height: 12),
-            ElevatedButton.icon(onPressed: _working ? null : _adminGrantLicense, icon: const Icon(Icons.admin_panel_settings), label: const Text('Grant License')),
+            ElevatedButton.icon(onPressed: _working ? null : _adminGrantLicense, icon: const Icon(Icons.admin_panel_settings), label: const Text('লাইসেন্স প্রদান')),
           ]),
         ),
       );

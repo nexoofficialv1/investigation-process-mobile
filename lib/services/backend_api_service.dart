@@ -21,10 +21,10 @@ class BackendApiService {
 
   Future<String> testConnection(BackendConfig config) async {
     if (!config.isCustomServer) {
-      return config.mode == 'offline' ? 'Offline mode selected' : 'Supabase mode will be configured later';
+      return config.mode == 'offline' ? 'অফলাইন মোড নির্বাচিত হয়েছে' : 'সুপাবেস মোড পরে কনফিগার করা হবে';
     }
     final base = _base(config);
-    if (base.isEmpty) return 'API Base URL is empty';
+    if (base.isEmpty) return 'এপিআই মূল ইউআরএল দেওয়া হয়নি';
 
     final paths = <String>['/health', '/api/health'];
     Object? lastError;
@@ -34,9 +34,9 @@ class BackendApiService {
             .get(Uri.parse('$base$path'), headers: _headers(config))
             .timeout(const Duration(seconds: 12));
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          return 'Connected: ${res.body}';
+          return 'সংযোগ সফল: ${res.body}';
         }
-        lastError = 'Server responded ${res.statusCode}: ${res.body}';
+        lastError = 'সার্ভারের উত্তর ${res.statusCode}: ${res.body}';
       } catch (e) {
         lastError = e;
       }
@@ -57,7 +57,7 @@ class BackendApiService {
     String role = 'officer',
   }) async {
     final base = _base(config);
-    if (base.isEmpty) throw BackendApiException('API Base URL is empty');
+    if (base.isEmpty) throw BackendApiException('এপিআই মূল ইউআরএল দেওয়া হয়নি');
     final res = await http
         .post(
           Uri.parse('$base/api/auth/register'),
@@ -91,7 +91,7 @@ class BackendApiService {
     String deviceId = 'investigo-mobile',
   }) async {
     final base = _base(config);
-    if (base.isEmpty) throw BackendApiException('API Base URL is empty');
+    if (base.isEmpty) throw BackendApiException('এপিআই মূল ইউআরএল দেওয়া হয়নি');
     final isEmail = mobileOrEmail.contains('@');
     final res = await http
         .post(
@@ -112,7 +112,7 @@ class BackendApiService {
 
   Future<ServerLicense> getLicenseStatus(BackendConfig config) async {
     final base = _base(config);
-    if (base.isEmpty) throw BackendApiException('API Base URL is empty');
+    if (base.isEmpty) throw BackendApiException('এপিআই মূল ইউআরএল দেওয়া হয়নি');
     final res = await http
         .get(Uri.parse('$base/api/license/status'), headers: _headers(config))
         .timeout(const Duration(seconds: 15));
@@ -128,7 +128,7 @@ class BackendApiService {
     required String activationCode,
   }) async {
     final base = _base(config);
-    if (base.isEmpty) throw BackendApiException('API Base URL is empty');
+    if (base.isEmpty) throw BackendApiException('এপিআই মূল ইউআরএল দেওয়া হয়নি');
     final res = await http
         .post(
           Uri.parse('$base/api/license/activate-manual'),
@@ -156,7 +156,7 @@ class BackendApiService {
     String paymentRef = 'MANUAL',
   }) async {
     final base = _base(config);
-    if (base.isEmpty) throw BackendApiException('API Base URL is empty');
+    if (base.isEmpty) throw BackendApiException('এপিআই মূল ইউআরএল দেওয়া হয়নি');
     final res = await http
         .post(
           Uri.parse('$base/api/license/admin/grant'),
@@ -188,9 +188,9 @@ class BackendApiService {
     required OfficerProfile profile,
     required List<CaseFile> cases,
   }) async {
-    if (!config.isCustomServer || !config.syncEnabled) return 'Sync disabled';
+    if (!config.isCustomServer || !config.syncEnabled) return 'সিঙ্ক বন্ধ রয়েছে';
     final base = _base(config);
-    if (base.isEmpty) return 'API Base URL is empty';
+    if (base.isEmpty) return 'এপিআই মূল ইউআরএল দেওয়া হয়নি';
     try {
       final payload = {
         'officer': profile.toJson(),
@@ -199,10 +199,10 @@ class BackendApiService {
       final res = await http
           .post(Uri.parse('$base/api/sync/cases'), headers: _headers(config), body: jsonEncode(payload))
           .timeout(const Duration(seconds: 20));
-      if (res.statusCode >= 200 && res.statusCode < 300) return 'Synced ${cases.length} cases';
-      return 'Sync failed ${res.statusCode}: ${res.body}';
+      if (res.statusCode >= 200 && res.statusCode < 300) return '${cases.length}টি মামলা সিঙ্ক হয়েছে';
+      return 'সিঙ্ক ব্যর্থ ${res.statusCode}: ${res.body}';
     } catch (e) {
-      return 'Sync failed: $e';
+      return 'সিঙ্ক ব্যর্থ: $e';
     }
   }
 
