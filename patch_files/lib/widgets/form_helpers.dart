@@ -99,6 +99,52 @@ class FormHelpers {
     );
   }
 
+
+  static Widget dateTimeField({
+    required BuildContext context,
+    required TextEditingController controller,
+    required String label,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: controller,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: label,
+          suffixIcon: const Icon(Icons.event_outlined),
+        ),
+        onTap: () async {
+          final now = DateTime.now();
+
+          final selectedDate = await showDatePicker(
+            context: context,
+            initialDate: now,
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2100),
+          );
+
+          if (selectedDate == null) return;
+
+          final selectedTime = await showTimePicker(
+            context: context,
+            initialTime: TimeOfDay.now(),
+          );
+
+          if (selectedTime == null) return;
+
+          final day = selectedDate.day.toString().padLeft(2, '0');
+          final month = selectedDate.month.toString().padLeft(2, '0');
+          final hour = selectedTime.hour.toString().padLeft(2, '0');
+          final minute = selectedTime.minute.toString().padLeft(2, '0');
+
+          controller.text =
+              '$day-$month-${selectedDate.year} $hour:$minute';
+        },
+      ),
+    );
+  }
+
   static Widget yesNoTile({
     required String title,
     required bool value,
