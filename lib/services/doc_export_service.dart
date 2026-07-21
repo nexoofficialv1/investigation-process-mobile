@@ -123,7 +123,119 @@ class DocExportService {
     );
   }
 
-  Future<Uint8List> buildStatementDoc({
+  
+  Future buildCaseDiaryBundleDoc({
+    required OfficerProfile officer,
+    required CaseFile caseFile,
+    required List<CdEntry> cds,
+  }) async {
+    final sortedCds = List<CdEntry>.from(cds)
+      ..sort((a, b) => a.cdNumber.compareTo(b.cdNumber));
+
+    final sections = <String>[];
+
+    for (var index = 0; index < sortedCds.length; index++) {
+      final cd = sortedCds[index];
+      final isEnglish = cd.languageCode == 'en';
+
+      final lines = cd.tableLines.isNotEmpty
+          ? cd.tableLines
+          : <CdTableLine>[
+              CdTableLine(
+                noAndHour: '${isEnglish ? '1' : '১'}\n${cd.startTime}',
+                placeOfEntry: cd.placeOfEntry,
+                synopsis: cd.cdNumber == 1
+                    ? (isEnglish
+                        ? 'Receipt of FIR copy\n+\nBrief facts'
+                        : 'এফআইআরের অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা')
+                    : (isEnglish
+                        ? 'Further investigation'
+                        : 'পরবর্তী তদন্ত'),
+                proceedings: cd.body,
+              ),
+            ];
+
+      final rows = lines.map((line) => '''
+<tr>
+  <td>${_e(line.noAndHour)}</td>
+  <td>${_e(line.placeOfEntry)}</td>
+  <td>${_e(line.synopsis)}</td>
+  <td>${_e(line.proceedings)}</td>
+</tr>
+''').join('\n');
+
+      final pageBreak =
+          index == 0 ? '' : 'style="page-break-before: always;"';
+
+      final heading = isEnglish
+          ? 'CASE DIARY UNDER SECTION 192 BNSS'
+          : 'বিএনএসএস-এর ১৯২ ধারার অধীন কেস ডায়েরি';
+      final policeStationLabel = isEnglish ? 'Police Station' : 'থানা';
+      final districtLabel = isEnglish ? 'District' : 'জেলা';
+      final caseLabel = isEnglish ? 'FIR/Case No.' : 'প্রথম তথ্য/মামলা নং';
+      final dateLabel = isEnglish ? 'Date' : 'তারিখ';
+      final sectionsLabel = isEnglish ? 'Sections' : 'ধারা';
+      final complainantLabel =
+          isEnglish ? 'Name of complainant' : 'অভিযোগকারীর নাম';
+      final cdLabel = isEnglish ? 'Case Diary No.' : 'কেস ডায়েরি নং';
+      final entryLabel =
+          isEnglish ? 'Entry No. and time' : 'এন্ট্রি নং ও সময়';
+      final placeLabel = isEnglish ? 'Place of entry' : 'এন্ট্রির স্থান';
+      final synopsisLabel =
+          isEnglish ? 'Synopsis of entry' : 'এন্ট্রির সারাংশ';
+      final detailsLabel =
+          isEnglish ? 'Particulars of enquiry' : 'তদন্তের বিবরণ';
+      final submitted = isEnglish ? 'Submitted' : 'পেশ করা হলো';
+
+      sections.add('''
+<section $pageBreak>
+  <h2>$heading</h2>
+  <p>
+    <b>$policeStationLabel:</b> ${_e(officer.policeStation)}
+    &nbsp;&nbsp;
+    <b>$districtLabel:</b> ${_e(officer.district)}
+  </p>
+  <p>
+    <b>$caseLabel:</b> ${_e(caseFile.psCaseNo)}
+    &nbsp;&nbsp;
+    <b>$dateLabel:</b> ${_e(caseFile.caseDate)}
+    &nbsp;&nbsp;
+    <b>$sectionsLabel:</b> ${_e(caseFile.sections)}
+  </p>
+  <p><b>$complainantLabel:</b> ${_e(caseFile.complainantName)}</p>
+  <p>
+    <b>$cdLabel:</b> ${cd.cdNumber}
+    &nbsp;&nbsp;
+    <b>$dateLabel:</b> ${_e(cd.cdDate)}
+  </p>
+  <table border="1" cellspacing="0" cellpadding="6"
+         style="width:100%; border-collapse:collapse;">
+    <tr>
+      <th>$entryLabel</th>
+      <th>$placeLabel</th>
+      <th>$synopsisLabel</th>
+      <th>$detailsLabel</th>
+    </tr>
+    $rows
+  </table>
+  <p style="text-align:right;">
+    $submitted<br>
+    (${_e(officer.name)})<br>
+    ${_e(officer.rank)}<br>
+    ${_e(officer.policeStation)}
+  </p>
+</section>
+''');
+    }
+
+    final allEnglish = sortedCds.isNotEmpty &&
+        sortedCds.every((cd) => cd.languageCode == 'en');
+    final title = allEnglish ? 'Case Diary Bundle' : 'কেস ডায়েরি সমষ্টি';
+
+    return _docBytes(_page(title, sections.join('\n')));
+  }
+
+Future<Uint8List> buildStatementDoc({
     required OfficerProfile officer,
     required CaseFile caseFile,
     required StatementEntry statement,
