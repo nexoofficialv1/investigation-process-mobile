@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../core/document_language.dart';
+
 import '../models/case_file.dart';
 import '../models/form_notice.dart';
 import '../models/officer_profile.dart';
 import '../models/pending_cd_action.dart';
 import '../services/forms_generator_service.dart';
+import '../services/document_translation_service.dart';
 import '../services/local_store_service.dart';
 import '../services/pdf_service.dart';
 import '../services/doc_export_service.dart';
@@ -27,6 +30,7 @@ class _FormsScreenState extends State<FormsScreen> {
   List<FormNotice> forms = [];
   List<CaseFile> _cases = [];
   late CaseFile _selectedCase;
+  DocumentLanguage _language = DocumentLanguage.bangla;
 
   @override
   void initState() {
@@ -62,12 +66,18 @@ class _FormsScreenState extends State<FormsScreen> {
   }
 
   Future<void> _create(FormTemplateInfo template) async {
-    final body = _generator.generate(templateId: template.id, officer: widget.profile, caseFile: _selectedCase);
+    final body = _generator.generate(
+      templateId: template.id,
+      officer: widget.profile,
+      caseFile: _selectedCase,
+      language: _language,
+    );
     final form = FormNotice.create(
       caseId: _selectedCase.id,
       templateId: template.id,
-      title: template.title,
+      title: template.titleFor(_language),
       body: body,
+      languageCode: _language.code,
     );
     await Navigator.push(
       context,
@@ -122,13 +132,57 @@ class _FormsScreenState extends State<FormsScreen> {
               ),
             ),
             const SizedBox(height: 10),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'নথির ভাষা নির্বাচন করুন',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<DocumentLanguage>(
+                      value: _language,
+                      decoration: const InputDecoration(
+                        labelText: 'Document language / নথির ভাষা',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: DocumentLanguage.values
+                          .map(
+                            (language) => DropdownMenuItem(
+                              value: language,
+                              child: Text(
+                                language.isBangla ? 'বাংলা' : 'English',
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (language) {
+                        if (language != null) {
+                          setState(() => _language = language);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _language.isBangla
+                          ? 'নোটিশ, ফরওয়ার্ডিং, রিকুইজিশন ও ফর্ম সম্পূর্ণ বাংলায় তৈরি হবে।'
+                          : 'Notice, forwarding, requisition and forms will be generated in English.',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
             Text('নতুন ফর্ম তৈরি করুন', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ...FormsGeneratorService.templates.map((template) => Card(
                   child: ListTile(
                     leading: const Icon(Icons.post_add),
-                    title: Text(template.title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text('${template.category} • ${template.subtitle}'),
+                    title: Text(template.titleFor(_language), style: const TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: Text('${template.categoryFor(_language)} • ${template.subtitleFor(_language)}'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => _create(template),
                   ),
@@ -169,7 +223,9 @@ class FormEditorScreen extends StatefulWidget {
 
 class _FormEditorScreenState extends State<FormEditorScreen> {
   final LocalStoreService _store = LocalStoreService();
+  final FormsGeneratorService _generator = FormsGeneratorService();
   late FormNotice _form;
+  late DocumentLanguage _language;
   late final TextEditingController title;
   late final TextEditingController body;
   final Map<String, TextEditingController> _structured = {};
@@ -178,11 +234,14 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
 
   bool get _isCdrCaf => _form.templateId == 'cdr_caf';
   bool get _isFsl => _form.templateId == 'fsl';
+  bool get _useStructuredEntry =>
+      _language.isBangla && (_isCdrCaf || _isFsl);
 
   @override
   void initState() {
     super.initState();
     _form = widget.form;
+    _language = DocumentLanguage.fromCode(_form.languageCode);
     title = TextEditingController(text: _form.title);
     body = TextEditingController(text: _form.body);
     _initStructuredControllers();
@@ -297,6 +356,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
   }
 
   void _initStructuredControllers() {
+    if (!_language.isBangla) return;
     if (_isCdrCaf) {
       final defaults = <String, String>{
         'মামলার রেফারেন্স': '${widget.profile.policeStation} মামলা নং-${widget.caseFile.psCaseNo}, তারিখ-${widget.caseFile.caseDate}, ধারা-${widget.caseFile.sections}',
@@ -345,11 +405,11 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     }
     buffer.writeln();
     buffer.writeln(_isCdrCaf
-        ? 'Note: Fill the above entry fields. Preview will render the official table format.'
-        : 'Note: Fill the above entry fields. Preview will generate Form 5203 + Exhibit List + Examination Required + Custody + Magistrate forwarding/certification + Challan + Labels.');
+        ? 'নোট: উপরোক্ত ঘরগুলি পূরণ করুন। প্রিভিউতে সরকারি সারণি বিন্যাসে তৈরি হবে।'
+        : 'নোট: উপরোক্ত ঘরগুলি পূরণ করুন। প্রিভিউতে ফর্ম ৫২০৩, আলামত তালিকা, প্রয়োজনীয় পরীক্ষা, হেফাজতের বিবরণ, ম্যাজিস্ট্রেটের ফরওয়ার্ডিং/প্রত্যয়ন, চালান ও লেবেল তৈরি হবে।');
     body.text = buffer.toString();
     if (showMessage && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Structured entry applied. Now preview/export.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('কাঠামোবদ্ধ এন্ট্রি প্রয়োগ হয়েছে। এখন প্রিভিউ/এক্সপোর্ট করুন।')));
     }
   }
 
@@ -359,8 +419,9 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     if (controller == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: TextField(
+      child: BanglaTextField(
         controller: controller,
+        label: key,
         maxLines: maxLines,
         decoration: InputDecoration(labelText: key, helperText: helperText, border: const OutlineInputBorder()),
       ),
@@ -377,7 +438,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
           children: [
             Row(
               children: [
-                Expanded(child: Text('Exhibit ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(child: Text('আলামত ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold))),
                 if (_fslExhibits.length > 1)
                   IconButton(
                     onPressed: () => setState(() {
@@ -388,15 +449,15 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
                   ),
               ],
             ),
-            TextField(controller: row['চিহ্ন'], decoration: const InputDecoration(labelText: 'Label / Exhibit Mark, e.g. A', border: OutlineInputBorder())),
+            BanglaTextField(controller: row['চিহ্ন']!, label: 'লেবেল/আলামত চিহ্ন, যেমন ক', autoTranslate: false, decoration: const InputDecoration(labelText: 'লেবেল/আলামত চিহ্ন, যেমন ক', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['বিবরণ'], maxLines: 3, decoration: const InputDecoration(labelText: 'Description of the exhibit', border: OutlineInputBorder())),
+            BanglaTextField(controller: row['বিবরণ']!, label: 'আলামতের বিবরণ', maxLines: 3, decoration: const InputDecoration(labelText: 'আলামতের বিবরণ', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['কীভাবে/কখন/কার দ্বারা পাওয়া'], maxLines: 3, decoration: const InputDecoration(labelText: 'How and when found and by whom', border: OutlineInputBorder())),
+            BanglaTextField(controller: row['কীভাবে/কখন/কার দ্বারা পাওয়া']!, label: 'কীভাবে, কখন এবং কার দ্বারা পাওয়া/জব্দ', maxLines: 3, decoration: const InputDecoration(labelText: 'কীভাবে, কখন এবং কার দ্বারা পাওয়া/জব্দ', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['আলামতের মালিকানা'], maxLines: 2, decoration: const InputDecoration(labelText: 'Ownership of exhibit', border: OutlineInputBorder())),
+            BanglaTextField(controller: row['আলামতের মালিকানা']!, label: 'আলামতের মালিকানা/অধিকার', maxLines: 2, decoration: const InputDecoration(labelText: 'আলামতের মালিকানা/অধিকার', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['মন্তব্য'], maxLines: 2, decoration: const InputDecoration(labelText: 'Remarks — editable', border: OutlineInputBorder())),
+            BanglaTextField(controller: row['মন্তব্য']!, label: 'মন্তব্য — সম্পাদনযোগ্য', maxLines: 2, decoration: const InputDecoration(labelText: 'মন্তব্য — সম্পাদনযোগ্য', border: OutlineInputBorder())),
           ],
         ),
       ),
@@ -413,7 +474,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
           children: [
             Row(
               children: [
-                Expanded(child: Text('Person in Custody ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(child: Text('হেফাজতে থাকা ব্যক্তি ${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold))),
                 if (_fslCustodyPersons.length > 1)
                   IconButton(
                     onPressed: () => setState(() {
@@ -424,28 +485,28 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
                   ),
               ],
             ),
-            TextField(controller: row['পূর্ণ নাম'], maxLines: 2, decoration: const InputDecoration(labelText: 'পূর্ণ নাম', border: OutlineInputBorder())),
+            BanglaTextField(controller: row['পূর্ণ নাম']!, label: 'পূর্ণ নাম', maxLines: 2, decoration: const InputDecoration(labelText: 'পূর্ণ নাম', border: OutlineInputBorder())),
             const SizedBox(height: 8),
             Row(children: [
-              Expanded(child: TextField(controller: row['পেশা'], decoration: const InputDecoration(labelText: 'পেশা', border: OutlineInputBorder()))),
+              Expanded(child: BanglaTextField(controller: row['পেশা']!, label: 'পেশা', decoration: const InputDecoration(labelText: 'পেশা', border: OutlineInputBorder()))),
               const SizedBox(width: 8),
-              Expanded(child: TextField(controller: row['বয়স'], decoration: const InputDecoration(labelText: 'বয়স', border: OutlineInputBorder()))),
+              Expanded(child: BanglaTextField(controller: row['বয়স']!, label: 'বয়স', autoTranslate: false, decoration: const InputDecoration(labelText: 'বয়স', border: OutlineInputBorder()))),
             ]),
             const SizedBox(height: 8),
             Row(children: [
               Expanded(child: DropdownButtonFormField<String>(
                 value: (row['লিঙ্গ']?.text.trim().isEmpty ?? true) ? null : row['লিঙ্গ']!.text.trim(),
                 decoration: const InputDecoration(labelText: 'লিঙ্গ', border: OutlineInputBorder()),
-                items: const ['Male', 'Female', 'Other'].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+                items: const ['পুরুষ', 'মহিলা', 'অন্যান্য'].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
                 onChanged: (v) => row['লিঙ্গ']?.text = v ?? '',
               )),
               const SizedBox(width: 8),
-              Expanded(child: FormHelpers.dateTimeField(context: context, controller: row['গ্রেপ্তারের তারিখ ও সময়']!, label: 'গ্রেপ্তারের তারিখ ও সময়')),
+              Expanded(child: BanglaTextField(controller: row['গ্রেপ্তারের তারিখ ও সময়']!, label: 'গ্রেপ্তারের তারিখ ও সময়', autoTranslate: false, decoration: const InputDecoration(labelText: 'গ্রেপ্তারের তারিখ ও সময়', border: OutlineInputBorder()))),
             ]),
             const SizedBox(height: 8),
-            TextField(controller: row['জামিন/হেফাজতের অবস্থা'], decoration: const InputDecoration(labelText: 'Whether on bail or in custody', border: OutlineInputBorder())),
+            BanglaTextField(controller: row['জামিন/হেফাজতের অবস্থা']!, label: 'জামিনে নাকি হেফাজতে', decoration: const InputDecoration(labelText: 'জামিনে নাকি হেফাজতে', border: OutlineInputBorder())),
             const SizedBox(height: 8),
-            TextField(controller: row['আদালত'], decoration: const InputDecoration(labelText: 'আদালত', border: OutlineInputBorder())),
+            BanglaTextField(controller: row['আদালত']!, label: 'আদালত', decoration: const InputDecoration(labelText: 'আদালত', border: OutlineInputBorder())),
           ],
         ),
       ),
@@ -459,9 +520,9 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('FSL Form Fill Up — Step by Step Entry', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text('এফএসএল ফর্ম পূরণ — ধাপে ধাপে এন্ট্রি', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
-            const Text('Pre-fill data already বসানো আছে। প্রতিটা point ধরে entry করুন। Preview করলে official Form 5203, Exhibit List, Nature of Examination, Particulars of Person in Custody, Certificate, Challan ও Label আলাদা page/section-এ তৈরি হবে।'),
+            const Text('আগের তথ্য স্বয়ংক্রিয়ভাবে বসানো আছে। প্রতিটি বিষয় ধরে তথ্য লিখুন। প্রিভিউ করলে সরকারি ফর্ম ৫২০৩, আলামত তালিকা, পরীক্ষার প্রকৃতি, হেফাজতে থাকা ব্যক্তির বিবরণ, প্রত্যয়ন, চালান ও লেবেল পৃথক পৃষ্ঠা/অংশে তৈরি হবে।'),
             const SizedBox(height: 12),
             _entryText('অপরাধের প্রকৃতি', maxLines: 6),
             _entryText('প্রয়োজনীয় পরীক্ষার প্রকৃতি', maxLines: 5),
@@ -469,15 +530,15 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
             _entryText('আদালত', maxLines: 1),
             const Divider(height: 24),
             Row(children: [
-              const Expanded(child: Text('II. List of Exhibits Sent for Examination', style: TextStyle(fontWeight: FontWeight.bold))),
-              FilledButton.icon(onPressed: () => _addFslExhibit(), icon: const Icon(Icons.add), label: const Text('Add Exhibit')),
+              const Expanded(child: Text('২। পরীক্ষার জন্য প্রেরিত আলামতের তালিকা', style: TextStyle(fontWeight: FontWeight.bold))),
+              FilledButton.icon(onPressed: () => _addFslExhibit(), icon: const Icon(Icons.add), label: const Text('আলামত যোগ করুন')),
             ]),
             const SizedBox(height: 8),
             ..._fslExhibits.asMap().entries.map((entry) => _fslExhibitEntryCard(entry.key, entry.value)),
             const Divider(height: 24),
             Row(children: [
-              const Expanded(child: Text('IV. Particulars of Persons in Custody', style: TextStyle(fontWeight: FontWeight.bold))),
-              FilledButton.icon(onPressed: () => _addFslCustodyPerson(), icon: const Icon(Icons.add), label: const Text('Add Person')),
+              const Expanded(child: Text('৪। হেফাজতে থাকা ব্যক্তিদের বিবরণ', style: TextStyle(fontWeight: FontWeight.bold))),
+              FilledButton.icon(onPressed: () => _addFslCustodyPerson(), icon: const Icon(Icons.add), label: const Text('ব্যক্তি যোগ করুন')),
             ]),
             const SizedBox(height: 8),
             ..._fslCustodyPersons.asMap().entries.map((entry) => _fslCustodyEntryCard(entry.key, entry.value)),
@@ -488,7 +549,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
               child: FilledButton.icon(
                 onPressed: () => _applyStructuredToBody(),
                 icon: const Icon(Icons.check),
-                label: const Text('Apply to Form Draft'),
+                label: const Text('ফর্মের খসড়ায় প্রয়োগ করুন'),
               ),
             ),
           ],
@@ -498,24 +559,25 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
   }
 
   Widget _structuredEntryModule() {
+    if (!_useStructuredEntry) return const SizedBox.shrink();
     if (_isFsl) return _fslSimpleEntryModule();
-    if (!_isCdrCaf && !_isFsl) return const SizedBox.shrink();
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_isCdrCaf ? 'CDR / SDR / CAF Entry Module' : 'FSL Form + Challan + Label Entry Module', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(_isCdrCaf ? 'সিডিআর/এসডিআর/সিএএফ এন্ট্রি মডিউল' : 'এফএসএল ফর্ম, চালান ও লেবেল এন্ট্রি মডিউল', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
             Text(_isFsl
-                ? 'Exhibit একাধিক হলে EXHIBITS field-এ প্রত্যেক exhibit আলাদা line-এ লিখুন: Mark | Description | How/when found | Ownership | Remarks. Accused একাধিক হলে PERSONS IN CUSTODY field-এ প্রত্যেক accused আলাদা line-এ লিখুন: Name | Occupation | Age | Sex | Arrest date/time | Bail/Custody | Court. Preview official page-wise format-এ হবে।'
-                : 'নিচের field গুলো fill/edit করুন। Preview চাপলে official form layout-এ দেখা যাবে।'),
+                ? 'একাধিক আলামত থাকলে প্রতিটি আলামত পৃথক লাইনে লিখুন: চিহ্ন | বিবরণ | কীভাবে/কখন পাওয়া | মালিকানা | মন্তব্য। একাধিক অভিযুক্ত থাকলে প্রতিটি ব্যক্তির তথ্য পৃথক লাইনে লিখুন: নাম | পেশা | বয়স | লিঙ্গ | গ্রেপ্তারের তারিখ/সময় | জামিন/হেফাজত | আদালত। প্রিভিউ সরকারি পৃষ্ঠাভিত্তিক বিন্যাসে হবে।'
+                : 'নিচের ঘরগুলি পূরণ/সম্পাদনা করুন। প্রিভিউ চাপলে সরকারি ফর্ম বিন্যাসে দেখা যাবে।'),
             const SizedBox(height: 12),
             ..._structured.entries.map((entry) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: TextField(
+                  child: BanglaTextField(
                     controller: entry.value,
+                    label: entry.key,
                     maxLines: entry.key == 'সংক্ষিপ্ত ঘটনা' || entry.key == 'অপরাধের প্রকৃতি' || entry.key == 'প্রয়োজনীয় পরীক্ষার প্রকৃতি' || entry.key == 'এফএসএল কার্যালয়' || entry.key == 'আলামতসমূহ' || entry.key == 'হেফাজতে থাকা ব্যক্তিবর্গ' || entry.key == 'তদন্তকারী অফিসার/থানার যোগাযোগের বিবরণ' ? 5 : 1,
                     decoration: InputDecoration(labelText: entry.key, border: const OutlineInputBorder()),
                   ),
@@ -525,7 +587,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
               child: FilledButton.icon(
                 onPressed: () => _applyStructuredToBody(),
                 icon: const Icon(Icons.check),
-                label: const Text('Apply to Form Draft'),
+                label: const Text('ফর্মের খসড়ায় প্রয়োগ করুন'),
               ),
             ),
           ],
@@ -534,23 +596,137 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     );
   }
 
+  Future<void> _changeDocumentLanguage(
+    DocumentLanguage language,
+  ) async {
+    if (language == _language) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('নথির ভাষা পরিবর্তন করবেন?'),
+        content: Text(
+          language.isBangla
+              ? 'বর্তমান খসড়ার জায়গায় নির্বাচিত ফর্মের সম্পূর্ণ বাংলা সরকারি খসড়া বসবে।'
+              : 'The present draft will be replaced with the complete English template of the selected form.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('বাতিল'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('ভাষা পরিবর্তন'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    for (final controller in _structured.values) {
+      controller.dispose();
+    }
+    _structured.clear();
+    for (final row in _fslExhibits) {
+      for (final controller in row.values) {
+        controller.dispose();
+      }
+    }
+    _fslExhibits.clear();
+    for (final row in _fslCustodyPersons) {
+      for (final controller in row.values) {
+        controller.dispose();
+      }
+    }
+    _fslCustodyPersons.clear();
+
+    final generated = _generator.generate(
+      templateId: _form.templateId,
+      officer: widget.profile,
+      caseFile: widget.caseFile,
+      language: language,
+    );
+    setState(() {
+      _language = language;
+      title.text = _generator.titleFor(_form.templateId, language);
+      body.text = generated;
+      _form = _form.copyWith(
+        title: title.text,
+        body: generated,
+        languageCode: language.code,
+      );
+      _initStructuredControllers();
+    });
+  }
+
+  Future<void> _translateCurrentDraft() async {
+    final controllers = <TextEditingController>[
+      title,
+      body,
+      if (_useStructuredEntry) ..._structured.values,
+    ];
+    final changed = await DocumentTranslationService.instance
+        .translateControllers(controllers, target: _language);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          changed > 0
+              ? (_language.isBangla
+                  ? 'বর্তমান লেখা বাংলায় রূপান্তরিত হয়েছে।'
+                  : 'The current text has been translated into English.')
+              : (_language.isBangla
+                  ? 'অনুবাদের প্রয়োজন পাওয়া যায়নি অথবা অনুবাদ সেবা পাওয়া যায়নি।'
+                  : 'No text required translation, or the translation service was unavailable.'),
+        ),
+      ),
+    );
+  }
+
   FormNotice _currentForm({bool? finalSave}) {
-    if (_isCdrCaf || _isFsl) {
+    if (_useStructuredEntry) {
       _applyStructuredToBody(showMessage: false);
     }
     return _form.copyWith(
       title: title.text.trim(),
       body: body.text.trim(),
+      languageCode: _language.code,
       isFinal: finalSave == true ? true : _form.isFinal,
     );
   }
 
   Future<FormNotice> _save({bool finalSave = false, bool askCdMention = true}) async {
+    final editableControllers = <TextEditingController>[
+      title,
+      if (!_useStructuredEntry) body,
+      if (_useStructuredEntry) ..._structured.values,
+      if (_useStructuredEntry)
+        ..._fslExhibits.expand(
+          (row) => row.entries
+              .where((e) => e.key != 'চিহ্ন')
+              .map((e) => e.value),
+        ),
+      if (_useStructuredEntry)
+        ..._fslCustodyPersons.expand(
+          (row) => row.entries
+              .where(
+                (e) =>
+                    e.key != 'বয়স' &&
+                    e.key != 'গ্রেপ্তারের তারিখ ও সময়',
+              )
+              .map((e) => e.value),
+        ),
+    ];
+    await DocumentTranslationService.instance.translateControllers(
+      editableControllers,
+      target: _language,
+    );
+    if (!mounted) return _currentForm(finalSave: finalSave);
     final updated = _currentForm(finalSave: finalSave);
     await _store.saveForm(updated);
     if (!mounted) return updated;
     setState(() => _form = updated);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(finalSave ? 'Form final saved' : 'Form draft saved')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(finalSave ? 'ফর্ম চূড়ান্তভাবে সংরক্ষিত হয়েছে' : 'ফর্মের খসড়া সংরক্ষিত হয়েছে')));
     if (askCdMention) await _askMentionInCaseDiary(updated);
     return updated;
   }
@@ -625,8 +801,8 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
       MaterialPageRoute(
         builder: (_) => PdfPreviewScreen(
           title: '${previewForm.title} প্রিভিউ',
-          filename: '${previewForm.title.replaceAll(' ', '_')}_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.pdf',
-          docFilename: '${previewForm.title.replaceAll(' ', '_')}_${widget.caseFile.psCaseNo.replaceAll('/', '_')}.doc',
+          filename: '${previewForm.title.replaceAll(' ', '_')}_${widget.caseFile.psCaseNo.replaceAll('/', '_')}_${previewForm.languageCode}.pdf',
+          docFilename: '${previewForm.title.replaceAll(' ', '_')}_${widget.caseFile.psCaseNo.replaceAll('/', '_')}_${previewForm.languageCode}.doc',
           buildPdf: () => PdfService().buildFormNoticePdf(officer: widget.profile, caseFile: widget.caseFile, form: previewForm),
           buildDoc: () => DocExportService().buildFormNoticeDoc(officer: widget.profile, caseFile: widget.caseFile, form: previewForm),
           onFinalSave: () async {
@@ -642,11 +818,11 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Final Save Form?'),
-        content: const Text('Final save করলে form locked হিসেবে mark হবে। পরে edit করা যাবে, কিন্তু warning দেখাবে।'),
+        title: const Text('ফর্ম চূড়ান্তভাবে সংরক্ষণ করবেন?'),
+        content: const Text('চূড়ান্তভাবে সংরক্ষণ করলে ফর্মটি লক হিসেবে চিহ্নিত হবে। পরে সম্পাদনা করা যাবে, তবে সতর্কবার্তা দেখাবে।'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('বাতিল')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Final Save')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('চূড়ান্ত সংরক্ষণ')),
         ],
       ),
     );
@@ -664,7 +840,7 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
             children: [
               Expanded(child: OutlinedButton.icon(onPressed: () => _save(), icon: const Icon(Icons.save), label: const Text('খসড়া'))),
               const SizedBox(width: 8),
-              Expanded(child: FilledButton.icon(onPressed: _finalSave, icon: const Icon(Icons.lock), label: const Text('Final'))),
+              Expanded(child: FilledButton.icon(onPressed: _finalSave, icon: const Icon(Icons.lock), label: const Text('চূড়ান্ত'))),
               const SizedBox(width: 8),
               Expanded(child: FilledButton.icon(onPressed: _previewPdf, icon: const Icon(Icons.preview), label: const Text('প্রিভিউ'))),
             ],
@@ -675,16 +851,73 @@ class _FormEditorScreenState extends State<FormEditorScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           if (_form.isFinal)
-            const Card(child: Padding(padding: EdgeInsets.all(14), child: Text('This form is final saved. Edit carefully if required.', style: TextStyle(fontWeight: FontWeight.bold)))),
+            const Card(child: Padding(padding: EdgeInsets.all(14), child: Text('ফর্মটি চূড়ান্তভাবে সংরক্ষিত। প্রয়োজন হলে সতর্কতার সঙ্গে সম্পাদনা করুন।', style: TextStyle(fontWeight: FontWeight.bold)))),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'নথির ভাষা / Document language',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<DocumentLanguage>(
+                    value: _language,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                    items: DocumentLanguage.values
+                        .map(
+                          (language) => DropdownMenuItem(
+                            value: language,
+                            child: Text(
+                              language.isBangla ? 'বাংলা' : 'English',
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (language) {
+                      if (language != null) {
+                        _changeDocumentLanguage(language);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _translateCurrentDraft,
+                    icon: const Icon(Icons.translate),
+                    label: Text(
+                      _language.isBangla
+                          ? 'বর্তমান ইংরেজি লেখা বাংলায় করুন'
+                          : 'Translate current Bangla text to English',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
           _structuredEntryModule(),
           const SizedBox(height: 10),
-          FormHelpers.textField(controller: title, label: 'Form Title'),
-          TextField(
+          FormHelpers.textField(
+            controller: title,
+            label: _language.isBangla ? 'ফর্মের শিরোনাম' : 'Form title',
+            autoTranslate: _language.isBangla,
+          ),
+          BanglaTextField(
             controller: body,
+            label: _language.isBangla
+                ? 'স্বয়ংক্রিয়ভাবে পূরণ করা ফর্ম — প্রয়োজনমতো সম্পাদনা করুন'
+                : 'Auto-generated form — edit as required',
             maxLines: 28,
-            decoration: const InputDecoration(
+            autoTranslate: _language.isBangla,
+            decoration: InputDecoration(
               alignLabelWithHint: true,
-              labelText: 'Auto-filled form body — edit as required',
+              labelText: _language.isBangla
+                  ? 'স্বয়ংক্রিয়ভাবে পূরণ করা ফর্ম — প্রয়োজনমতো সম্পাদনা করুন'
+                  : 'Auto-generated form — edit as required',
             ),
           ),
           const SizedBox(height: 90),

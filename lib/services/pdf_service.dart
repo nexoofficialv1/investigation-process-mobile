@@ -32,98 +32,49 @@ class PdfService {
     required CdEntry cd,
   }) async {
     final doc = pw.Document(theme: await _pdfTheme());
-
-    // STRICT OFFICIAL CD FORMAT - West Bengal Form No. 5363 / P.R.B Form No. 43.
-    // The PDF package can fail when one very tall table row is given to MultiPage.
-    // So CD pages are created manually after splitting the diary proceedings into
-    // safe page-sized chunks. This prevents PdfTooBigPageException in CD-1 preview.
-    final sourceLines = cd.tableLines.isNotEmpty
-        ? cd.tableLines
-        : [
-            CdTableLine(
-              noAndHour: '১\n${cd.startTime}',
-              placeOfEntry: cd.placeOfEntry,
-              synopsis: cd.cdNumber == 1 ? 'এফআইআর অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত',
-              proceedings: cd.body,
-            ),
-          ];
-    final pageLines = _paginateCdLines(sourceLines, cd.cdNumber);
-
-    for (var i = 0; i < pageLines.length; i++) {
-      final isLast = i == pageLines.length - 1;
-      doc.addPage(
-        pw.Page(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
-          build: (context) => pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-            children: [
-              _wbOfficialCdHeader(officer: officer, caseFile: caseFile, cd: cd, continued: i > 0),
-              _wbOfficialCdStatusRow(),
-              pw.Expanded(child: _wbOfficialCdContinuousTableFromLines(pageLines[i], officer, showSignature: isLast)),
-            ],
+    final isEnglish = cd.languageCode == 'en';
+    doc.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
+        header: (context) => context.pageNumber == 1
+            ? pw.SizedBox()
+            : pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                children: [
+                  _wbOfficialCdHeader(
+                    officer: officer,
+                    caseFile: caseFile,
+                    cd: cd,
+                    continued: true,
+                  ),
+                  _wbOfficialCdStatusRow(isEnglish),
+                ],
+              ),
+        build: (context) => [
+          _wbOfficialCdHeader(
+            officer: officer,
+            caseFile: caseFile,
+            cd: cd,
           ),
-        ),
-      );
-    }
-
+          _wbOfficialCdStatusRow(isEnglish),
+          _wbOfficialCdContinuousTable(cd, officer),
+        ],
+      ),
+    );
     return doc.save();
   }
 
-  List<List<CdTableLine>> _paginateCdLines(List<CdTableLine> lines, int cdNumber) {
-    final maxChars = cdNumber == 1 ? 1700 : 2100;
-    final maxEntries = cdNumber == 1 ? 4 : 6;
-    final expanded = <CdTableLine>[];
+  String _shortPsName(String ps) => ps
+      .replaceAll('Police Station', 'থানা')
+      .replaceAll('P.S.', 'থানা')
+      .replaceAll(' PS', ' থানা')
+      .trim();
 
-    for (final line in lines) {
-      final parts = _splitCdProceedings(line.proceedings, maxChars);
-      for (var i = 0; i < parts.length; i++) {
-        expanded.add(CdTableLine(
-          noAndHour: i == 0 ? line.noAndHour : '',
-          placeOfEntry: i == 0 ? line.placeOfEntry : '',
-          synopsis: i == 0 ? line.synopsis : 'Contd.',
-          proceedings: parts[i],
-        ));
-      }
-    }
-
-    final pages = <List<CdTableLine>>[];
-    var current = <CdTableLine>[];
-    var count = 0;
-    for (final line in expanded) {
-      final nextCount = count + line.proceedings.length + line.noAndHour.length + line.placeOfEntry.length + line.synopsis.length;
-      if (current.isNotEmpty && (nextCount > maxChars || current.length >= maxEntries)) {
-        pages.add(current);
-        current = <CdTableLine>[];
-        count = 0;
-      }
-      current.add(line);
-      count += line.proceedings.length + line.noAndHour.length + line.placeOfEntry.length + line.synopsis.length;
-    }
-    if (current.isNotEmpty) pages.add(current);
-    return pages.isEmpty ? [lines] : pages;
+  String _displayPsName(String ps, bool isEnglish) {
+    if (isEnglish) return ps.trim();
+    return _shortPsName(ps);
   }
-
-  List<String> _splitCdProceedings(String text, int maxChars) {
-    final clean = text.trim();
-    if (clean.isEmpty) return [''];
-    if (clean.length <= maxChars) return [clean];
-
-    final parts = <String>[];
-    var remaining = clean;
-    while (remaining.length > maxChars) {
-      var cut = remaining.lastIndexOf('\n\n', maxChars);
-      if (cut < maxChars ~/ 2) cut = remaining.lastIndexOf('. ', maxChars);
-      if (cut < maxChars ~/ 2) cut = remaining.lastIndexOf(' ', maxChars);
-      if (cut < maxChars ~/ 2) cut = maxChars;
-      parts.add(remaining.substring(0, cut).trim());
-      remaining = remaining.substring(cut).trim();
-    }
-    if (remaining.isNotEmpty) parts.add(remaining);
-    return parts;
-  }
-
-  String _shortPsName(String ps) => ps.replaceAll('থানা', 'থানা').trim();
 
   pw.Widget _wbOfficialCdHeader({
     required OfficerProfile officer,
@@ -131,44 +82,133 @@ class PdfService {
     required CdEntry cd,
     bool continued = false,
   }) {
+    final isEnglish = cd.languageCode == 'en';
+    final ps = _displayPsName(officer.policeStation, isEnglish);
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.stretch,
       children: [
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
-            pw.Text('West Bengal form No. 5363', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
-            pw.Text('OF ${DateTime.now().year}', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              isEnglish
+                  ? 'West Bengal Form No. 5363'
+                  : 'পশ্চিমবঙ্গ ফর্ম নং ৫৩৬৩',
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ),
+            pw.Text(
+              isEnglish
+                  ? 'Year ${DateTime.now().year}'
+                  : 'সন ${DateTime.now().year}',
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ),
           ],
         ),
         pw.SizedBox(height: 4),
-        pw.Center(child: pw.Text('CASE DIARY UNDER SECTION 192 BNSS${continued ? ' (Continued)' : ''}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold))),
+        pw.Center(
+          child: pw.Text(
+            isEnglish
+                ? 'CASE DIARY UNDER SECTION 192 BNSS${continued ? ' (Continued)' : ''}'
+                : 'বিএনএসএস-এর ১৯২ ধারার অধীন কেস ডায়েরি${continued ? ' (চলমান)' : ''}',
+            style: pw.TextStyle(
+              fontSize: 12,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+        ),
         pw.SizedBox(height: 8),
-        pw.Center(child: pw.RichText(text: pw.TextSpan(children: [
-          pw.TextSpan(text: '(পি.আর.বি ফর্ম নং ৪৩ – দ্রষ্টব্য ', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
-          pw.TextSpan(text: 'বিধি ২২৯', style: pw.TextStyle(fontSize: 11, fontStyle: pw.FontStyle.italic, fontWeight: pw.FontWeight.bold)),
-          pw.TextSpan(text: ')', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
-        ]))),
+        pw.Center(
+          child: pw.Text(
+            isEnglish
+                ? '(P.R.B. Form No. 43 — See Regulation 229)'
+                : '(পি.আর.বি ফর্ম নং ৪৩ — বিধি ২২৯ দ্রষ্টব্য)',
+            style: pw.TextStyle(
+              fontSize: 11,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+        ),
         pw.SizedBox(height: 4),
         pw.Row(
           children: [
-            pw.Expanded(flex: 3, child: pw.Text('PS: -${_shortPsName(officer.policeStation)}', style: _cdTopStyle())),
-            pw.Expanded(flex: 2, child: pw.Text('জেলা: -${officer.district}', style: _cdTopStyle())),
+            pw.Expanded(
+              flex: 3,
+              child: pw.Text(
+                isEnglish ? 'Police Station: $ps' : 'থানা: -$ps',
+                style: _cdTopStyle(),
+              ),
+            ),
+            pw.Expanded(
+              flex: 2,
+              child: pw.Text(
+                isEnglish
+                    ? 'District: ${officer.district}'
+                    : 'জেলা: -${officer.district}',
+                style: _cdTopStyle(),
+              ),
+            ),
           ],
         ),
         pw.SizedBox(height: 2),
         pw.Row(
           children: [
-            pw.Expanded(flex: 2, child: pw.Text('প্রথম সংবাদ নং: -${caseFile.psCaseNo}', style: _cdTopStyle())),
-            pw.Expanded(flex: 1, child: pw.Text('তারিখ: -${caseFile.caseDate}', style: _cdTopStyle())),
-            pw.Expanded(flex: 2, child: pw.Text('ধারা: -${caseFile.sections}', style: _cdTopStyle())),
+            pw.Expanded(
+              flex: 2,
+              child: pw.Text(
+                isEnglish
+                    ? 'FIR/Case No.: ${caseFile.psCaseNo}'
+                    : 'প্রথম সংবাদ নং: -${caseFile.psCaseNo}',
+                style: _cdTopStyle(),
+              ),
+            ),
+            pw.Expanded(
+              flex: 1,
+              child: pw.Text(
+                isEnglish
+                    ? 'Date: ${caseFile.caseDate}'
+                    : 'তারিখ: -${caseFile.caseDate}',
+                style: _cdTopStyle(),
+              ),
+            ),
+            pw.Expanded(
+              flex: 2,
+              child: pw.Text(
+                isEnglish
+                    ? 'Sections: ${caseFile.sections}'
+                    : 'ধারা: -${caseFile.sections}',
+                style: _cdTopStyle(),
+              ),
+            ),
           ],
         ),
-        pw.Text('অভিযোগকারীর নাম: -${caseFile.complainantName}', style: _cdTopStyle()),
+        pw.Text(
+          isEnglish
+              ? 'Name of complainant: ${caseFile.complainantName}'
+              : 'অভিযোগকারীর নাম: -${caseFile.complainantName}',
+          style: _cdTopStyle(),
+        ),
         pw.Row(
           children: [
-            pw.Expanded(child: pw.Text('কেস ডায়েরি নং: -${cd.cdNumber}', style: _cdTopStyle())),
-            pw.Expanded(child: pw.Text('তারিখ: -${cd.cdDate}', style: _cdTopStyle())),
+            pw.Expanded(
+              child: pw.Text(
+                isEnglish
+                    ? 'Case Diary No.: ${cd.cdNumber}'
+                    : 'কেস ডায়েরি নং: -${cd.cdNumber}',
+                style: _cdTopStyle(),
+              ),
+            ),
+            pw.Expanded(
+              child: pw.Text(
+                isEnglish ? 'Date: ${cd.cdDate}' : 'তারিখ: -${cd.cdDate}',
+                style: _cdTopStyle(),
+              ),
+            ),
           ],
         ),
         pw.SizedBox(height: 4),
@@ -176,39 +216,73 @@ class PdfService {
     );
   }
 
-  pw.TextStyle _cdTopStyle() => pw.TextStyle(fontSize: 10.5, fontWeight: pw.FontWeight.bold);
+  pw.TextStyle _cdTopStyle() =>
+      pw.TextStyle(fontSize: 10.5, fontWeight: pw.FontWeight.bold);
 
-  pw.Widget _wbOfficialCdStatusRow() {
+  pw.Widget _wbOfficialCdStatusRow(bool isEnglish) {
     return pw.Table(
       border: pw.TableBorder.all(width: 0.55),
-      columnWidths: const {0: pw.FlexColumnWidth(1), 1: pw.FlexColumnWidth(1.1), 2: pw.FlexColumnWidth(1.1)},
+      columnWidths: const {
+        0: pw.FlexColumnWidth(1),
+        1: pw.FlexColumnWidth(1.1),
+        2: pw.FlexColumnWidth(1.1),
+      },
       children: [
-        pw.TableRow(children: [
-          _officialCell('গ্রেপ্তার করে আদালতে প্রেরিত', center: true, fontSize: 11),
-          _officialCell('গ্রেপ্তার করে জামিনে মুক্ত।', center: true, fontSize: 11),
-          _officialCell('পলাতক।', center: true, fontSize: 11),
-        ]),
+        pw.TableRow(
+          children: [
+            _officialCell(
+              isEnglish
+                  ? 'Arrested and forwarded to Court'
+                  : 'গ্রেপ্তার করে আদালতে প্রেরিত',
+              center: true,
+              fontSize: 11,
+            ),
+            _officialCell(
+              isEnglish
+                  ? 'Arrested and released on bail'
+                  : 'গ্রেপ্তার করে জামিনে মুক্ত।',
+              center: true,
+              fontSize: 11,
+            ),
+            _officialCell(
+              isEnglish ? 'Absconding' : 'পলাতক।',
+              center: true,
+              fontSize: 11,
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  pw.Widget _wbOfficialCdContinuousTable(CdEntry cd, OfficerProfile officer) {
+  pw.Widget _wbOfficialCdContinuousTable(
+    CdEntry cd,
+    OfficerProfile officer,
+  ) {
+    final isEnglish = cd.languageCode == 'en';
     final lines = cd.tableLines.isNotEmpty
         ? cd.tableLines
-        : [CdTableLine(noAndHour: '১\n${cd.startTime}', placeOfEntry: cd.placeOfEntry, synopsis: cd.cdNumber == 1 ? 'এফআইআর অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা' : 'পরবর্তী তদন্ত', proceedings: cd.body)];
-    return _wbOfficialCdContinuousTableFromLines(lines, officer, showSignature: true);
-  }
+        : [
+            CdTableLine(
+              noAndHour: '${isEnglish ? '1' : '১'}\n${cd.startTime}',
+              placeOfEntry: cd.placeOfEntry,
+              synopsis: cd.cdNumber == 1
+                  ? (isEnglish
+                      ? 'Receipt of FIR copy\n+\nBrief facts'
+                      : 'এফআইআর অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা')
+                  : (isEnglish ? 'Further investigation' : 'পরবর্তী তদন্ত'),
+              proceedings: cd.body,
+            ),
+          ];
 
-  pw.Widget _wbOfficialCdContinuousTableFromLines(List<CdTableLine> lines, OfficerProfile officer, {required bool showSignature}) {
-    final leftEntryColumn = lines.map((line) => line.noAndHour).join('\n\n');
-    final placeColumn = lines.map((line) => line.placeOfEntry).join('\n\n');
-    final synopsisColumn = lines.map((line) => line.synopsis).join('\n\n');
-    final proceedingsColumn = lines.map((line) => line.proceedings).where((e) => e.trim().isNotEmpty).join('\n\n');
+    final leftEntryColumn = lines.map((line) => line.noAndHour).join('\n\n\n');
+    final placeColumn = lines.map((line) => line.placeOfEntry).join('\n\n\n');
+    final synopsisColumn = lines.map((line) => line.synopsis).join('\n\n\n');
+    final proceedingsColumn = lines
+        .map((line) => line.proceedings)
+        .where((text) => text.trim().isNotEmpty)
+        .join('\n\n');
 
-    // Official PRB Form No. 43 layout:
-    // Row 1: "Particulars of Enquiry." is merged only over the three marginal columns.
-    // Row 2: three marginal columns + the large proceedings column.
-    // No horizontal line is inserted between individual CD entries.
     return pw.Table(
       border: pw.TableBorder.all(width: 0.55),
       columnWidths: const {
@@ -216,13 +290,21 @@ class PdfService {
         1: pw.FlexColumnWidth(7.10),
       },
       children: [
-        pw.TableRow(children: [
-          pw.Container(
-            padding: const pw.EdgeInsets.fromLTRB(8, 3, 8, 3),
-            child: pw.Text('তদন্তের বিবরণ।', style: pw.TextStyle(fontSize: 11.5, fontWeight: pw.FontWeight.bold)),
-          ),
-          pw.SizedBox(height: 20),
-        ]),
+        pw.TableRow(
+          children: [
+            pw.Container(
+              padding: const pw.EdgeInsets.fromLTRB(8, 3, 8, 3),
+              child: pw.Text(
+                isEnglish ? 'Particulars of Enquiry' : 'তদন্তের বিবরণ।',
+                style: pw.TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.SizedBox(height: 22),
+          ],
+        ),
         pw.TableRow(
           verticalAlignment: pw.TableCellVerticalAlignment.top,
           children: [
@@ -237,45 +319,91 @@ class PdfService {
                 2: pw.FlexColumnWidth(1.14),
               },
               children: [
-                pw.TableRow(children: [
-                  _officialCell('এন্ট্রি নং ও\nসময়', center: true, fontSize: 9.0),
-                  _officialCell('এন্ট্রির\nস্থান', center: true, fontSize: 9.0),
-                  _officialCell('এন্ট্রির\nসারাংশ', center: true, fontSize: 9.0),
-                ]),
+                pw.TableRow(
+                  children: [
+                    _officialCell(
+                      isEnglish ? 'Entry No.\nand time' : 'এন্ট্রি নং ও\nসময়',
+                      center: true,
+                      fontSize: 9.4,
+                    ),
+                    _officialCell(
+                      isEnglish ? 'Place of\nentry' : 'এন্ট্রির\nস্থান',
+                      center: true,
+                      fontSize: 9.4,
+                    ),
+                    _officialCell(
+                      isEnglish ? 'Synopsis of\nentry' : 'এন্ট্রির\nসারাংশ',
+                      center: true,
+                      fontSize: 9.4,
+                    ),
+                  ],
+                ),
                 pw.TableRow(
                   verticalAlignment: pw.TableCellVerticalAlignment.top,
                   children: [
-                    _officialCell(leftEntryColumn, center: true, fontSize: 8.8, minHeight: 455),
-                    _officialCell(placeColumn, center: true, fontSize: 8.8, minHeight: 455),
-                    _officialCell(synopsisColumn, center: true, fontSize: 8.8, minHeight: 455),
+                    _officialCell(
+                      leftEntryColumn,
+                      center: true,
+                      fontSize: 9.4,
+                      minHeight: 520,
+                    ),
+                    _officialCell(
+                      placeColumn,
+                      center: true,
+                      fontSize: 9.4,
+                      minHeight: 520,
+                    ),
+                    _officialCell(
+                      synopsisColumn,
+                      center: true,
+                      fontSize: 9.4,
+                      minHeight: 520,
+                    ),
                   ],
                 ),
               ],
             ),
             pw.Container(
-              constraints: const pw.BoxConstraints(minHeight: 505),
+              constraints: const pw.BoxConstraints(minHeight: 575),
               child: pw.Padding(
                 padding: const pw.EdgeInsets.fromLTRB(6, 4, 6, 4),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.stretch,
                   children: [
-                    pw.Text(proceedingsColumn, style: const pw.TextStyle(fontSize: 9.4), textAlign: pw.TextAlign.justify),
-                    if (showSignature) ...[
-                      pw.SizedBox(height: 14),
-                      pw.Align(
-                        alignment: pw.Alignment.centerRight,
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.center,
-                          children: [
-                            pw.Text('নিবেদিত', style: const pw.TextStyle(fontSize: 10.0)),
-                            pw.SizedBox(height: 22),
-                            pw.Text('(${officer.name})', style: const pw.TextStyle(fontSize: 10.0)),
-                            pw.Text(officer.rank, style: const pw.TextStyle(fontSize: 10.0)),
-                            pw.Text(_shortPsName(officer.policeStation), style: const pw.TextStyle(fontSize: 10.0)),
-                          ],
-                        ),
+                    pw.Text(
+                      proceedingsColumn,
+                      style: const pw.TextStyle(fontSize: 10.2),
+                      textAlign: pw.TextAlign.justify,
+                    ),
+                    pw.SizedBox(height: 18),
+                    pw.Align(
+                      alignment: pw.Alignment.centerRight,
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.center,
+                        children: [
+                          pw.Text(
+                            isEnglish ? 'Submitted' : 'নিবেদিত',
+                            style: const pw.TextStyle(fontSize: 10.5),
+                          ),
+                          pw.SizedBox(height: 28),
+                          pw.Text(
+                            '(${officer.name})',
+                            style: const pw.TextStyle(fontSize: 10.5),
+                          ),
+                          pw.Text(
+                            officer.rank,
+                            style: const pw.TextStyle(fontSize: 10.5),
+                          ),
+                          pw.Text(
+                            _displayPsName(
+                              officer.policeStation,
+                              isEnglish,
+                            ),
+                            style: const pw.TextStyle(fontSize: 10.5),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
@@ -283,6 +411,40 @@ class PdfService {
           ],
         ),
       ],
+    );
+  }
+
+  pw.Widget _wbOfficialCdSignature({
+    required OfficerProfile officer,
+    bool isEnglish = false,
+  }) {
+    return pw.Align(
+      alignment: pw.Alignment.centerRight,
+      child: pw.Padding(
+        padding: const pw.EdgeInsets.only(top: 8, right: 80),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.center,
+          children: [
+            pw.Text(
+              isEnglish ? 'Submitted' : 'নিবেদিত',
+              style: const pw.TextStyle(fontSize: 10.5),
+            ),
+            pw.SizedBox(height: 28),
+            pw.Text(
+              '(${officer.name})',
+              style: const pw.TextStyle(fontSize: 10.5),
+            ),
+            pw.Text(
+              officer.rank,
+              style: const pw.TextStyle(fontSize: 10.5),
+            ),
+            pw.Text(
+              _displayPsName(officer.policeStation, isEnglish),
+              style: const pw.TextStyle(fontSize: 10.5),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -409,8 +571,59 @@ class PdfService {
   }) async {
     final doc = pw.Document(theme: await _pdfTheme());
     final body = form.body;
+    final isEnglish = form.languageCode == 'en';
+
+    if (isEnglish) {
+      doc.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.fromLTRB(46, 34, 46, 34),
+          footer: (context) => pw.Align(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Text(
+              'Page ${context.pageNumber}/${context.pagesCount}',
+              style: const pw.TextStyle(fontSize: 8),
+            ),
+          ),
+          build: (context) => [
+            _centerBold(form.title),
+            pw.SizedBox(height: 10),
+            pw.Text(
+              'Reference: ${officer.policeStation} Case No. ${caseFile.psCaseNo} dated ${caseFile.caseDate}, U/S ${caseFile.sections}',
+              style: const pw.TextStyle(fontSize: 10.5),
+            ),
+            pw.SizedBox(height: 16),
+            pw.Text(
+              body,
+              style: const pw.TextStyle(fontSize: 11.5),
+              textAlign: pw.TextAlign.justify,
+            ),
+            pw.SizedBox(height: 28),
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Text('Submitted by,'),
+                  pw.SizedBox(height: 24),
+                  pw.Text(officer.name),
+                  pw.Text(officer.rank),
+                  pw.Text('${officer.policeStation}, ${officer.district}'),
+                  if (officer.mobile.trim().isNotEmpty)
+                    pw.Text('Mobile: ${officer.mobile}'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+      return doc.save();
+    }
+
     final is35 = form.templateId == 'bnss_35_3';
-    final is94 = form.templateId == 'bnss_94' || form.templateId == 'medical_exam' || form.templateId == 'bht_injury';
+    final is94 = form.templateId == 'bnss_94' ||
+        form.templateId == 'medical_exam' ||
+        form.templateId == 'bht_injury';
     final isForwarding = form.templateId == 'forwarding';
     final isCdrCaf = form.templateId == 'cdr_caf';
     final isFsl = form.templateId == 'fsl';
@@ -430,7 +643,10 @@ class PdfService {
         margin: const pw.EdgeInsets.fromLTRB(46, 30, 46, 30),
         footer: (context) => pw.Align(
           alignment: pw.Alignment.centerRight,
-          child: pw.Text('পৃষ্ঠা ${context.pageNumber}/${context.pagesCount}', style: const pw.TextStyle(fontSize: 8)),
+          child: pw.Text(
+            'পৃষ্ঠা ${context.pageNumber}/${context.pagesCount}',
+            style: const pw.TextStyle(fontSize: 8),
+          ),
         ),
         build: (context) {
           if (is35) return _notice35Pdf(officer, caseFile, body);
@@ -439,9 +655,16 @@ class PdfService {
           return [
             _centerBold(form.title),
             pw.SizedBox(height: 10),
-            pw.Text('রেফারেন্স: ${officer.policeStation} থানা মামলা নং ${caseFile.psCaseNo}, তারিখ ${caseFile.caseDate}, ধারা ${caseFile.sections}', style: const pw.TextStyle(fontSize: 10.5)),
+            pw.Text(
+              'মামলার সূত্র: ${officer.policeStation} থানা মামলা নং ${caseFile.psCaseNo}, তারিখ ${caseFile.caseDate}, ধারা ${caseFile.sections}',
+              style: const pw.TextStyle(fontSize: 10.5),
+            ),
             pw.SizedBox(height: 16),
-            pw.Text(body, style: const pw.TextStyle(fontSize: 11.5), textAlign: pw.TextAlign.justify),
+            pw.Text(
+              body,
+              style: const pw.TextStyle(fontSize: 11.5),
+              textAlign: pw.TextAlign.justify,
+            ),
             pw.SizedBox(height: 26),
             _rightOfficerBlock(officer),
           ];
@@ -450,9 +673,6 @@ class PdfService {
     );
     return doc.save();
   }
-
-
-
 
   List<String> _splitChunks(String text, {int max = 820}) {
     final clean = text.trim();
@@ -910,27 +1130,44 @@ class PdfService {
     required FormNotice form,
   }) async {
     final doc = pw.Document(theme: await _pdfTheme());
+    final isEnglish = form.languageCode == 'en';
     doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(42, 36, 42, 36),
         footer: (context) => pw.Align(
           alignment: pw.Alignment.centerRight,
-          child: pw.Text('পৃষ্ঠা ${context.pageNumber}/${context.pagesCount}', style: const pw.TextStyle(fontSize: 9)),
+          child: pw.Text(
+            isEnglish
+                ? 'Page ${context.pageNumber}/${context.pagesCount}'
+                : 'পৃষ্ঠা ${context.pageNumber}/${context.pagesCount}',
+            style: const pw.TextStyle(fontSize: 9),
+          ),
         ),
         build: (context) => [
           _centerBold(form.title),
           pw.SizedBox(height: 16),
-          pw.Text(form.body, style: const pw.TextStyle(fontSize: 11.5), textAlign: pw.TextAlign.justify),
+          pw.Text(
+            form.body,
+            style: const pw.TextStyle(fontSize: 11.5),
+            textAlign: pw.TextAlign.justify,
+          ),
           pw.SizedBox(height: 26),
           pw.Align(
             alignment: pw.Alignment.centerRight,
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
-                pw.Text('${officer.rank} ${officer.name}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                  '${officer.rank} ${officer.name}',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                ),
                 pw.Text(officer.policeStation),
-                pw.Text('জেলা: ${officer.district}'),
+                pw.Text(
+                  isEnglish
+                      ? 'District: ${officer.district}'
+                      : 'জেলা: ${officer.district}',
+                ),
               ],
             ),
           ),

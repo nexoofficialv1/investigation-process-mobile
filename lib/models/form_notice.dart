@@ -4,6 +4,7 @@ class FormNotice {
   final String templateId;
   final String title;
   final String body;
+  final String languageCode;
   final bool isFinal;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -14,6 +15,7 @@ class FormNotice {
     required this.templateId,
     required this.title,
     required this.body,
+    this.languageCode = 'bn',
     required this.isFinal,
     required this.createdAt,
     required this.updatedAt,
@@ -24,6 +26,7 @@ class FormNotice {
     required String templateId,
     required String title,
     required String body,
+    String languageCode = 'bn',
   }) {
     final now = DateTime.now();
     return FormNotice(
@@ -32,6 +35,7 @@ class FormNotice {
       templateId: templateId,
       title: title,
       body: body,
+      languageCode: languageCode,
       isFinal: false,
       createdAt: now,
       updatedAt: now,
@@ -41,6 +45,7 @@ class FormNotice {
   FormNotice copyWith({
     String? title,
     String? body,
+    String? languageCode,
     bool? isFinal,
   }) {
     return FormNotice(
@@ -49,6 +54,7 @@ class FormNotice {
       templateId: templateId,
       title: title ?? this.title,
       body: body ?? this.body,
+      languageCode: languageCode ?? this.languageCode,
       isFinal: isFinal ?? this.isFinal,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
@@ -61,6 +67,7 @@ class FormNotice {
         'templateId': templateId,
         'title': title,
         'body': body,
+        'languageCode': languageCode,
         'isFinal': isFinal,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
@@ -73,6 +80,7 @@ class FormNotice {
       templateId: json['templateId'] ?? '',
       title: json['title'] ?? '',
       body: json['body'] ?? '',
+      languageCode: json['languageCode'] == 'en' ? 'en' : 'bn',
       isFinal: json['isFinal'] ?? false,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
