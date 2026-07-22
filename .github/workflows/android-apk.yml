@@ -1,16 +1,29 @@
-name: Build Android APK
+name: Build Android Release APK
 
 on:
   workflow_dispatch:
   push:
-    branches: [main, master]
+    branches:
+      - main
+      - master
+    paths:
+      - "lib/**"
+      - "assets/**"
+      - "android/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/android-apk.yml"
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Setup Flutter
@@ -19,19 +32,25 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Show Flutter version
+        run: flutter --version
+
       - name: Generate Android platform files
         run: |
           flutter create . --platforms=android
           rm -rf test
 
-      - name: Enable translation and speech permissions
+      - name: Configure Android manifest
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
 
-          path = Path('android/app/src/main/AndroidManifest.xml')
-          text = path.read_text(encoding='utf-8')
+          path = Path("android/app/src/main/AndroidManifest.xml")
+          if not path.exists():
+              raise SystemExit("AndroidManifest.xml not found")
+
+          text = path.read_text(encoding="utf-8")
 
           permissions = [
               '<uses-permission android:name="android.permission.RECORD_AUDIO"/>',
@@ -41,61 +60,76 @@ jobs:
               '<uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>',
           ]
 
-          opening = re.search(r'<manifest[^>]*>', text)
-          if opening is None:
-              raise SystemExit('Android manifest opening tag not found')
+          manifest_open = re.search(r"<manifest\b[^>]*>", text, re.DOTALL)
+          if manifest_open is None:
+              raise SystemExit("Opening <manifest> tag not found")
 
-          missing = [item for item in permissions if item not in text]
-          if missing:
-              insertion = '\n    ' + '\n    '.join(missing)
-              text = text[:opening.end()] + insertion + text[opening.end():]
+          missing_permissions = [
+              item for item in permissions if item not in text
+          ]
+          if missing_permissions:
+              insertion = "\n    " + "\n    ".join(missing_permissions)
+              text = (
+                  text[:manifest_open.end()]
+                  + insertion
+                  + text[manifest_open.end():]
+              )
 
-          query_block = (
-              '\n    <queries>\n'
-              '        <intent>\n'
-              '            <action android:name="android.speech.RecognitionService" />\n'
-              '        </intent>\n'
-              '    </queries>\n'
-          )
-          if 'android.speech.RecognitionService' not in text:
-              text = text.replace('    <application', query_block + '\n    <application', 1)
-
-          path.write_text(text, encoding='utf-8')
-          print(path.read_text(encoding='utf-8'))
-          PY
-
-
-      - name: Disable Impeller renderer
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path("android/app/src/main/AndroidManifest.xml")
-          text = path.read_text(encoding="utf-8")
-
-          metadata = (
-              '        <meta-data\n'
-              '            android:name="io.flutter.embedding.android.EnableImpeller"\n'
-              '            android:value="false" />'
-          )
+          if "android.speech.RecognitionService" not in text:
+              query_block = (
+                  "\n    <queries>\n"
+                  "        <intent>\n"
+                  "            <action android:name=\"android.speech.RecognitionService\" />\n"
+                  "        </intent>\n"
+                  "    </queries>\n"
+              )
+              application_start = text.find("<application")
+              if application_start == -1:
+                  raise SystemExit("Opening <application> tag not found")
+              text = (
+                  text[:application_start]
+                  + query_block
+                  + "    "
+                  + text[application_start:]
+              )
 
           if "io.flutter.embedding.android.EnableImpeller" not in text:
-              match = re.search(r"<application\b[^>]*>", text, re.DOTALL)
-              if match is None:
-                  raise SystemExit("AndroidManifest.xml application tag not found")
-              text = text[:match.end()] + "\n" + metadata + text[match.end():]
-              path.write_text(text, encoding="utf-8")
+              application_open = re.search(
+                  r"<application\b[^>]*>",
+                  text,
+                  re.DOTALL,
+              )
+              if application_open is None:
+                  raise SystemExit("Opening <application> tag not found")
 
-          print("Impeller disabled in AndroidManifest.xml")
+              impeller_metadata = (
+                  "\n        <meta-data\n"
+                  "            android:name=\"io.flutter.embedding.android.EnableImpeller\"\n"
+                  "            android:value=\"false\" />\n"
+              )
+              text = (
+                  text[:application_open.end()]
+                  + impeller_metadata
+                  + text[application_open.end():]
+              )
+
+          path.write_text(text, encoding="utf-8")
+          print(path.read_text(encoding="utf-8"))
           PY
 
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Analyze source
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
       - name: Build release APK
         run: flutter build apk --release --no-shrink
+
+      - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
-          name: investigation-process-release-apk
+          name: investigo-android-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
