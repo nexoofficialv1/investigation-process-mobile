@@ -16,6 +16,10 @@ import 'sketch_map_screen.dart';
 import 'evidence_screen.dart';
 import 'investigation_screen.dart';
 import 'pdf_preview_screen.dart';
+// INVESTIGO_GUIDED_DAILY_WORKFLOW_V050
+import 'daily_cd_mode_screen.dart';
+import 'daily_work_hub_screen.dart';
+
 
 class CaseDetailScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -67,7 +71,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   Future<void> _newCd() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => CdBuilderScreen(profile: widget.profile, caseFile: _caseFile)),
+      MaterialPageRoute(builder: (_) => DailyCdModeScreen(profile: widget.profile, caseFile: _caseFile)),
     );
     await _load();
   }
@@ -106,7 +110,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   Future<void> _openInvestigation() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => InvestigationScreen(profile: widget.profile, caseFile: _caseFile)),
+      MaterialPageRoute(builder: (_) => DailyWorkHubScreen.investigation(profile: widget.profile, caseFile: _caseFile)),
     );
     await _load();
   }
@@ -114,7 +118,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   Future<void> _openEvidence() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => EvidenceScreen(profile: widget.profile, caseFile: _caseFile)),
+      MaterialPageRoute(builder: (_) => DailyWorkHubScreen.evidence(profile: widget.profile, caseFile: _caseFile)),
     );
     await _load();
   }
