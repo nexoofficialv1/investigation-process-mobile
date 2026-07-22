@@ -64,6 +64,32 @@ jobs:
           print(path.read_text(encoding='utf-8'))
           PY
 
+
+      - name: Disable Impeller renderer
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("android/app/src/main/AndroidManifest.xml")
+          text = path.read_text(encoding="utf-8")
+
+          metadata = (
+              '        <meta-data\n'
+              '            android:name="io.flutter.embedding.android.EnableImpeller"\n'
+              '            android:value="false" />'
+          )
+
+          if "io.flutter.embedding.android.EnableImpeller" not in text:
+              match = re.search(r"<application\b[^>]*>", text, re.DOTALL)
+              if match is None:
+                  raise SystemExit("AndroidManifest.xml application tag not found")
+              text = text[:match.end()] + "\n" + metadata + text[match.end():]
+              path.write_text(text, encoding="utf-8")
+
+          print("Impeller disabled in AndroidManifest.xml")
+          PY
+
       - name: Get dependencies
         run: flutter pub get
 
