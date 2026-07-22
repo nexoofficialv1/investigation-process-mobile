@@ -1,0 +1,37 @@
+name: Build Laptop Web App
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate web platform files
+        run: |
+          flutter create . --platforms=web
+          rm -rf test
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build web app
+        run: flutter build web --release
+
+      - name: Upload laptop web bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: investigation-process-web
+          path: build/web

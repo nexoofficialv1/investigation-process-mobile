@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'core/app_language_controller.dart';
 import 'core/app_theme.dart';
 import 'models/officer_profile.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/officer_profile_screen.dart';
 import 'screens/intro_screen.dart';
+import 'screens/officer_profile_screen.dart';
 import 'services/local_store_service.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppLanguageController.instance.load();
   runApp(const InvestigationProcessApp());
 }
 
@@ -18,18 +20,40 @@ class InvestigationProcessApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'ইনভেস্টিগো — তদন্ত সহায়ক',
-      locale: const Locale('bn', 'BD'),
-      supportedLocales: const [Locale('bn', 'BD'), Locale('en', 'US')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: AppTheme.light(),
-      home: const StartupGate(),
+    return AnimatedBuilder(
+      animation: AppLanguageController.instance,
+      builder: (context, _) {
+        final language = AppLanguageController.instance;
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: language.text(
+            'ইনভেস্টিগো — তদন্ত সহায়ক',
+            'INVESTIGO — Investigation Assistant',
+          ),
+          locale: language.locale,
+          supportedLocales: const <Locale>[
+            Locale('bn', 'BD'),
+            Locale('en', 'US'),
+          ],
+          localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: AppTheme.light(),
+          builder: (context, child) => Stack(
+            children: <Widget>[
+              if (child != null) child,
+              const Positioned(
+                right: 10,
+                bottom: 82,
+                child: _GlobalLanguageButton(),
+              ),
+            ],
+          ),
+          home: const StartupGate(),
+        );
+      },
     );
   }
 }
@@ -63,10 +87,14 @@ class _StartupGateState extends State<StartupGate> {
     if (!_introDone) {
       return IntroScreen(onStart: () => setState(() => _introDone = true));
     }
+
     final profile = _profile;
     if (profile == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
+
     if (!profile.isComplete) {
       return OfficerProfileScreen(
         profile: profile,
@@ -77,6 +105,50 @@ class _StartupGateState extends State<StartupGate> {
         },
       );
     }
+
     return DashboardScreen(profile: profile);
+  }
+}
+
+
+class _GlobalLanguageButton extends StatelessWidget {
+  const _GlobalLanguageButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = AppLanguageController.instance;
+    return SafeArea(
+      child: Material(
+        elevation: 5,
+        color: Theme.of(context).colorScheme.surface,
+        shape: const StadiumBorder(),
+        child: PopupMenuButton<String>(
+          tooltip: controller.text('ভাষা পরিবর্তন', 'Change language'),
+          initialValue: controller.languageCode,
+          onSelected: (value) { controller.setLanguage(value); },
+          itemBuilder: (context) => const <PopupMenuEntry<String>>[
+            PopupMenuItem<String>(value: 'bn', child: Text('বাংলা')),
+            PopupMenuItem<String>(value: 'en', child: Text('English')),
+          ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const Icon(Icons.language, size: 19),
+                const SizedBox(width: 6),
+                Text(
+                  controller.isBangla ? 'বাংলা' : 'EN',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

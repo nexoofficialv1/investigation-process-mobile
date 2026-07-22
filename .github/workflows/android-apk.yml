@@ -3,11 +3,12 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,22 +17,51 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
 
       - name: Generate Android platform files
         run: |
           flutter create . --platforms=android
           rm -rf test
 
-      - name: Enable internet for Bengali translation
+      - name: Enable translation and speech permissions
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('android/app/src/main/AndroidManifest.xml')
-          text = p.read_text()
-          permission = '<uses-permission android:name="android.permission.INTERNET" />'
-          if permission not in text:
-              text = text.replace('<manifest xmlns:android="http://schemas.android.com/apk/res/android">', '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    ' + permission)
-              p.write_text(text)
+          import re
+
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          text = path.read_text(encoding='utf-8')
+
+          permissions = [
+              '<uses-permission android:name="android.permission.RECORD_AUDIO"/>',
+              '<uses-permission android:name="android.permission.INTERNET"/>',
+              '<uses-permission android:name="android.permission.BLUETOOTH"/>',
+              '<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>',
+              '<uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>',
+          ]
+
+          opening = re.search(r'<manifest[^>]*>', text)
+          if opening is None:
+              raise SystemExit('Android manifest opening tag not found')
+
+          missing = [item for item in permissions if item not in text]
+          if missing:
+              insertion = '\n    ' + '\n    '.join(missing)
+              text = text[:opening.end()] + insertion + text[opening.end():]
+
+          query_block = (
+              '\n    <queries>\n'
+              '        <intent>\n'
+              '            <action android:name="android.speech.RecognitionService" />\n'
+              '        </intent>\n'
+              '    </queries>\n'
+          )
+          if 'android.speech.RecognitionService' not in text:
+              text = text.replace('    <application', query_block + '\n    <application', 1)
+
+          path.write_text(text, encoding='utf-8')
+          print(path.read_text(encoding='utf-8'))
           PY
 
       - name: Get dependencies
