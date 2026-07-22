@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/app_language_controller.dart';
@@ -11,6 +12,18 @@ import 'services/local_store_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // INVESTIGO_DEBUG_VISUALS_DISABLED
+  assert(() {
+    debugPaintSizeEnabled = false;
+    debugPaintBaselinesEnabled = false;
+    debugPaintPointersEnabled = false;
+    debugPaintLayerBordersEnabled = false;
+    debugRepaintRainbowEnabled = false;
+    debugCheckElevationsEnabled = false;
+    return true;
+  }());
+
   await AppLanguageController.instance.load();
   runApp(const InvestigationProcessApp());
 }
@@ -25,6 +38,11 @@ class InvestigationProcessApp extends StatelessWidget {
       builder: (context, _) {
         final language = AppLanguageController.instance;
         return MaterialApp(
+      showPerformanceOverlay: false,
+      checkerboardRasterCacheImages: false,
+      checkerboardOffscreenLayers: false,
+      showSemanticsDebugger: false,
+      debugShowMaterialGrid: false,
           debugShowCheckedModeBanner: false,
           title: language.text(
             'ইনভেস্টিগো — তদন্ত সহায়ক',

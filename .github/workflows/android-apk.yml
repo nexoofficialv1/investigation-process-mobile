@@ -93,11 +93,9 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build debug APK
-        run: flutter build apk --debug
-
-      - name: Upload APK
+      - name: Build release APK
+        run: flutter build apk --release --no-shrink
         uses: actions/upload-artifact@v4
         with:
-          name: investigation-process-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: investigation-process-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
