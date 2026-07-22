@@ -12,6 +12,8 @@ import 'cd_editor_screen.dart';
 import 'forms_screen.dart';
 import 'statement_screen.dart';
 import 'compliance_screen.dart';
+import 'sop_compliance_screen.dart';
+import 'investigation_checklist_screen.dart';
 import 'sketch_map_screen.dart';
 import 'evidence_screen.dart';
 import 'investigation_screen.dart';
@@ -131,6 +133,26 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   }
 
 
+
+  Future<void> _openInvestigationChecklist() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            InvestigationChecklistScreen(caseFile: _caseFile),
+      ),
+    );
+  }
+
+  Future<void> _openSopCompliance() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => SopComplianceScreen(caseFile: _caseFile),
+      ),
+    );
+  }
+
   bool get _firstFiveCdsReady {
     final numbers = _cds.map((e) => e.cdNumber).toSet();
     for (var i = 1; i <= 5; i++) {
@@ -230,6 +252,8 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                 _moduleCard('বিবৃতি', Icons.record_voice_over, _openStatements),
                 _moduleCard('ফর্ম ও নোটিশ', Icons.description, _openForms),
                 _moduleCard('অনুবর্তিতা', Icons.checklist, _openCompliance),
+              _moduleCard('যাচাই তালিকা', Icons.fact_check_rounded, _openInvestigationChecklist),
+              _moduleCard('SOP', Icons.policy_rounded, _openSopCompliance),
                 _moduleCard('আলামত/প্রমাণ', Icons.inventory_2, _openEvidence),
                 _moduleCard('খসড়া নকশা', Icons.map, _openSketchMap),
               ],

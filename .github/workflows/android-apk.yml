@@ -117,6 +117,8 @@ jobs:
           print(path.read_text(encoding="utf-8"))
           PY
 
+      - name: Configure Android SDK for image/OCR plugins
+        run: python3 tool/configure_android_ocr.py
       - name: Get dependencies
         run: flutter pub get
 

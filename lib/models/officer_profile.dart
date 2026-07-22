@@ -7,6 +7,7 @@ class OfficerProfile {
   final String courtName;
   final String mobile;
   final String email;
+  final String photoBase64;
 
   const OfficerProfile({
     required this.name,
@@ -17,6 +18,7 @@ class OfficerProfile {
     required this.courtName,
     required this.mobile,
     required this.email,
+    this.photoBase64 = '',
   });
 
   factory OfficerProfile.empty() => const OfficerProfile(
@@ -28,6 +30,7 @@ class OfficerProfile {
         courtName: 'বিজ্ঞ এসিজেএম আদালত, কালনা',
         mobile: '',
         email: '',
+        photoBase64: '',
       );
 
   bool get isComplete => name.trim().isNotEmpty && rank.trim().isNotEmpty;
@@ -41,6 +44,7 @@ class OfficerProfile {
     String? courtName,
     String? mobile,
     String? email,
+    String? photoBase64,
   }) {
     return OfficerProfile(
       name: name ?? this.name,
@@ -51,10 +55,11 @@ class OfficerProfile {
       courtName: courtName ?? this.courtName,
       mobile: mobile ?? this.mobile,
       email: email ?? this.email,
+      photoBase64: photoBase64 ?? this.photoBase64,
     );
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => <String, dynamic>{
         'name': name,
         'rank': rank,
         'beltNo': beltNo,
@@ -63,18 +68,21 @@ class OfficerProfile {
         'courtName': courtName,
         'mobile': mobile,
         'email': email,
+        'photoBase64': photoBase64,
       };
 
-  factory OfficerProfile.fromJson(Map<String, dynamic> json) {
+  factory OfficerProfile.fromJson(Map<dynamic, dynamic> json) {
     return OfficerProfile(
-      name: json['name'] ?? '',
-      rank: json['rank'] ?? '',
-      beltNo: json['beltNo'] ?? '',
-      policeStation: json['policeStation'] ?? 'Kalna PS',
-      district: json['district'] ?? 'পূর্ব বর্ধমান',
-      courtName: json['courtName'] ?? 'বিজ্ঞ এসিজেএম আদালত, কালনা',
-      mobile: json['mobile'] ?? '',
-      email: json['email'] ?? '',
+      name: json['name']?.toString() ?? '',
+      rank: json['rank']?.toString() ?? '',
+      beltNo: json['beltNo']?.toString() ?? '',
+      policeStation: json['policeStation']?.toString() ?? 'Kalna PS',
+      district: json['district']?.toString() ?? 'পূর্ব বর্ধমান',
+      courtName:
+          json['courtName']?.toString() ?? 'বিজ্ঞ এসিজেএম আদালত, কালনা',
+      mobile: json['mobile']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      photoBase64: json['photoBase64']?.toString() ?? '',
     );
   }
 }
