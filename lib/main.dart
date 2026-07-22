@@ -20,7 +20,6 @@ Future<void> main() async {
     debugPaintPointersEnabled = false;
     debugPaintLayerBordersEnabled = false;
     debugRepaintRainbowEnabled = false;
-    debugCheckElevationsEnabled = false;
     return true;
   }());
 
