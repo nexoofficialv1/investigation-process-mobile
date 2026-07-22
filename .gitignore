@@ -10,3 +10,8 @@ windows/
 linux/
 web/
 *.iml
+
+patch_files/
+.bilingual_patch_backup_*/
+fix_investigo_*.py
+repair_investigo_*.py
