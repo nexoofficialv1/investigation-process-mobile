@@ -11,6 +11,7 @@ import '../services/guided_question_engine.dart';
 import '../services/local_store_service.dart';
 import '../services/protected_translation_service.dart';
 import 'sketch_map_screen.dart';
+import 'daily_cd_mode_screen.dart';
 
 class GuidedDailyEntryScreen extends StatefulWidget {
   final OfficerProfile profile;
@@ -18,12 +19,14 @@ class GuidedDailyEntryScreen extends StatefulWidget {
   final DailyEntrySource source;
   final String? initialDate;
 
+  final bool firstCdMode;
   const GuidedDailyEntryScreen({
     super.key,
     required this.profile,
     required this.caseFile,
     required this.source,
     this.initialDate,
+    this.firstCdMode = false,
   });
 
   @override
@@ -58,6 +61,11 @@ class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
     );
     _initializeSpeech();
     _loadExisting();
+    if (widget.firstCdMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showFirstCdGuide();
+      });
+    }
   }
 
   @override
@@ -66,6 +74,30 @@ class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
     _narration.dispose();
     _date.dispose();
     super.dispose();
+  }
+
+
+  Future<void> _showFirstCdGuide() async {
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('First Case Diary-এর প্রয়োজনীয় তথ্য দিন'),
+        content: const Text(
+          'নিজের ভাষায় বলুন বা লিখুন—কখন তদন্তভার গ্রহণ করেছেন, কখন PS থেকে '
+          'রওনা হয়েছেন, কখন PO-তে পৌঁছেছেন, PO-এর বিস্তারিত কী, সেখানে কী '
+          'দেখেছেন, Sketch Map প্রস্তুত করবেন কি না, সাক্ষীর নাম ও বয়ান, '
+          'এবং জব্দ/চিকিৎসা/Evidence সংক্রান্ত কাজ।',
+        ),
+        actions: <Widget>[
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('তথ্য দেওয়া শুরু করুন'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _initializeSpeech() async {
@@ -418,7 +450,7 @@ class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
     if (index >= 0) setState(() => _actions[index] = edited);
   }
 
-  Future<void> _save() async {
+  Future<void> _saveEntry({bool createCdAfterSave = false}) async {
     if (_narration.text.trim().isEmpty || _actions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Narration Analyse করে প্রশ্নগুলোর উত্তর দিন।')),
@@ -520,6 +552,21 @@ class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
           '${widget.source.banglaLabel} দিনের Entry সংরক্ষিত হয়েছে।',
         ),
       ));
+      if (createCdAfterSave) {
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) => DailyCdModeScreen(
+              profile: widget.profile,
+              caseFile: widget.caseFile,
+              initialDate: _date.text.trim(),
+              lockDate: true,
+              autoGenerate: true,
+            ),
+          ),
+        );
+        return;
+      }
       Navigator.pop(context, true);
     } catch (error) {
       if (!mounted) return;
@@ -531,24 +578,58 @@ class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
     }
   }
 
+  Future<void> _save() async {
+    await _saveEntry();
+  }
+
+  Future<void> _saveAndCreateCd() async {
+    await _saveEntry(createCdAfterSave: true);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('আজকের ${widget.source.banglaLabel} Entry'),
+        title: Text(
+          widget.firstCdMode
+              ? 'First CD-এর Investigation Entry'
+              : 'আজকের ${widget.source.banglaLabel} Entry',
+        ),
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: FilledButton.icon(
-            onPressed: _busy ? null : _save,
-            icon: _busy
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.save),
-            label: const Text('দিনের Entry সংরক্ষণ করুন'),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _busy ? null : _saveAndCreateCd,
+                  icon: const Icon(Icons.auto_awesome),
+                  label: Text(
+                    widget.firstCdMode
+                        ? 'Entry সংরক্ষণ করে CD-I তৈরি করুন'
+                        : 'Entry সংরক্ষণ করে এই দিনের CD তৈরি করুন',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _busy ? null : _save,
+                  icon: _busy
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.save),
+                  label: const Text('শুধু দিনের Entry সংরক্ষণ করুন'),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -576,11 +657,17 @@ class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
           TextField(
             controller: _date,
             readOnly: true,
-            onTap: _pickDate,
-            decoration: const InputDecoration(
-              labelText: 'দিনের তারিখ',
-              suffixIcon: Icon(Icons.calendar_month),
-              border: OutlineInputBorder(),
+            onTap: widget.firstCdMode ? null : _pickDate,
+            decoration: InputDecoration(
+              labelText: widget.firstCdMode
+                  ? 'দিনের তারিখ (মামলার তারিখ অনুযায়ী নির্ধারিত)'
+                  : 'দিনের তারিখ',
+              suffixIcon: Icon(
+                widget.firstCdMode
+                    ? Icons.lock_outline
+                    : Icons.calendar_month,
+              ),
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 12),

@@ -16,10 +16,16 @@ class DailyCdModeScreen extends StatefulWidget {
   final OfficerProfile profile;
   final CaseFile caseFile;
 
+  final String? initialDate;
+  final bool lockDate;
+  final bool autoGenerate;
   const DailyCdModeScreen({
     super.key,
     required this.profile,
     required this.caseFile,
+    this.initialDate,
+    this.lockDate = false,
+    this.autoGenerate = false,
   });
 
   @override
@@ -51,9 +57,15 @@ class _DailyCdModeScreenState extends State<DailyCdModeScreen> {
   void initState() {
     super.initState();
     _date = TextEditingController(
-      text: DateTime.now().toIso8601String().split('T').first,
+      text: widget.initialDate ??
+          DateTime.now().toIso8601String().split('T').first,
     );
-    _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _load();
+      if (widget.autoGenerate && mounted) {
+        await _automaticCd();
+      }
+    });
   }
 
   @override
@@ -110,34 +122,13 @@ class _DailyCdModeScreenState extends State<DailyCdModeScreen> {
     }
     final nextNumber = await _localStore.nextCdNumber(widget.caseFile.id);
     if (!mounted) return;
-    if (nextNumber == 1) {
-      final useFixed = await showDialog<bool>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('CD-I-এর নির্ধারিত পদ্ধতি'),
-          content: const Text(
-            'প্রথম Case Diary-তে FIR/case papers গ্রহণ, তদন্তভার গ্রহণ, PO visit এবং অন্যান্য নির্ধারিত বিষয় থাকে। পুরোনো CD-I Builder-টি ব্যবহার করা হবে।',
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('বাতিল'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('CD-I Builder খুলুন'),
-            ),
-          ],
-        ),
-      );
-      if (useFixed == true) await _legacyBuilder();
-      return;
-    }
+
 
     setState(() => _busy = true);
     try {
       final result = await _assembly.build(
         caseId: widget.caseFile.id,
+        caseFile: widget.caseFile,
         actionDate: _date.text.trim(),
         cdNumber: nextNumber,
         profile: widget.profile,
@@ -223,11 +214,17 @@ class _DailyCdModeScreenState extends State<DailyCdModeScreen> {
           TextField(
             controller: _date,
             readOnly: true,
-            onTap: _pickDate,
-            decoration: const InputDecoration(
-              labelText: 'Case Diary-এর তারিখ',
-              suffixIcon: Icon(Icons.calendar_month),
-              border: OutlineInputBorder(),
+            onTap: widget.lockDate ? null : _pickDate,
+            decoration: InputDecoration(
+              labelText: widget.lockDate
+                  ? 'Case Diary-এর তারিখ (দিনের Entry থেকে নেওয়া)'
+                  : 'Case Diary-এর তারিখ',
+              suffixIcon: Icon(
+                widget.lockDate
+                    ? Icons.lock_outline
+                    : Icons.calendar_month,
+              ),
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 12),

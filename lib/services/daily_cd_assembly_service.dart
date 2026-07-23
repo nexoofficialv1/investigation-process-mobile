@@ -1,5 +1,6 @@
 import '../core/document_language.dart';
 import '../models/cd_entry.dart';
+import '../models/case_file.dart';
 import '../models/guided_daily_entry.dart';
 import '../models/officer_profile.dart';
 import 'guided_question_engine.dart';
@@ -22,6 +23,7 @@ class DailyCdAssemblyService {
 
   Future<DailyCdAssemblyResult?> build({
     required String caseId,
+    required CaseFile caseFile,
     required String actionDate,
     required int cdNumber,
     required OfficerProfile profile,
@@ -55,15 +57,24 @@ class DailyCdAssemblyService {
     final rows = <CdTableLine>[];
     var serial = 1;
 
+    final isFirstCd = cdNumber == 1;
     rows.add(CdTableLine(
       noAndHour: '${_number(serial++, language)}\n$firstTime',
       placeOfEntry: station,
-      synopsis: language.isBangla
-          ? 'পরবর্তী তদন্ত পুনরায় শুরু'
-          : 'Resumption of further investigation',
-      proceedings: language.isBangla
-          ? 'মামলার পরবর্তী তদন্ত পুনরায় শুরু করলাম।'
-          : 'Resumed further investigation of the case.',
+      synopsis: isFirstCd
+          ? (language.isBangla
+              ? 'এফআইআর ও মামলার কাগজপত্র গ্রহণ এবং তদন্তভার গ্রহণ'
+              : 'Receipt of FIR and case papers and taking up investigation')
+          : (language.isBangla
+              ? 'পরবর্তী তদন্ত পুনরায় শুরু'
+              : 'Resumption of further investigation'),
+      proceedings: isFirstCd
+          ? (language.isBangla
+              ? '${caseFile.displayTitle}, ধারা ${caseFile.sections}-এর এফআইআর ও মামলার কাগজপত্র গ্রহণ করে নির্দেশমতো মামলার তদন্তভার গ্রহণ করলাম।'
+              : 'Received the FIR and case papers of ${caseFile.displayTitle} under sections ${caseFile.sections} and, as endorsed, took up investigation of the case.')
+          : (language.isBangla
+              ? 'মামলার পরবর্তী তদন্ত পুনরায় শুরু করলাম।'
+              : 'Resumed further investigation of the case.'),
     ));
 
     for (final action in actions) {

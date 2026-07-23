@@ -88,7 +88,9 @@ class _OcrScannerScreenState extends State<OcrScannerScreen> {
       });
     } catch (error) {
       if (!mounted) return;
-      setState(() => _status = 'OCR করা যায়নি: $error');
+      debugPrint('INVESTIGO OCR ERROR: $error');
+      setState(() => _status =
+          'OCR engine চালু করা যায়নি। নতুন build-এর APK ইনস্টল করে আবার চেষ্টা করুন।');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
