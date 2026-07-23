@@ -26,44 +26,157 @@ class PdfService {
     }
   }
 
-  Future<Uint8List> buildCaseDiaryPdf({
-    required OfficerProfile officer,
-    required CaseFile caseFile,
-    required CdEntry cd,
-  }) async {
-    final doc = pw.Document(theme: await _pdfTheme());
-    final isEnglish = cd.languageCode == 'en';
+  // INVESTIGO_CD_PREVIEW_STABILITY_V094
+Future<Uint8List> buildCaseDiaryPdf({
+  required OfficerProfile officer,
+  required CaseFile caseFile,
+  required CdEntry cd,
+}) async {
+  final doc = pw.Document(theme: await _pdfTheme());
+  final pageCds = _caseDiaryPageCds(cd);
+
+  for (var pageIndex = 0; pageIndex < pageCds.length; pageIndex++) {
+    final pageCd = pageCds[pageIndex];
+    final isEnglish = pageCd.languageCode == 'en';
     doc.addPage(
-      pw.MultiPage(
+      pw.Page(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
-        header: (context) => context.pageNumber == 1
-            ? pw.SizedBox()
-            : pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-                children: [
-                  _wbOfficialCdHeader(
-                    officer: officer,
-                    caseFile: caseFile,
-                    cd: cd,
-                    continued: true,
-                  ),
-                  _wbOfficialCdStatusRow(isEnglish),
-                ],
-              ),
-        build: (context) => [
-          _wbOfficialCdHeader(
-            officer: officer,
-            caseFile: caseFile,
-            cd: cd,
-          ),
-          _wbOfficialCdStatusRow(isEnglish),
-          _wbOfficialCdContinuousTable(cd, officer),
-        ],
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+          children: [
+            _wbOfficialCdHeader(
+              officer: officer,
+              caseFile: caseFile,
+              cd: pageCd,
+              continued: pageIndex > 0,
+            ),
+            _wbOfficialCdStatusRow(isEnglish),
+            pw.Expanded(
+              child: _wbOfficialCdContinuousTable(pageCd, officer),
+            ),
+          ],
+        ),
       ),
     );
-    return doc.save();
   }
+
+  return doc.save();
+}
+
+List<CdTableLine> _sourceCaseDiaryLines(CdEntry cd) {
+  if (cd.tableLines.isNotEmpty) {
+    return List<CdTableLine>.from(cd.tableLines);
+  }
+  final isEnglish = cd.languageCode == 'en';
+  return [
+    CdTableLine(
+      noAndHour: '${isEnglish ? '1' : '১'}\n${cd.startTime}',
+      placeOfEntry: cd.placeOfEntry,
+      synopsis: cd.cdNumber == 1
+          ? (isEnglish
+              ? 'Receipt of FIR copy\n+\nBrief facts'
+              : 'এফআইআর অনুলিপি গ্রহণ\n+\nসংক্ষিপ্ত ঘটনা')
+          : (isEnglish ? 'Further investigation' : 'পরবর্তী তদন্ত'),
+      proceedings: cd.body,
+    ),
+  ];
+}
+
+List<String> _splitCaseDiaryText(String source, {int maxChars = 620}) {
+  final text = source.trim();
+  if (text.isEmpty) return const [''];
+
+  final words = text.split(RegExp(r'\s+'));
+  final chunks = <String>[];
+  var buffer = StringBuffer();
+
+  void flush() {
+    final value = buffer.toString().trim();
+    if (value.isNotEmpty) chunks.add(value);
+    buffer = StringBuffer();
+  }
+
+  for (final word in words) {
+    if (word.length > maxChars) {
+      flush();
+      final runes = word.runes.toList();
+      for (var start = 0; start < runes.length; start += maxChars) {
+        final end = math.min(start + maxChars, runes.length);
+        chunks.add(String.fromCharCodes(runes.sublist(start, end)));
+      }
+      continue;
+    }
+
+    final currentLength = buffer.length;
+    final nextLength = currentLength + (currentLength == 0 ? 0 : 1) + word.length;
+    if (nextLength > maxChars) flush();
+    if (buffer.length > 0) buffer.write(' ');
+    buffer.write(word);
+  }
+
+  flush();
+  return chunks.isEmpty ? const [''] : chunks;
+}
+
+List<CdEntry> _caseDiaryPageCds(CdEntry cd) {
+  const pageBudget = 650;
+  final isEnglish = cd.languageCode == 'en';
+  final pages = <CdEntry>[];
+  var currentLines = <CdTableLine>[];
+  var used = 0;
+
+  void flushPage() {
+    if (currentLines.isEmpty) return;
+    pages.add(
+      cd.copyWith(
+        body: currentLines
+            .map((line) => line.proceedings)
+            .where((text) => text.trim().isNotEmpty)
+            .join('\n\n'),
+        tableLines: List<CdTableLine>.from(currentLines),
+      ),
+    );
+    currentLines = <CdTableLine>[];
+    used = 0;
+  }
+
+  for (final line in _sourceCaseDiaryLines(cd)) {
+    final parts = _splitCaseDiaryText(line.proceedings);
+    for (var partIndex = 0; partIndex < parts.length; partIndex++) {
+      final firstPart = partIndex == 0;
+      final part = parts[partIndex];
+      final metadataCost = firstPart
+          ? line.noAndHour.length + line.placeOfEntry.length + line.synopsis.length
+          : 24;
+      final cost = part.length + (metadataCost ~/ 2) + 40;
+
+      if (currentLines.isNotEmpty && used + cost > pageBudget) {
+        flushPage();
+      }
+
+      currentLines.add(
+        CdTableLine(
+          noAndHour: firstPart ? line.noAndHour : '',
+          placeOfEntry: firstPart ? line.placeOfEntry : '',
+          synopsis: firstPart
+              ? line.synopsis
+              : (isEnglish ? 'Continued' : 'চলমান'),
+          proceedings: part,
+        ),
+      );
+      used += cost;
+
+      if (used >= pageBudget) flushPage();
+    }
+  }
+
+  flushPage();
+  if (pages.isEmpty) {
+    pages.add(cd.copyWith(tableLines: _sourceCaseDiaryLines(cd)));
+  }
+  return pages;
+}
 
   String _shortPsName(String ps) => ps
       .replaceAll('Police Station', 'থানা')
@@ -463,18 +576,19 @@ class PdfService {
 
 
   Future<Uint8List> buildCaseDiaryBundlePdf({
-    required OfficerProfile officer,
-    required CaseFile caseFile,
-    required List<CdEntry> cds,
-  }) async {
-    final doc = pw.Document(theme: await _pdfTheme());
+  required OfficerProfile officer,
+  required CaseFile caseFile,
+  required List<CdEntry> cds,
+}) async {
+  final doc = pw.Document(theme: await _pdfTheme());
+  final sortedCds = List<CdEntry>.from(cds)
+    ..sort((a, b) => a.cdNumber.compareTo(b.cdNumber));
 
-    final sortedCds = [...cds]
-      ..sort((a, b) => a.cdNumber.compareTo(b.cdNumber));
-
-    for (final cd in sortedCds) {
-      final isEnglish = cd.languageCode == 'en';
-
+  for (final cd in sortedCds) {
+    final pageCds = _caseDiaryPageCds(cd);
+    for (var pageIndex = 0; pageIndex < pageCds.length; pageIndex++) {
+      final pageCd = pageCds[pageIndex];
+      final isEnglish = pageCd.languageCode == 'en';
       doc.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
@@ -485,20 +599,22 @@ class PdfService {
               _wbOfficialCdHeader(
                 officer: officer,
                 caseFile: caseFile,
-                cd: cd,
+                cd: pageCd,
+                continued: pageIndex > 0,
               ),
               _wbOfficialCdStatusRow(isEnglish),
               pw.Expanded(
-                child: _wbOfficialCdContinuousTable(cd, officer),
+                child: _wbOfficialCdContinuousTable(pageCd, officer),
               ),
             ],
           ),
         ),
       );
     }
-
-    return doc.save();
   }
+
+  return doc.save();
+}
 
   Future<Uint8List> buildStatementPdf({
     required OfficerProfile officer,
