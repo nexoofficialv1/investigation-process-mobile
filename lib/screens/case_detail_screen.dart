@@ -21,6 +21,7 @@ import 'pdf_preview_screen.dart';
 // INVESTIGO_GUIDED_DAILY_WORKFLOW_V050
 import 'daily_cd_mode_screen.dart';
 import 'daily_work_hub_screen.dart';
+import 'mandatory_first_cd_screen.dart';
 
 
 class CaseDetailScreen extends StatefulWidget {
@@ -110,10 +111,27 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   }
 
   Future<void> _openInvestigation() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => DailyWorkHubScreen.investigation(profile: widget.profile, caseFile: _caseFile)),
-    );
+    if (_cds.isEmpty) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => MandatoryFirstCdScreen(
+            profile: widget.profile,
+            caseFile: _caseFile,
+          ),
+        ),
+      );
+    } else {
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => DailyWorkHubScreen.investigation(
+            profile: widget.profile,
+            caseFile: _caseFile,
+          ),
+        ),
+      );
+    }
     await _load();
   }
 
@@ -247,12 +265,12 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
               crossAxisSpacing: 10,
               childAspectRatio: 1.55,
               children: [
-                _moduleCard('তদন্ত', Icons.manage_search, _openInvestigation),
+                _moduleCard('Continue Investigation', Icons.play_arrow_rounded, _openInvestigation),
                 _moduleCard('সিডি প্রস্তুতকারী', Icons.note_alt, _newCd),
                 _moduleCard('বিবৃতি', Icons.record_voice_over, _openStatements),
                 _moduleCard('ফর্ম ও নোটিশ', Icons.description, _openForms),
                 _moduleCard('অনুবর্তিতা', Icons.checklist, _openCompliance),
-              _moduleCard('যাচাই তালিকা', Icons.fact_check_rounded, _openInvestigationChecklist),
+              _moduleCard('স্বয়ংক্রিয় যাচাইতালিকা', Icons.fact_check_rounded, _openInvestigationChecklist),
               _moduleCard('SOP', Icons.policy_rounded, _openSopCompliance),
                 _moduleCard('আলামত/প্রমাণ', Icons.inventory_2, _openEvidence),
                 _moduleCard('খসড়া নকশা', Icons.map, _openSketchMap),

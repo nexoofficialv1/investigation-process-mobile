@@ -213,6 +213,18 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
     );
   }
 
+
+  Future<void> _changeDocumentLanguage(
+    DocumentLanguage language,
+  ) async {
+    if (language.code == _cd.languageCode || _translating) return;
+    setState(() {
+      _cd = _cd.copyWith(languageCode: language.code);
+    });
+    await _translateAll();
+    await _save(finalSave: false);
+  }
+
   Future<void> _translateAll() async {
     setState(() => _translating = true);
     try {
@@ -381,11 +393,25 @@ class _CdEditorScreenState extends State<CdEditorScreen> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                        Chip(
-                          label: Text(
-                            _documentLanguage.isBangla ? 'বাংলা' : 'English',
-                          ),
-                        ),
+                        DropdownButton<DocumentLanguage>(
+                      value: _documentLanguage,
+                      underline: const SizedBox.shrink(),
+                      items: DocumentLanguage.values
+                          .map(
+                            (language) => DropdownMenuItem<DocumentLanguage>(
+                              value: language,
+                              child: Text(language.displayLabel),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: _translating
+                          ? null
+                          : (language) {
+                              if (language != null) {
+                                _changeDocumentLanguage(language);
+                              }
+                            },
+                    ),
                       ],
                     ),
                     const SizedBox(height: 10),

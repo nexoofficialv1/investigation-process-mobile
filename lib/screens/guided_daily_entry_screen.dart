@@ -7,6 +7,7 @@ import '../models/guided_daily_entry.dart';
 import '../models/officer_profile.dart';
 import '../models/pending_cd_action.dart';
 import '../services/guided_daily_entry_store.dart';
+import '../services/chronology_engine_service.dart';
 import '../services/guided_question_engine.dart';
 import '../services/local_store_service.dart';
 import '../services/protected_translation_service.dart';
@@ -36,6 +37,7 @@ class GuidedDailyEntryScreen extends StatefulWidget {
 
 class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
   final GuidedDailyEntryStore _entryStore = GuidedDailyEntryStore();
+  final ChronologyEngineService _chronology = ChronologyEngineService();
   final GuidedQuestionEngine _engine = GuidedQuestionEngine();
   final LocalStoreService _localStore = LocalStoreService();
   final SpeechToText _speech = SpeechToText();
@@ -486,7 +488,7 @@ class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
 
     setState(() => _busy = true);
     try {
-      final entry = _existing == null
+      var entry = _existing == null
           ? GuidedDailyEntry.create(
               caseId: widget.caseFile.id,
               actionDate: _date.text.trim(),
@@ -503,10 +505,31 @@ class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
               documentLanguageCode: _documentLanguage.code,
               actions: _actions,
             );
+      final assessment = await _chronology.assessEntry(entry);
+      if (!assessment.hasNewFacts) {
+        if (!mounted) return;
+        final previous = assessment.exactDuplicates.isEmpty
+            ? ''
+            : ' আগের source: ${assessment.exactDuplicates.first.actionDate} '
+                '${assessment.exactDuplicates.first.sourceType}.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'একই তথ্য আগে থেকেই মামলার chronology-তে আছে। '
+              'Duplicate Entry save করা হয়নি.$previous',
+            ),
+          ),
+        );
+        return;
+      }
+      entry = entry.copyWith(
+        actions: assessment.acceptedActions.cast<GuidedAction>(),
+      );
       await _entryStore.save(entry);
+      await _chronology.commitEntry(entry, assessment);
 
       // Interoperability with the existing pending-CD workflow.
-      for (final action in _actions.where((item) => item.includeInCd)) {
+      for (final action in entry.actions.where((item) => item.includeInCd)) {
         String facts = _engine.factSummary(action);
         try {
           facts = await ProtectedTranslationService.instance.translate(
@@ -549,7 +572,10 @@ class _GuidedDailyEntryScreenState extends State<GuidedDailyEntryScreen> {
       setState(() => _existing = entry);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
-          '${widget.source.banglaLabel} দিনের Entry সংরক্ষিত হয়েছে।',
+          assessment.exactDuplicates.isEmpty
+              ? '${widget.source.banglaLabel} দিনের Entry সংরক্ষিত হয়েছে।'
+              : '${widget.source.banglaLabel} Entry সংরক্ষিত; '
+                  '${assessment.exactDuplicates.length}টি duplicate বাদ গেছে।',
         ),
       ));
       if (createCdAfterSave) {

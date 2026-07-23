@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/case_file.dart';
 import '../models/officer_profile.dart';
-import '../models/guided_daily_entry.dart';
-import 'guided_daily_entry_screen.dart';
+import 'mandatory_first_cd_screen.dart';
 import '../services/local_store_service.dart';
 import '../widgets/app_section_card.dart';
 import '../widgets/form_helpers.dart';
@@ -136,50 +135,23 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
       return;
     }
 
-    final prepareFirstCd = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('First Case Diary প্রস্তুত করবেন?'),
-        content: const Text(
-          'মামলার তারিখের CD-I প্রস্তুত করার জন্য নিজের ভাষায় তদন্তের কাজ বলুন '
-          'বা লিখুন। অ্যাপ প্রয়োজন অনুযায়ী PO-এর বিস্তারিত, PS থেকে রওনা ও '
-          'PO-তে পৌঁছানোর সময়, Sketch Map, সাক্ষীর নাম ও বয়ান, জব্দ, চিকিৎসা '
-          'এবং Evidence সম্পর্কে প্রশ্ন করবে।',
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'মামলা সংরক্ষিত হয়েছে—Mandatory First Case Diary শুরু হচ্ছে',
         ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('পরে করব'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('এখন CD-I প্রস্তুত করুন'),
-          ),
-        ],
       ),
     );
-
-    if (!mounted) return;
-    if (prepareFirstCd == true) {
-      await Navigator.pushReplacement(
-        context,
-        MaterialPageRoute<void>(
-          builder: (_) => GuidedDailyEntryScreen(
-            profile: widget.profile,
-            caseFile: updated,
-            source: DailyEntrySource.investigation,
-            initialDate: updated.caseDate.trim().isEmpty
-                ? DateTime.now().toIso8601String().split('T').first
-                : updated.caseDate.trim(),
-            firstCdMode: true,
-          ),
+    await Navigator.pushReplacement(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => MandatoryFirstCdScreen(
+          profile: widget.profile,
+          caseFile: updated,
         ),
-      );
-      return;
-    }
-
-    Navigator.pop(context, true);
+      ),
+    );
+    return;
   }
 
   @override
@@ -230,8 +202,9 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
               ],
             ),
           ),
-          AppSectionCard(
-            title: 'ধাপ ৪: তদন্তের সূচনা',
+          if (widget.existing != null)
+            AppSectionCard(
+              title: 'ধাপ ৪: তদন্তের সূচনা',
             subtitle: 'হ্যাঁ নির্বাচন করলে বিস্তারিত লেখার ঘর খুলবে। এই তথ্য থেকে সিডি-১-এর খসড়া স্বয়ংক্রিয়ভাবে তৈরি হবে।',
             icon: Icons.manage_search,
             child: Column(

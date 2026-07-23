@@ -120,7 +120,12 @@ class _DailyCdModeScreenState extends State<DailyCdModeScreen> {
       );
       return;
     }
-    final nextNumber = await _localStore.nextCdNumber(widget.caseFile.id);
+    final existingCd = await _localStore.loadCdForDate(
+      widget.caseFile.id,
+      _date.text.trim(),
+    );
+    final nextNumber = existingCd?.cdNumber ??
+        await _localStore.nextCdNumber(widget.caseFile.id);
     if (!mounted) return;
 
 
@@ -142,7 +147,7 @@ class _DailyCdModeScreenState extends State<DailyCdModeScreen> {
         );
         return;
       }
-      await _localStore.saveCd(result.cd);
+      final savedCd = await _localStore.saveCdForDate(result.cd);
       if (!mounted) return;
       await Navigator.push(
         context,
@@ -150,7 +155,7 @@ class _DailyCdModeScreenState extends State<DailyCdModeScreen> {
           builder: (_) => CdEditorScreen(
             profile: widget.profile,
             caseFile: widget.caseFile,
-            cd: result.cd,
+            cd: savedCd,
           ),
         ),
       );
@@ -160,6 +165,23 @@ class _DailyCdModeScreenState extends State<DailyCdModeScreen> {
   }
 
   Future<void> _manualCd() async {
+    final existingCd = await _localStore.loadCdForDate(
+      widget.caseFile.id,
+      _date.text.trim(),
+    );
+    if (existingCd != null) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => CdEditorScreen(
+            profile: widget.profile,
+            caseFile: widget.caseFile,
+            cd: existingCd,
+          ),
+        ),
+      );
+      return;
+    }
     final nextNumber = await _localStore.nextCdNumber(widget.caseFile.id);
     final station = widget.profile.policeStation.trim().isEmpty
         ? 'থানা'
@@ -178,7 +200,7 @@ class _DailyCdModeScreenState extends State<DailyCdModeScreen> {
       tableLines: <CdTableLine>[line],
       languageCode: _language.code,
     ).copyWith(cdDate: _date.text.trim());
-    await _localStore.saveCd(draft);
+    final savedDraft = await _localStore.saveCdForDate(draft);
     if (!mounted) return;
     await Navigator.push(
       context,
@@ -186,7 +208,7 @@ class _DailyCdModeScreenState extends State<DailyCdModeScreen> {
         builder: (_) => CdEditorScreen(
           profile: widget.profile,
           caseFile: widget.caseFile,
-          cd: draft,
+          cd: savedDraft,
         ),
       ),
     );

@@ -317,6 +317,12 @@ class GuidedQuestionEngine {
       'return_ps': 'Return to Police Station',
       'other': 'Further investigation',
     };
+    if (action.type == 'sketch_map' &&
+        _isNo(action.answers['sketch_map_decision'])) {
+      return language.isBangla
+          ? 'খসড়া নকশা প্রস্তুত না করার কারণ'
+          : 'Reason for not preparing rough sketch map';
+    }
     return language.isBangla
         ? (bn[action.type] ?? bn['other']!)
         : (en[action.type] ?? en['other']!);
@@ -340,6 +346,10 @@ class GuidedQuestionEngine {
     }
 
     if (language.isBangla) {
+      if (action.type == 'sketch_map' &&
+          _isNo(action.answers['sketch_map_decision'])) {
+        return '${timePart}Rough Sketch Map প্রস্তুত করা হলো না।${appendFacts()}';
+      }
       switch (action.type) {
         case 'departure':
           return '${timePart}মামলার তদন্তের স্বার্থে ${place.isEmpty ? 'থানা' : place} থেকে রওনা হলাম।${appendFacts()}';
@@ -374,6 +384,10 @@ class GuidedQuestionEngine {
       }
     }
 
+    if (action.type == 'sketch_map' &&
+        _isNo(action.answers['sketch_map_decision'])) {
+      return '${timePart}The rough sketch map was not prepared.${appendFacts()}';
+    }
     switch (action.type) {
       case 'departure':
         return '${timePart}I left ${place.isEmpty ? 'the Police Station' : place} in connection with the investigation of the case.${appendFacts()}';
@@ -457,5 +471,13 @@ class GuidedQuestionEngine {
   static bool _isYes(String? value) {
     final text = (value ?? '').trim().toLowerCase();
     return text == 'হ্যাঁ' || text == 'হ্যা' || text == 'yes' || text == 'y';
+  }
+
+  static bool _isNo(String? value) {
+    final text = (value ?? '').trim().toLowerCase();
+    return text == 'না' ||
+        text == 'no' ||
+        text == 'n' ||
+        text == 'প্রযোজ্য নয়';
   }
 }

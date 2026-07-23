@@ -52,7 +52,12 @@ class DailyCdAssemblyService {
     final station = profile.policeStation.trim().isEmpty
         ? (language.isBangla ? 'থানা' : 'Police Station')
         : profile.policeStation.trim();
-    final firstTime = actions.first.time.trim();
+    final takingUpTime = actions
+        .map((item) => item.answers['taking_up_time']?.trim() ?? '')
+        .firstWhere((value) => value.isNotEmpty, orElse: () => '');
+    final firstTime = cdNumber == 1 && takingUpTime.isNotEmpty
+        ? takingUpTime
+        : actions.first.time.trim();
     final lastTime = actions.last.time.trim();
     final rows = <CdTableLine>[];
     var serial = 1;
